@@ -48,10 +48,13 @@ class SceneObjectsFound:
         self.locators = []
         self.triggers = []
         self.particles = []
-        self.collisions = [[] for i in range(10)] # Each collision layer is a list of objects that were found within said layer
+        self.collisions = [[] for i in range(10)] # Each collision layer is a list of objects that were found within said layer.
         self.nav_meshes = []
         self.animated_parts = []
+        
+        # NOTE : These 2 ahead can only be found on static level data, can't be within animated level parts.
         self.physics_entities = []
+        self.force_fields = []
 
 class SceneObjectsGeneratedStatic:
     def __init__(self):
@@ -65,7 +68,8 @@ class SceneObjectsGeneratedStatic:
         self.collisions = []
         self.nav_mesh = None
         self.animated_parts = []
-        self.physics_entities = [] # NOTE : These can only be found on static level data, can't be within animated level parts.
+        self.physics_entities = []
+        self.force_fields = []
 
 class SceneObjectsGeneratedAnimated:
     def __init__(self):
@@ -2962,7 +2966,8 @@ def unregister_properties_empty():
 def register_properties_mesh():
     mesh = bpy.types.Mesh
     
-    # Object type for mesh objects:
+    # region Object type for mesh objects:
+    
     mesh.magickcow_mesh_type = bpy.props.EnumProperty(
         name = "Type",
         description = "Determine the type of this object",
@@ -2971,12 +2976,16 @@ def register_properties_mesh():
             ("COLLISION", "Collision", "This object will be exported as a piece of level collision"),
             ("WATER", "Water", "This object will be exported as a liquid of type \"Water\""),
             ("LAVA", "Lava", "This object will be exported as a liquid of type \"Lava\""),
-            ("NAV", "Nav", "This object will be exported as a nav mesh")
+            ("NAV", "Nav", "This object will be exported as a nav mesh"),
+            ("FORCE_FIELD", "Force Field", "This object will be exported as a force field")
         ],
         default = "GEOMETRY"
     )
+
+    # endregion
     
-    # Liquid properties (for both water and lava):
+    # region Liquid properties (for both water and lava):
+    
     mesh.magickcow_mesh_can_drown = bpy.props.BoolProperty(
         name = "Can Drown Entities",
         description = "Determines whether the entities that collide with this liquid's surface will die by drowning in the liquid or not. Useful for maps with shallow water like \"Eye Sockey Rink\", where entities can contact the liquid but will not instantly drown. Entities will drown both in water and lava when this setting is enabled for the selected liquid.",
@@ -2992,6 +3001,8 @@ def register_properties_mesh():
         description = "Determines whether the liquid will freeze automatically or not. Useful for cold maps and areas like \"Frostjord\" where the environment is cold and water would logically freeze automatically into ice.",
         default = False
     )
+
+    # endregion
 
 def unregister_properties_mesh():
     mesh = bpy.types.Mesh
