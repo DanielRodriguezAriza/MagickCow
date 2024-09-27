@@ -967,7 +967,8 @@ class DataGenerator:
     def generate_force_field_data(self, obj, transform):
         # Generate the mesh data (vertex buffer, index buffer and effect / material, altough the material is ignored in this case)
         vertices, indices, matname = self.generate_mesh_data(obj, transform, False)
-        return (vertices, indices)
+        ripple_color = obj.data.magickcow_force_field_ripple_color
+        return (vertices, indices, ripple_color)
 
     def generate_light_reference_data(self, obj, transform):
         name = obj.name
@@ -2517,12 +2518,12 @@ class DataGenerator:
     # region Make - Force Fields
 
     def make_force_field(self, force_field):
-        vertices, indices = force_field
+        vertices, indices, ripple_color = force_field
         ans = {
             "color" : {
-                "x" : 0,
-                "y" : 0,
-                "z" : 0
+                "x" : ripple_color[0],
+                "y" : ripple_color[1],
+                "z" : ripple_color[2]
             },
             "width" : 0.5,
             "alphaPower": 4,
@@ -2856,6 +2857,8 @@ class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
             self.draw_mesh_liquid(layout, obj)
         elif obj.data.magickcow_mesh_type == "COLLISION":
             self.draw_mesh_collision(layout, obj)
+        elif obj.data.magickcow_mesh_type == "FORCE_FIELD":
+            self.draw_mesh_force_field(layout, obj)
         return
     
     def draw_mesh_geometry(self, layout, obj):
@@ -2870,6 +2873,9 @@ class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
     
     def draw_mesh_collision(self, layout, obj):
         layout.prop(obj, "magickcow_collision_material") # 2
+
+    def draw_mesh_force_field(self, layout, obj):
+        layout.prop(obj.data, "magickcow_force_field_ripple_color")
 
 # endregion
 
@@ -3075,6 +3081,20 @@ def register_properties_mesh():
 
     # endregion
 
+    # region Force Field Properties
+
+    mesh.magickcow_force_field_ripple_color = bpy.props.FloatVectorProperty(
+        name = "Ripple Color",
+        description = "Color used for the ripple effect displayed when an entity collides with the force field.\nThe lower the values, the more transparent they will appear. This means that color < 0.0, 0.0, 0.0 >, which corresponds to black, is displayed as a transparent ripple effect with no color tint.",
+        subtype = "COLOR",
+        default = (0.0, 0.0, 0.0),
+        min = 0.0,
+        max = 1.0,
+        size = 3 # RGB has 3 values. Magicka lights are Vec3, so no alpha channel.
+    )
+
+    # endregion
+
 def unregister_properties_mesh():
     mesh = bpy.types.Mesh
     
@@ -3082,6 +3102,7 @@ def unregister_properties_mesh():
     del mesh.magickcow_mesh_can_drown
     del mesh.magickcow_mesh_freezable
     del mesh.magickcow_mesh_autofreeze
+    del mesh.magickcow_force_field_ripple_color
 
 def register_properties_light():
     light = bpy.types.Light
