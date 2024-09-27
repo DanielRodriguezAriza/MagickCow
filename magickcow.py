@@ -737,6 +737,11 @@ class DataGenerator:
                 
                 elif obj.data.magickcow_mesh_type == "NAV":
                     found_objects_current.nav_meshes.append((obj, transform))
+                
+                elif obj.data.magickcow_mesh_type == "FORCE_FIELD":
+                    # Only add it to the global scope because animated level parts cannot contain force fields.
+                    # Allows "malformed" (with a hierarchy that would not be correct in game) scenes to export successfully and work correctly in game.
+                    found_objects_global.force_fields.append((obj, transform))
             
             elif obj.type == "LIGHT":
                 
@@ -796,7 +801,7 @@ class DataGenerator:
     # endregion
     
     # region "Generate Data" / "Transform Data" Functions
-    
+
     def generate_physics_entity_data(self, obj, transform):
         template = obj.magickcow_physics_entity_name
         matrix = self.generate_matrix_data(transform)
@@ -831,7 +836,7 @@ class DataGenerator:
         
         return (obj, transform, obj.name, matrix, vertices, indices, idx)
 
-    def generate_mesh_data(self, obj, transform):
+    def generate_mesh_data(self, obj, transform, uses_material = True):
         
         # Get the inverse-tranpose matrix of the object's transform matrix to use it on directional vectors (normals and tangents)
         # NOTE : The reason we do this is because vectors that represent points in space need to be translated, but vectors that represent directions don't, so we use the input transform matrix for point operations and the inverse-transpose matrix for direction vector operations, since that allows transforming vectors without displacing them (no translation) but properly preserves the other transformations (scale, rotation, shearing, whatever...)
@@ -844,8 +849,9 @@ class DataGenerator:
         # Get material name
         matname = self.get_material_name(obj)
 
-        # Generate material data and store it
-        self.create_material(matname, mesh.magickcow_mesh_type)
+        # If the mesh uses a material, generate the material data and store it
+        if uses_material:
+            self.create_material(matname, mesh.magickcow_mesh_type)
         
         # Define vertex buffer and index buffer
         vertices = []
@@ -854,6 +860,14 @@ class DataGenerator:
         # Define vertex map (used to duplicate vertices to translate Blender's face based data such as UVs to vertex based data)
         vertices_map = {}
         
+        # region Comment
+        # Get the Vertex color layer if it exists
+        # if "Color" in mesh.color_attributes:
+        #     color_layer = mesh.color_attributes["Color"]
+        # else:
+        #     color_layer = None
+        # endregion
+
         # Extract vertex data (vertex buffer and index buffer)
         # Generate the vertex map for vertex duplication
         # The map is used to generate duplicate vertices each time we find a vertex with non matching UVs so as to allow Blender styled UVs (per face) to work in Magicka (where UVs are per vertex, meaning we have to duplicate vertices in some cases). The map prevents having to make a duplicate vertex for every single face, making it so that we only have to duplicate the vertices where the UV data does not match between faces.
@@ -877,9 +891,18 @@ class DataGenerator:
                 uv = mesh.uv_layers.active.data[loop_idx].uv
                 uv = (uv[0], -uv[1]) # Invert the "Y axis" (V axis, controlled by Y property in Blender) of the UVs because Magicka has it inverted for some reason...
                 
+                # region Comment
+                # This piece of code would be useful if we wanted to conserve vertex color, but for now we're not going to use it since it appears to be useless.
+                # All official magicka models I have unpacked seem to either have no vertex color property, and when they do, all of the colors are <1,1,1,1> or <1,1,1,0>
+                # btw, to make things faster in the future, we could actually not use an if on every single loop and just create a dummy list with 3 elements as color_layer.data or whatever...
+                # if color_layer is not None:
+                #     color = color_layer.data[loop_idx].color
+                #     color = (color[0], color[1], color[2], color[3])
+                # else:
+                #     color = (0.0, 0.0, 0.0, 1.0)
+                # endregion
+
                 vertex = (global_vertex_index, position, normal, tangent, uv)
-                
-                # vertices.append(vertex)
                 
                 # If the map entry does not exist (we have not added this vertex yet) or the vertex in the map has different UVs (we have found one of Blender's UVs seams caused by its face based UVs), then we create a new vertex entry or modify the entry that already exists.
                 # Allows to reduce the number of duplicated vertices.
@@ -940,7 +963,12 @@ class DataGenerator:
         autofreeze = obj.data.magickcow_mesh_autofreeze
         
         return (vertices, indices, matname, can_drown, freezable, autofreeze)
-    
+
+    def generate_force_field_data(self, obj, transform):
+        # Generate the mesh data (vertex buffer, index buffer and effect / material, altough the material is ignored in this case)
+        vertices, indices, matname = self.generate_mesh_data(obj, transform, False)
+        return (vertices, indices)
+
     def generate_light_reference_data(self, obj, transform):
         name = obj.name
         matrix = self.generate_matrix_data(transform)
@@ -1252,7 +1280,8 @@ class DataGenerator:
 
     # region Generate Static Data
     
-    # aaaand it's fucking deprecated because the dictionary is more than enough!
+    # Aaaand... it's fucking deprecated! Because the dictionary is more than enough!
+    # TODO : Remove!!!
     def generate_static_materials_data(self, generated_meshes):
         # region Comment
             # Create all of the materials for the meshes after creating the mesh data itself
@@ -1303,7 +1332,12 @@ class DataGenerator:
     def generate_static_physics_entities_data(self, found_entities):
         ans = [self.generate_physics_entity_data(obj, transform) for obj, transform in found_entities]
         return ans
+    
+    def generate_static_force_fields_data(self, found_fields):
+        ans = [self.generate_force_field_data(obj, transform) for obj, transform in found_fields]
+        return ans
 
+    # region Comment
     # NOTE : This is basically an "inlined" version of the final collision generation functions. It does the exact same thing.
     # The only reason this test exists is because I was debugging some slow down in the collision mesh generation and I assumed it was related to the extra function calls.
     # While it is true that Python function calls are slower than the inlined version, in this case the difference is extremely small and it is negligible...
@@ -1323,11 +1357,12 @@ class DataGenerator:
     #             last_vertex_index += current_num_vertices
     #         generated_collisions.append((layer_vertices, layer_triangles))
     #     return generated_collisions
+    # endregion
 
     def generate_static_nav_meshes_data(self, found_nav_meshes):
         ans = self.generate_nav_mesh_data(found_nav_meshes)
         return ans
-    
+
     # endregion
 
     # region Generate Animated Data
@@ -1448,7 +1483,7 @@ class DataGenerator:
 
     # region Generation entry point
 
-    # NOTE : For now, the shared resources dict is not used for the "static" side, but we're keeping it here in case it will ever be used for other purposes and features that are not implemented yet.
+    # NOTE : Some of the stuff generated on the static side of the code is not present on the animated side, so DO NOT call this function from the generate scene data animated functions as a way to simply the code...
     def generate_scene_data_static(self, found_scene_objects, generated_scene_objects):
         generated_scene_objects.meshes           = self.generate_static_meshes_data(found_scene_objects.meshes)
         generated_scene_objects.waters           = self.generate_static_liquids_data(found_scene_objects.waters)
@@ -1460,6 +1495,7 @@ class DataGenerator:
         generated_scene_objects.collisions       = self.generate_static_collisions_data(found_scene_objects.collisions)
         generated_scene_objects.nav_mesh         = self.generate_static_nav_meshes_data(found_scene_objects.nav_meshes)
         generated_scene_objects.physics_entities = self.generate_static_physics_entities_data(found_scene_objects.physics_entities)
+        generated_scene_objects.force_fields     = self.generate_static_force_fields_data(found_scene_objects.force_fields)
     
     def generate_scene_data_static_TIMINGS(self, found_scene_objects, generated_scene_objects):
         t0 = time.time()
@@ -2478,6 +2514,18 @@ class DataGenerator:
 
     # endregion
 
+    # region Make - Force Fields
+
+    def make_force_field(self, force_field):
+        ans = {}
+        return ans
+    
+    def make_force_fields(self, force_fields):
+        ans = [self.make_force_field(force_field) for force_field in force_fields]
+        return ans
+
+    # endregion
+
     # region Make - Level Model
     
     # TODO : Finish implementing leftover stuff (for example, force fields, etc... btw, right now I think that force fields MIGHT be things that apply forces to entities, like the wind stuff in R'lyeh)
@@ -2493,6 +2541,7 @@ class DataGenerator:
         nav_mesh = self.make_nav_mesh(generated_scene_data.nav_mesh)
         animated_parts = self.make_animated_level_parts(generated_scene_data.animated_parts)
         physics_entities = self.make_physics_entities(generated_scene_data.physics_entities)
+        force_fields = self.make_force_field(generated_scene_data.force_fields)
 
         ans = {
             "$type" : "level_model",
@@ -2510,8 +2559,8 @@ class DataGenerator:
             "physicsEntities" : physics_entities,
             "numLiquids" : len(liquids),
             "liquids" : liquids,
-            "numForceFields" : 0,
-            "forceFields" : [],
+            "numForceFields" : len(force_fields),
+            "forceFields" : force_fields,
             "collisionDataLevel" : collisions,
             "collisionDataCamera" : self.make_collision((False, [], [])), # For now, hard code no collision data for camera collision. Or whatever the fuck this truly is...
             "numTriggers" : len(triggers),
