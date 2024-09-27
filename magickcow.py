@@ -2517,7 +2517,29 @@ class DataGenerator:
     # region Make - Force Fields
 
     def make_force_field(self, force_field):
-        ans = {}
+        vertices, indices = force_field
+        ans = {
+            "color" : {
+                "x" : 0,
+                "y" : 0,
+                "z" : 0
+            },
+            "width" : 0.5,
+            "alphaPower": 4,
+            "alphaFalloffPower" : 2,
+            "maxRadius" : 4,
+            "rippleDistortion" : 2,
+            "mapDistortion" : 0.53103447,
+            "vertexColorEnabled": False,
+            "displacementMap": "..\\Textures\\Liquids\\WaterNormals_0",
+            "ttl": 1,
+            "vertices" : self.make_vertex_buffer(vertices),
+            "indices" : self.make_index_buffer(indices),
+            "declaration" : self.make_vertex_declaration_default(),
+            "vertexStride" : self.make_vertex_stride_default(),
+            "numVertices" : len(vertices),
+            "primitiveCount" : (len(indices) // 3)
+        }
         return ans
     
     def make_force_fields(self, force_fields):
@@ -2541,7 +2563,7 @@ class DataGenerator:
         nav_mesh = self.make_nav_mesh(generated_scene_data.nav_mesh)
         animated_parts = self.make_animated_level_parts(generated_scene_data.animated_parts)
         physics_entities = self.make_physics_entities(generated_scene_data.physics_entities)
-        force_fields = self.make_force_field(generated_scene_data.force_fields)
+        force_fields = self.make_force_fields(generated_scene_data.force_fields)
 
         ans = {
             "$type" : "level_model",
