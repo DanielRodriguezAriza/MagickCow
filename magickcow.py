@@ -2850,6 +2850,7 @@ class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
     # Properties that must be displayed for meshes
     def draw_mesh(self, layout, obj):
         layout.prop(obj.data, "magickcow_mesh_type")
+        layout.prop(obj.data, "magickcow_vertex_color_enabled")
         
         if obj.data.magickcow_mesh_type == "GEOMETRY":
             self.draw_mesh_geometry(layout, obj)
