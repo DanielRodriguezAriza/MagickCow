@@ -896,7 +896,16 @@ class DataGenerator:
                     color = color_layer.data[loop_idx].color
                     color = (color[0], color[1], color[2], color[3])
                 else:
-                    color = (1.0, 1.0, 1.0, 1.0) # The default color value should either be <1,1,1,1> or <0,0,0,1>
+                    # Default color value : vector < 1, 1, 1, 0 >
+                    # region Comment
+                        # The default color value should either be <1,1,1,1>, <0,0,0,1> or <1,1,1,0> or some other vector to that effect...
+                        # The reason for picking the vector <1,1,1,0> is that the default vertex color will paint the surface with a color multiplication on top of the used textures, so the RGB section is
+                        # ideal to have as <1,1,1> by default.
+                        # The alpha channel is used to lerp between 2 texture sets on deferred effects, and the value 0 corresponds to the first texture set, so it is ideal to have the alpha value to 0 by default.
+                        # The default value does not matter at all in the case of using an effect JSON file where the use vertex color attribute is set to false tho. But in case it is set to true, this is the best
+                        # default vector in my opinion.
+                    # endregion
+                    color = (1.0, 1.0, 1.0, 0.0)
 
                 vertex = (global_vertex_index, position, normal, tangent, uv, color)
                 
