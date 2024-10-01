@@ -3095,6 +3095,30 @@ def register_properties_mesh():
 
     # endregion
 
+    # region Vertex Properties
+    
+    # NOTE : Some day in the future we may allow adding custom properties at will to the vertices, for now we're just going to roll with the same config for all meshes except for vertex color,
+    # cause that's the only special case there is for now tbh. Something something ease of use etc etc...
+    """
+    mesh.magickcow_vertex_use_normals = bpy.props.BoolProperty(
+        name = "Use Vertex Normals",
+        description = "Allow vertex normals to be exported for this mesh",
+        default = True
+    )
+    mesh.magickcow_vertex_use_tangents = bpy.props.BoolProperty(
+        name = "Use Vertex Tangents",
+        description = "Allow vertex tangents to be exported for this mesh",
+        default = True
+    )
+    """
+    mesh.magickcow_vertex_color_enabled = bpy.props.BoolProperty(
+        name = "Vertex Color Enabled",
+        description = "Export the vertex color property for this mesh",
+        default = True
+    )
+
+    # endregion
+
 def unregister_properties_mesh():
     mesh = bpy.types.Mesh
     
@@ -3103,6 +3127,8 @@ def unregister_properties_mesh():
     del mesh.magickcow_mesh_freezable
     del mesh.magickcow_mesh_autofreeze
     del mesh.magickcow_force_field_ripple_color
+
+    del mesh.magickcow_vertex_color_enabled
 
 def register_properties_light():
     light = bpy.types.Light
