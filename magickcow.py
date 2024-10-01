@@ -2851,15 +2851,15 @@ class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
         
         if obj.data.magickcow_mesh_type == "GEOMETRY":
             self.draw_mesh_geometry(layout, obj)
-            self.draw_mesh_vertex_properties(layout, obj)
+            # self.draw_mesh_vertex_properties(layout, obj)
         elif obj.data.magickcow_mesh_type in ["WATER", "LAVA"]:
             self.draw_mesh_liquid(layout, obj)
-            self.draw_mesh_vertex_properties(layout, obj)
+            # self.draw_mesh_vertex_properties(layout, obj)
         elif obj.data.magickcow_mesh_type == "COLLISION":
             self.draw_mesh_collision(layout, obj)
         elif obj.data.magickcow_mesh_type == "FORCE_FIELD":
             self.draw_mesh_force_field(layout, obj)
-            self.draw_mesh_vertex_properties(layout, obj)
+            # self.draw_mesh_vertex_properties(layout, obj)
         return
     
     def draw_mesh_geometry(self, layout, obj):
@@ -2878,8 +2878,8 @@ class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
     def draw_mesh_force_field(self, layout, obj):
         layout.prop(obj.data, "magickcow_force_field_ripple_color")
     
-    def draw_mesh_vertex_properties(self, layout, obj):
-        layout.prop(obj.data, "magickcow_vertex_color_enabled")
+    # def draw_mesh_vertex_properties(self, layout, obj):
+    #     layout.prop(obj.data, "magickcow_vertex_color_enabled")
 
 # endregion
 
@@ -3104,23 +3104,22 @@ def register_properties_mesh():
     # NOTE : Some day in the future we may allow adding custom properties at will to the vertices, for now we're just going to roll with the same config for all meshes except for vertex color,
     # cause that's the only special case there is for now tbh. Something something ease of use etc etc...
     """
-    mesh.magickcow_vertex_use_normals = bpy.props.BoolProperty(
+    mesh.magickcow_vertex_normal_enabled = bpy.props.BoolProperty(
         name = "Use Vertex Normals",
         description = "Allow vertex normals to be exported for this mesh",
         default = True
     )
-    mesh.magickcow_vertex_use_tangents = bpy.props.BoolProperty(
+    mesh.magickcow_vertex_tangent_enabled = bpy.props.BoolProperty(
         name = "Use Vertex Tangents",
         description = "Allow vertex tangents to be exported for this mesh",
         default = True
     )
-    """
     mesh.magickcow_vertex_color_enabled = bpy.props.BoolProperty(
         name = "Vertex Color Enabled",
         description = "Export the vertex color property for this mesh",
         default = True
     )
-
+    """
     # endregion
 
 def unregister_properties_mesh():
@@ -3132,7 +3131,9 @@ def unregister_properties_mesh():
     del mesh.magickcow_mesh_autofreeze
     del mesh.magickcow_force_field_ripple_color
 
-    del mesh.magickcow_vertex_color_enabled
+    # del mesh.magickcow_vertex_normal_enabled
+    # del mesh.magickcow_vertex_tangent_enabled
+    # del mesh.magickcow_vertex_color_enabled
 
 def register_properties_light():
     light = bpy.types.Light
