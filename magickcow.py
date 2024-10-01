@@ -2850,16 +2850,18 @@ class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
     # Properties that must be displayed for meshes
     def draw_mesh(self, layout, obj):
         layout.prop(obj.data, "magickcow_mesh_type")
-        layout.prop(obj.data, "magickcow_vertex_color_enabled")
         
         if obj.data.magickcow_mesh_type == "GEOMETRY":
             self.draw_mesh_geometry(layout, obj)
+            self.draw_mesh_vertex_properties(layout, obj)
         elif obj.data.magickcow_mesh_type in ["WATER", "LAVA"]:
             self.draw_mesh_liquid(layout, obj)
+            self.draw_mesh_vertex_properties(layout, obj)
         elif obj.data.magickcow_mesh_type == "COLLISION":
             self.draw_mesh_collision(layout, obj)
         elif obj.data.magickcow_mesh_type == "FORCE_FIELD":
             self.draw_mesh_force_field(layout, obj)
+            self.draw_mesh_vertex_properties(layout, obj)
         return
     
     def draw_mesh_geometry(self, layout, obj):
@@ -2877,6 +2879,9 @@ class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
 
     def draw_mesh_force_field(self, layout, obj):
         layout.prop(obj.data, "magickcow_force_field_ripple_color")
+    
+    def draw_mesh_vertex_properties(self, layout, obj):
+        layout.prop(obj.data, "magickcow_vertex_color_enabled")
 
 # endregion
 
