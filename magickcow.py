@@ -860,13 +860,12 @@ class DataGenerator:
         # Define vertex map (used to duplicate vertices to translate Blender's face based data such as UVs to vertex based data)
         vertices_map = {}
         
-        # region Comment
+        # TODO : In future implementations, maybe allow configurable color layer name?
         # Get the Vertex color layer if it exists
-        # if "Color" in mesh.color_attributes:
-        #     color_layer = mesh.color_attributes["Color"]
-        # else:
-        #     color_layer = None
-        # endregion
+        if len(mesh.color_attributes) > 0: # There exists at least 1 color attribute layer for this mesh
+            color_layer = mesh.color_attributes[0] # Get the first layer for now
+        else:
+            color_layer = None
 
         # Extract vertex data (vertex buffer and index buffer)
         # Generate the vertex map for vertex duplication
@@ -891,18 +890,15 @@ class DataGenerator:
                 uv = mesh.uv_layers.active.data[loop_idx].uv
                 uv = (uv[0], -uv[1]) # Invert the "Y axis" (V axis, controlled by Y property in Blender) of the UVs because Magicka has it inverted for some reason...
                 
-                # region Comment
-                # This piece of code would be useful if we wanted to conserve vertex color, but for now we're not going to use it since it appears to be useless.
-                # All official magicka models I have unpacked seem to either have no vertex color property, and when they do, all of the colors are <1,1,1,1> or <1,1,1,0>
+                # Check if the color layer is not null and then extract the color data. Otherwise, create a default color value.
                 # btw, to make things faster in the future, we could actually not use an if on every single loop and just create a dummy list with 3 elements as color_layer.data or whatever...
-                # if color_layer is not None:
-                #     color = color_layer.data[loop_idx].color
-                #     color = (color[0], color[1], color[2], color[3])
-                # else:
-                #     color = (0.0, 0.0, 0.0, 1.0)
-                # endregion
+                if color_layer is not None:
+                    color = color_layer.data[loop_idx].color
+                    color = (color[0], color[1], color[2], color[3])
+                else:
+                    color = (1.0, 1.0, 1.0, 1.0) # The default color value should either be <1,1,1,1> or <0,0,0,1>
 
-                vertex = (global_vertex_index, position, normal, tangent, uv)
+                vertex = (global_vertex_index, position, normal, tangent, uv, color)
                 
                 # If the map entry does not exist (we have not added this vertex yet) or the vertex in the map has different UVs (we have found one of Blender's UVs seams caused by its face based UVs), then we create a new vertex entry or modify the entry that already exists.
                 # Allows to reduce the number of duplicated vertices.
@@ -1740,13 +1736,15 @@ class DataGenerator:
         return self.make_vertex_declaration([(0, 0, 2, 0, 0, 0), (0, 12, 2, 0, 3, 0), (0, 24, 1, 0, 5, 0), (0, 32, 2, 0, 6, 0), (0, 24, 1, 0, 5, 1), (0, 32, 2, 0, 6, 1)])
     
     def make_vertex_stride_default(self):
-        return 44 # 44 = 11*4; only 11 because we do not account for those vertex declarations that use usage index 1, because they overlap with already existing values from the usage index 0.
+        # Old Stide was 44, the vertex color inclusion has changed that. No need to make special cases because it's actually quite slim, vertex color doesn't even bloat mesh memory usage that much despite the 2GB limit...
+        # return 44 # 44 = 11*4; only 11 because we do not account for those vertex declarations that use usage index 1, because they overlap with already existing values from the usage index 0.
+        return 60 # 60 because we include the vertex color now, which has its own vertex declaration.
     
     def make_vertex_buffer(self, vertices):
         buf = []
         for vertex in vertices:
-            global_idx, position, normal, tangent, uv = vertex
-            buffer_part = struct.pack("fffffffffff", position[0], position[1], position[2], normal[0], normal[1], normal[2], uv[0], uv[1], tangent[0], tangent[1], tangent[2])
+            global_idx, position, normal, tangent, uv, color = vertex
+            buffer_part = struct.pack("fffffffffffffff", position[0], position[1], position[2], normal[0], normal[1], normal[2], uv[0], uv[1], tangent[0], tangent[1], tangent[2], color[0], color[1], color[2], color[3])
             byte_array = bytearray(buffer_part)
             # int_array = array.array("i")
             # int_array.frombytes(byte_array)
