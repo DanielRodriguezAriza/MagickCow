@@ -844,7 +844,7 @@ class DataGenerator:
         invtrans = transform.inverted().transposed()
 
         # Get triangulated mesh
-        mesh = self.get_triangulated_mesh(obj)
+        mesh, bm = self.get_triangulated_mesh(obj)
         
         # Get material name
         matname = self.get_material_name(obj)
@@ -947,6 +947,9 @@ class DataGenerator:
             for vert in vertex_list:
                 vertices.append(vert)
         vertices.sort() # Sorts the vertices based on the global vertex index, which is what the sort() method uses as sorting key by default for tuples.
+
+        # Free the bm (for consistency, this is done at the end of the gen process for all different mesh types, but in truth, for this gen function it could be freed as soon as we get it)
+        bm.free()
 
         # vertices : List<Vertex>; vertices is the vertex buffer, which is a list containing tuples of type Vertex one after another.
         # indices : List<int>; indices is the index buffer, which is a list of all of the indices ordered to generate the triangles. They are NOT grouped in any form of triangle struct, the indices are laid out just as they would be in memory.
@@ -1107,19 +1110,8 @@ class DataGenerator:
 
     def generate_collision_data_part(self, obj, transform, last_vertex_index):
         
-        # Obtain the mesh data from the input object.
-        mesh = obj.data
-        
-        # Make a copy of the mesh to prevent triangulating the mesh in the scene.
-        mesh = mesh.copy()
-        
-        # TODO : Will you fucking encapsulate this shit at some point tho? You already have a function for it, you lazy fuck.
         # Triangulate the mesh
-        bm = bmesh.new()
-        bm.from_mesh(mesh)
-        bmesh.ops.triangulate(bm, faces=bm.faces)
-        bm.to_mesh(mesh)
-        bm.free()
+        mesh, bm = self.get_triangulated_mesh(obj)
         
         # Declare vertex list and index list
         vertices = []
@@ -1153,6 +1145,9 @@ class DataGenerator:
             
             indices.append(triangle_indices_tuple)
         
+        # Free the bm
+        bm.free()
+
         return (num_vertices, vertices, indices)
     
     def generate_collision_layer_data(self, found_collisions):
@@ -1192,18 +1187,8 @@ class DataGenerator:
 
     def generate_nav_mesh_part(self, obj, transform, last_vertex_idx, last_triangle_idx):
         
-        # Obtain the mesh data from the input object.
-        mesh = obj.data
-        
-        # Make a copy of the mesh to prevent triangulating the mesh in the scene.
-        mesh = mesh.copy()
-        
-        # TODO : Will you fucking encapsulate this shit at some point tho? You already have a function for it, you lazy fuck. (x2)
         # Triangulate the mesh
-        bm = bmesh.new()
-        bm.from_mesh(mesh)
-        bmesh.ops.triangulate(bm, faces=bm.faces)
-        bm.to_mesh(mesh)
+        mesh, bm = self.get_triangulated_mesh(obj)
         
         vertices = []
         triangles = []
@@ -1264,6 +1249,7 @@ class DataGenerator:
             tri = (triangle[0], triangle[1], triangle[2], neighbour_a, neighbour_b, neighbour_c, cost_ab, cost_bc, cost_ca) # within Magicka's code, 65535 (max u16 value) is reserved as the "none" or "null" value for neighbour triangle indices.
             triangles.append(tri)
         
+        # Free the bm (fun fact, this function is the only one that actually needs the bm to exist up until this point... again, keeping it everywhere else for consistency, and just in case it is needed in the future)
         bm.free()
         
         # Each Triangle = vertex_a, vertex_b, vertex_c, neighbour_a, neighbour_b, neighbour_c, cost_ab, cost_bc, cost_ca
@@ -2680,9 +2666,11 @@ class DataGenerator:
         bm.from_mesh(mesh)
         bmesh.ops.triangulate(bm, faces=bm.faces)
         bm.to_mesh(mesh)
-        bm.free()
         
-        return mesh
+        # Outisde, we will need to free the bm calling bm.free()
+        # bm.free()
+        
+        return mesh, bm
 
     # endregion
     
