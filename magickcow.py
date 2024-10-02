@@ -866,6 +866,7 @@ class DataGenerator:
             color_layer = mesh.color_attributes[0] # Get the first layer for now
         else:
             color_layer = None
+            color_default = (0.0, 0.0, 0.0, 0.0) if mesh.magickcow_mesh_type in ["WATER", "LAVA"] else (1.0, 1.0, 1.0, 0.0)
 
         # Extract vertex data (vertex buffer and index buffer)
         # Generate the vertex map for vertex duplication
@@ -905,7 +906,7 @@ class DataGenerator:
                         # The default value does not matter at all in the case of using an effect JSON file where the use vertex color attribute is set to false tho. But in case it is set to true, this is the best
                         # default vector in my opinion.
                     # endregion
-                    color = (1.0, 1.0, 1.0, 0.0)
+                    color = color_default
 
                 vertex = (global_vertex_index, position, normal, tangent, uv, color)
                 
