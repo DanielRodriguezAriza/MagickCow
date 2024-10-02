@@ -844,7 +844,7 @@ class DataGenerator:
         invtrans = transform.inverted().transposed()
 
         # Get triangulated mesh
-        mesh, bm = self.get_triangulated_mesh(obj)
+        mesh, bm = self.get_mesh_data(obj)
         
         # Get material name
         matname = self.get_material_name(obj)
@@ -1111,7 +1111,7 @@ class DataGenerator:
     def generate_collision_data_part(self, obj, transform, last_vertex_index):
         
         # Triangulate the mesh
-        mesh, bm = self.get_triangulated_mesh(obj)
+        mesh, bm = self.get_mesh_data(obj)
         
         # Declare vertex list and index list
         vertices = []
@@ -1188,7 +1188,7 @@ class DataGenerator:
     def generate_nav_mesh_part(self, obj, transform, last_vertex_idx, last_triangle_idx):
         
         # Triangulate the mesh
-        mesh, bm = self.get_triangulated_mesh(obj)
+        mesh, bm = self.get_mesh_data(obj)
         
         vertices = []
         triangles = []
@@ -2653,23 +2653,55 @@ class DataGenerator:
 
         bpy.context.view_layer.update() # Force the scene to update so that the rotation is properly applied before we start evaluating the objects in the scene.
 
-    # TODO : Modify to return both mesh and bm so that we can free bm manually, and thus use it in all functions where the mesh is triangulated without manually writing the triangulation code.
-    def get_triangulated_mesh(self, obj):
+    # This function returns both mesh and bm so that the caller can use the bm in case they need it.
+    # NOTE : The user must free the bm manually.
+    # TODO : Maybe add support in the future for an input bool param that will allow the bm to be freed automatically if the user does not need it? and maybe also change the return tuple to only contain mesh in that case.
+    def mesh_triangulate(self, obj):
         # Obtain the mesh data from the input object.
         mesh = obj.data
-        
-        # Make a copy of the mesh to prevent triangulating the mesh in the scene.
-        mesh = mesh.copy()
-        
+
         # Triangulate the mesh
         bm = bmesh.new()
         bm.from_mesh(mesh)
         bmesh.ops.triangulate(bm, faces=bm.faces)
         bm.to_mesh(mesh)
         
-        # Outisde, we will need to free the bm calling bm.free()
-        # bm.free()
-        
+        return mesh, bm
+
+    def mesh_apply_modifiers(self, obj):
+        # Obtain mesh data
+        mesh = obj.data
+
+        # Apply modifiers
+        for mod in obj.modifiers:
+            bpy.ops.object.modifier_apply(modifier=mod.name)
+
+    # Gets the data of a mesh object after applying modifiers and triangulating the mesh
+    def get_mesh_data(self, obj):
+        # Make a copy of the obj and its data
+        temp_obj = obj.copy()
+        temp_obj.data = obj.data.copy()
+
+        # Link the temp object to the scene
+        bpy.context.collection.objects.link(temp_obj)
+
+        # Select the copied object
+        temp_obj.select_set(state=True)
+        bpy.context.view_layer.objects.active = temp_obj
+
+        # Apply modifiers
+        self.mesh_apply_modifiers(temp_obj)
+
+        # Triangulate mesh
+        mesh, bm = self.mesh_triangulate(temp_obj)
+
+        # Make a copy of the mesh data yet again before deleting the object (we do this because Blender is allowed to garbage collect the mesh at any point, if we did not do this, it may sometimes work, and sometimes fail)
+        mesh = mesh.copy()
+
+        # Delete the temporary object
+        bpy.data.objects.remove(temp_obj, do_unlink=True)
+
+        # Return the mesh and bmesh
         return mesh, bm
 
     # endregion
