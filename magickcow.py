@@ -867,6 +867,9 @@ class DataGenerator:
         else:
             color_layer = None
             color_default = (0.0, 0.0, 0.0, 0.0) if mesh.magickcow_mesh_type in ["WATER", "LAVA"] else (1.0, 1.0, 1.0, 0.0)
+            # NOTE : It seems like vector <0,0,0,0> works universally and does not actually mean paint black the surface, not sure why...
+            # it would make sense to use that vector in the future, but for now, we're rolling with this as it seems to work pretty nicely.
+            # I'll get this polished even further in the future when I figure out more aobut how the Magicka shaders are coded internally...
 
         # Extract vertex data (vertex buffer and index buffer)
         # Generate the vertex map for vertex duplication
