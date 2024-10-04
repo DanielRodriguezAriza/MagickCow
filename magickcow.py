@@ -711,6 +711,18 @@ class DataGenerator:
             collision_index = find_collision_material_index(parent.magickcow_collision_material)
         found_objects_current.collisions[collision_index].append((obj, transform))
 
+    # region Comment
+        # NOTE : The reason we do this process rather than actually implementing BiTreeNode support is that BiTreeNodes are just badly optimized in Magicka and consume more memory than they should.
+        # A BiTreeNode's purpose is literally to just assign a different material to a given part of a root node's vertex buffer than the one assigned on the root node.
+        # This assignment process goes by starting at a certain vertex index and giving a number of primitives that are contained by said node (the root node does this as well).
+        # This means that for every single island of faces that make use of a given material, there will be a new BiTreeNode generated.
+        # This is a problem, because if a mesh in Blender has 2 materials, it is not guaranteed to have only 2 nodes in the binary tree structure. If the materials are assigned on different polygon islands,
+        # then the generated binary tree structure will generate a node for the same material multiple times, since a node can only represent a material assignment for contiguous faces within the vertex buffer.
+        # Another problem of using the BiTreeNode setup is that each node added is located on the heap, thus, there will be an increase in memory fragmentation. Root nodes are instead located within a list, so
+        # most of their data will at least be contiguous in memory.
+        # In short, BiTreeNodes in Magicka's code pointlessly increase the memory consumption, and the memory budget for a Magicka map is about 2GB at most since Magicka is 32 bits, and of the 4GB available
+        # for a 32 bit process, 2 of those have already been consumed by the game code itself and most assets, so the remaining budget is quite small, and using only root nodes reduces the memory footprint a lot.
+    # endregion
     def gsd_add_mesh(self, found_objects_list, obj, transform):
         mesh = obj.data
         num_materials = len(mesh.materials)
