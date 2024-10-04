@@ -710,23 +710,25 @@ class DataGenerator:
         else:
             collision_index = find_collision_material_index(parent.magickcow_collision_material)
         found_objects_current.collisions[collision_index].append((obj, transform))
-    
-    def gsd_add_mesh_internal(self, found_objects_list, obj, transform, matid):
-        found_polygons = 0
-        mesh = obj.data
-        for poly in obj.data.polygons:
-            if poly.material_index == matid
-                found_polygons += 1
-        if found_polygons > 0: # If there are no polygons in this mesh with this material assigned, discard it entirely and don't add it for processing.
-            found_objects_list.append((obj, transform, matid))
 
     def gsd_add_mesh(self, found_objects_list, obj, transform):
         mesh = obj.data
-        if len(mesh.materials) > 0:
-            for idx, name in enumerate(mesh.materials):
-                self.gsd_add_mesh_internal(found_objects_list, obj, transform, idx)
+        num_materials = len(mesh.materials)
+        
+        if num_materials > 0:
+            found_polygons_indices = [0 for i in range(num_materials)]
+            # Check every polygon in the mesh and increase the usage count of the material index used by each polygon
+            for poly in obj.data.polgyons:
+                found_polygons_indices[poly.material_index] += 1
         else:
-            self.gsd_add_mesh_internal(found_objects_list, obj, transform, -1)
+            # Create a dummy list with only one entry, which has to contain any value greater than 0 so as to indicate that at least one polygon has been foud to make use of material index 0.
+            # This is because in Blender, polygons that don't have any material assigned use the material index 0 by default.
+            found_polygons_indices = [69]
+        
+        # Add the meshes that have been found to contain at least 1 polgyon that uses the current material
+        for idx, found in enumerate(found_polygons_indices):
+            if found > 0: # If there are no polygons in this mesh with this material assigned, discard it entirely and don't add it for processing.
+                found_objects_list.append((obj, transform, idx))
 
     def get_scene_data_rec(self, found_objects_global, found_objects_current, objects, parent = None):
         
