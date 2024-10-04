@@ -712,16 +712,25 @@ class DataGenerator:
         found_objects_current.collisions[collision_index].append((obj, transform))
 
     # region Comment
-        # NOTE : The reason we do this process rather than actually implementing BiTreeNode support is that BiTreeNodes are just badly optimized in Magicka and consume more memory than they should.
+        # NOTE : The reason we do this process rather than actually implementing BiTreeNode support is for 3 major reasons
+        # 1) BiTree Nodes don't actually contain material data at all. Yes, their existance is literally useless, they just segment things up and don't even
+        # contain a different effect for a given part of a root node...
+        #
+        # 2) BiTreeNodes are just badly optimized in Magicka and consume more memory than they should.
         # A BiTreeNode's purpose is literally to just assign a different material to a given part of a root node's vertex buffer than the one assigned on the root node.
         # This assignment process goes by starting at a certain vertex index and giving a number of primitives that are contained by said node (the root node does this as well).
         # This means that for every single island of faces that make use of a given material, there will be a new BiTreeNode generated.
         # This is a problem, because if a mesh in Blender has 2 materials, it is not guaranteed to have only 2 nodes in the binary tree structure. If the materials are assigned on different polygon islands,
         # then the generated binary tree structure will generate a node for the same material multiple times, since a node can only represent a material assignment for contiguous faces within the vertex buffer.
+        #
+        # 3) BiTreeNodes are just badly optimized : Episode 2:
         # Another problem of using the BiTreeNode setup is that each node added is located on the heap, thus, there will be an increase in memory fragmentation. Root nodes are instead located within a list, so
         # most of their data will at least be contiguous in memory.
         # In short, BiTreeNodes in Magicka's code pointlessly increase the memory consumption, and the memory budget for a Magicka map is about 2GB at most since Magicka is 32 bits, and of the 4GB available
         # for a 32 bit process, 2 of those have already been consumed by the game code itself and most assets, so the remaining budget is quite small, and using only root nodes reduces the memory footprint a lot.
+        #
+        # In short, this is literally the only way to get multi material mesh support in Magicka. Magicka's meshes only support one material per mesh, so the trick we do is just segment the mesh into multiple different
+        # meshes, each containing all of the polygons for a given material that was assigned in Blender to that mesh.
     # endregion
     def gsd_add_mesh(self, found_objects_list, obj, transform):
         mesh = obj.data
@@ -735,7 +744,9 @@ class DataGenerator:
         else:
             # Create a dummy list with only one entry, which has to contain any value greater than 0 so as to indicate that at least one polygon has been foud to make use of material index 0.
             # This is because in Blender, polygons that don't have any material assigned use the material index 0 by default.
-            found_polygons_indices = [69]
+            found_polygons_indices = [69] # In this case, I use 69 cauze lol, but the value 1 would suffice just fine.
+            # Either that or just embed the call found_objects_list.append((obj, transform, 0)) within the else block and discard the dummy list entirely.
+            # We keep it like this in case we want to add more code in the future appart from the append() call, so as to prevent code duplication...
         
         # Add the meshes that have been found to contain at least 1 polgyon that uses the current material
         for idx, found in enumerate(found_polygons_indices):
@@ -2755,7 +2766,7 @@ class DataGenerator:
         bpy.data.objects.remove(temp_obj, do_unlink=True)
 
         # Return the mesh and bmesh
-        return mesh, bm
+        return mesh, bm # NOTE : mesh is freed automatically, bm needs to be freed manually by the caller.
 
     # endregion
     
