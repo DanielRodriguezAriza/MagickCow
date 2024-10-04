@@ -367,6 +367,8 @@ class DataGenerator:
             ans = "base/default_water"
         elif fallback_type == "LAVA":
             ans = "base/default_lava"
+        elif fallback_type == "FORCE_FIELD":
+            ans = "base/ff/default_force_field"
 
         return ans
 
@@ -515,6 +517,23 @@ class DataGenerator:
                 "RockNormalPower" : 1.0,
                 "RockTexture" : "..\\Textures\\Surface\\Nature\\Ground\\lavarock00_0",
                 "RockNormalMap" : "..\\Textures\\Surface\\Nature\\Ground\\lavarock00_NRM_0"
+            }
+        elif fallback_type == "FORCE_FIELD":
+            ans = {
+                "color" : {
+                    "x" : 1,
+                    "y" : 1,
+                    "z" : 1
+                },
+                "width" : 0.5,
+                "alphaPower": 4,
+                "alphaFalloffPower" : 2,
+                "maxRadius" : 4,
+                "rippleDistortion" : 2,
+                "mapDistortion" : 0.53103447,
+                "vertexColorEnabled": false,
+                "displacementMap": "..\\Textures\\Liquids\\WaterNormals_0",
+                "ttl": 1
             }
         return ans
     
@@ -1039,8 +1058,7 @@ class DataGenerator:
     def generate_force_field_data(self, obj, transform):
         # Generate the mesh data (vertex buffer, index buffer and effect / material, altough the material is ignored in this case)
         vertices, indices, matname = self.generate_mesh_data(obj, transform, False)
-        ripple_color = obj.data.magickcow_force_field_ripple_color
-        return (vertices, indices, ripple_color)
+        return (vertices, indices, matname)
 
     def generate_light_reference_data(self, obj, transform):
         name = obj.name
@@ -2575,22 +2593,26 @@ class DataGenerator:
     # region Make - Force Fields
 
     def make_force_field(self, force_field):
-        vertices, indices, ripple_color = force_field
+        vertices, indices, matname = force_field
+
+        # NOTE : This is a "dummy" effect of sorts. Magicka does NOT use an effect class for this when reading force fields from the XNB file, which means that this information is embedded on the force field class
+        # itself, but during object construction, under the hood, this data is used to generate an XNA effect. Kinda weird and inconsistent with the rest of the code, but yeah, makes sense from the point of view
+        # that technically force fields can only support one single type of effect and they are only used in one place in the game anyway, so that could explain why they implemented it like that.
+        # In short, we're piggybacking this onto the make_effect() function because it's gonna make things far easier to implement on the Blender side, but it's not necessarily semantically the best thing...
+        temp_effect = self.make_effect(matname, "FORCE_FIELD")
+        
+        # NOTE : It probably would be more efficient to add the extra fields to the temp_effect dict rather than reading them from the temp_effect dict and assigning them to a new one because of the lookup time for a dict...
         ans = {
-            "color" : {
-                "x" : ripple_color[0],
-                "y" : ripple_color[1],
-                "z" : ripple_color[2]
-            },
-            "width" : 0.5,
-            "alphaPower": 4,
-            "alphaFalloffPower" : 2,
-            "maxRadius" : 4,
-            "rippleDistortion" : 2,
-            "mapDistortion" : 0.53103447,
-            "vertexColorEnabled": False,
-            "displacementMap": "..\\Textures\\Liquids\\WaterNormals_0",
-            "ttl": 1,
+            "color" : temp_effect["color"],
+            "width" : temp_effect["width"],
+            "alphaPower": temp_effect["alphaPower"],
+            "alphaFalloffPower" : temp_effect["alphaFalloffPower"],
+            "maxRadius" : temp_effect["maxRadius"],
+            "rippleDistortion" : temp_effect["rippleDistortion"],
+            "mapDistortion" : temp_effect["mapDistortion"],
+            "vertexColorEnabled": temp_effect["vertexColorEnabled"],
+            "displacementMap": temp_effect["displacementMap"],
+            "ttl": temp_effect["ttl"],
             "vertices" : self.make_vertex_buffer(vertices),
             "indices" : self.make_index_buffer(indices),
             "declaration" : self.make_vertex_declaration_default(),
@@ -2969,7 +2991,8 @@ class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
         layout.prop(obj, "magickcow_collision_material") # 2
 
     def draw_mesh_force_field(self, layout, obj):
-        layout.prop(obj.data, "magickcow_force_field_ripple_color")
+        # layout.prop(obj.data, "magickcow_force_field_ripple_color")
+        return
     
     # def draw_mesh_vertex_properties(self, layout, obj):
     #     layout.prop(obj.data, "magickcow_vertex_color_enabled")
@@ -3180,6 +3203,8 @@ def register_properties_mesh():
 
     # region Force Field Properties
 
+    # NOTE : Disabled because this property is now controlled via material JSON files.
+    """
     mesh.magickcow_force_field_ripple_color = bpy.props.FloatVectorProperty(
         name = "Ripple Color",
         description = "Color used for the ripple effect displayed when an entity collides with the force field.\nThe lower the values, the more transparent they will appear. This means that color < 0.0, 0.0, 0.0 >, which corresponds to black, is displayed as a transparent ripple effect with no color tint.",
@@ -3189,6 +3214,7 @@ def register_properties_mesh():
         max = 1.0,
         size = 3 # RGB has 3 values. Magicka lights are Vec3, so no alpha channel.
     )
+    """
 
     # endregion
 
@@ -3222,7 +3248,7 @@ def unregister_properties_mesh():
     del mesh.magickcow_mesh_can_drown
     del mesh.magickcow_mesh_freezable
     del mesh.magickcow_mesh_autofreeze
-    del mesh.magickcow_force_field_ripple_color
+    # del mesh.magickcow_force_field_ripple_color
 
     # del mesh.magickcow_vertex_normal_enabled
     # del mesh.magickcow_vertex_tangent_enabled
