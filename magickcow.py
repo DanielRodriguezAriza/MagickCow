@@ -531,7 +531,7 @@ class DataGenerator:
                 "maxRadius" : 4,
                 "rippleDistortion" : 2,
                 "mapDistortion" : 0.53103447,
-                "vertexColorEnabled": false,
+                "vertexColorEnabled": False,
                 "displacementMap": "..\\Textures\\Liquids\\WaterNormals_0",
                 "ttl": 1
             }
