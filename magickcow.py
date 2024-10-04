@@ -699,7 +699,7 @@ class DataGenerator:
 
     # If the parent is an animated level part, then we add the collision to whatever collision channel the parent corresponds to.
     # Otherwise, we add it to the collision channel of the object itself.
-    def get_scene_data_add_found_collision(self, found_objects_current, obj, transform, parent):
+    def gsd_add_found_collision(self, found_objects_current, obj, transform, parent):
         collision_index = 0
         if parent is None:
             collision_index = find_collision_material_index(obj.magickcow_collision_material)
@@ -707,6 +707,17 @@ class DataGenerator:
             collision_index = find_collision_material_index(parent.magickcow_collision_material)
         found_objects_current.collisions[collision_index].append((obj, transform))
     
+    def gsd_add_mesh_internal(self, found_objects_list, obj, transform, matid):
+        found_objects_list.append((obj, transform, matid))
+
+    def gsd_add_mesh(self, found_objects_list, obj, transform):
+        mesh = obj.data
+        if len(mesh.materials) > 0:
+            for idx, name in enumerate(mesh.materials):
+                self.gsd_add_mesh_internal(found_objects_list, obj, transform, idx)
+        else:
+            self.gsd_add_mesh_internal(found_objects_list, obj, transform, -1)
+
     def get_scene_data_rec(self, found_objects_global, found_objects_current, objects, parent = None):
         
         for obj in objects:
@@ -724,10 +735,10 @@ class DataGenerator:
                     found_objects_current.meshes.append((obj, transform))
                     
                     if obj.magickcow_collision_enabled:
-                        self.get_scene_data_add_found_collision(found_objects_current, obj, transform, parent)
+                        self.gsd_add_found_collision(found_objects_current, obj, transform, parent)
                     
                 elif obj.data.magickcow_mesh_type == "COLLISION":
-                    self.get_scene_data_add_found_collision(found_objects_current, obj, transform, parent)
+                    self.gsd_add_found_collision(found_objects_current, obj, transform, parent)
                     
                 elif obj.data.magickcow_mesh_type == "WATER":
                     found_objects_current.waters.append((obj, transform))
