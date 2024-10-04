@@ -718,7 +718,7 @@ class DataGenerator:
         if num_materials > 0:
             found_polygons_indices = [0 for i in range(num_materials)]
             # Check every polygon in the mesh and increase the usage count of the material index used by each polygon
-            for poly in obj.data.polgyons:
+            for poly in obj.data.polygons:
                 found_polygons_indices[poly.material_index] += 1
         else:
             # Create a dummy list with only one entry, which has to contain any value greater than 0 so as to indicate that at least one polygon has been foud to make use of material index 0.
