@@ -521,9 +521,9 @@ class DataGenerator:
         elif fallback_type == "FORCE_FIELD":
             ans = {
                 "color" : {
-                    "x" : 1,
-                    "y" : 1,
-                    "z" : 1
+                    "x" : 0,
+                    "y" : 0,
+                    "z" : 0
                 },
                 "width" : 0.5,
                 "alphaPower": 4,
