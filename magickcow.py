@@ -712,7 +712,13 @@ class DataGenerator:
         found_objects_current.collisions[collision_index].append((obj, transform))
     
     def gsd_add_mesh_internal(self, found_objects_list, obj, transform, matid):
-        found_objects_list.append((obj, transform, matid))
+        found_polygons = 0
+        mesh = obj.data
+        for poly in obj.data.polygons:
+            if poly.material_index == matid
+                found_polygons += 1
+        if found_polygons > 0: # If there are no polygons in this mesh with this material assigned, discard it entirely and don't add it for processing.
+            found_objects_list.append((obj, transform, matid))
 
     def gsd_add_mesh(self, found_objects_list, obj, transform):
         mesh = obj.data
