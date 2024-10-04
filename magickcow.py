@@ -339,12 +339,12 @@ class DataGenerator:
 
     # Gets the full material name used on a mesh. This full name corresponds to the full path + filename of the JSON file that corresponds to the effect represented by the material's name.
     # If the mesh does not have a material assigned, it uses as material name the name "base/default"
-    def get_material_name(self, obj):
+    def get_material_name(self, obj, material_index = 0):
         # Get mesh
         mesh = obj.data
         
         # Get material name
-        matname = mesh.materials[0].name if len(mesh.materials) > 0 else self.generate_default_effect_name(mesh.magickcow_mesh_type)
+        matname = mesh.materials[material_index].name if len(mesh.materials) > 0 else self.generate_default_effect_name(mesh.magickcow_mesh_type)
         matname = self.get_material_path(matname)
         
         return matname
@@ -821,9 +821,9 @@ class DataGenerator:
         matrix = self.generate_matrix_data(transform)
         return (template, matrix)
 
-    def generate_static_mesh_data(self, obj, transform):
+    def generate_static_mesh_data(self, obj, transform, matid):
         # Generate basic mesh data
-        vertices, indices, matname = self.generate_mesh_data(obj, transform)
+        vertices, indices, matname = self.generate_mesh_data(obj, transform, True, matid)
 
         # Define a list of points used to calculate the bounding box of the mesh.
         # The list is calculated by extracting the position property from the vertices.
@@ -834,13 +834,13 @@ class DataGenerator:
 
         return (obj, transform, obj.name, vertices, indices, matname, aabb)
 
-    def generate_animated_mesh_data(self, obj, transform):
+    def generate_animated_mesh_data(self, obj, transform, matid):
         # NOTE : The animated mesh calculation is a bit simpler because it does not require computing the AABB, as it uses an user defined radius for a bounding sphere.
 
         mesh = obj.data
 
         # Generate basic mesh data
-        vertices, indices, matname = self.generate_mesh_data(obj, transform)
+        vertices, indices, matname = self.generate_mesh_data(obj, transform, True, matid)
         
         # Add the material as a shared resource and get the shared resource index
         idx = self.add_shared_resource(matname, self.get_material(matname, mesh.magickcow_mesh_type))
@@ -850,7 +850,7 @@ class DataGenerator:
         
         return (obj, transform, obj.name, matrix, vertices, indices, idx)
 
-    def generate_mesh_data(self, obj, transform, uses_material = True):
+    def generate_mesh_data(self, obj, transform, uses_material = True, material_index = 0):
         
         # Get the inverse-tranpose matrix of the object's transform matrix to use it on directional vectors (normals and tangents)
         # NOTE : The reason we do this is because vectors that represent points in space need to be translated, but vectors that represent directions don't, so we use the input transform matrix for point operations and the inverse-transpose matrix for direction vector operations, since that allows transforming vectors without displacing them (no translation) but properly preserves the other transformations (scale, rotation, shearing, whatever...)
@@ -861,7 +861,7 @@ class DataGenerator:
         mesh, bm = self.get_mesh_data(obj)
         
         # Get material name
-        matname = self.get_material_name(obj)
+        matname = self.get_material_name(obj, material_index)
 
         # If the mesh uses a material, generate the material data and store it
         if uses_material:
@@ -891,6 +891,13 @@ class DataGenerator:
         # The algorithm is surprisingly fast, and I am quite happy with this result for now.
         global_vertex_index = 0
         for poly in mesh.polygons:
+            
+            # Ignore all polygons that don't have the same material index as the input material index.
+            # NOTE : The default material index returned by surfaces that don't have an assigned material is 0, so the default input material index parameter for this function is also 0
+            # so as to allow easy support for exporting meshes that have no material assigned.
+            if poly.material_index != material_index:
+                continue
+
             temp_indices = []
             for loop_idx in poly.loop_indices:
                 loop = mesh.loops[loop_idx]
@@ -978,10 +985,10 @@ class DataGenerator:
     # Maybe it could be useful to add some kind of exception throwing or error checking or whatever to prevent players from exporting maps where waters have materials that
     # are not deferred liquid effects and lavas that are not lava effects?
     # NOTE : Liquids do not require any form of bounding box or sphere calculations, so they use the underlying generate_mesh_data() function rather than any of the other wrappers.
-    def generate_liquid_data(self, obj, transform):
+    def generate_liquid_data(self, obj, transform, matid):
         
         # Generate the mesh data (vertex buffer, index buffer and effect / material)
-        vertices, indices, matname = self.generate_mesh_data(obj, transform)
+        vertices, indices, matname = self.generate_mesh_data(obj, transform, True, matid)
         
         # Get Liquid Water / Lava config
         can_drown = obj.data.magickcow_mesh_can_drown
@@ -1312,11 +1319,11 @@ class DataGenerator:
             self.create_material(matname, obj.data.magickcow_mesh_type)
 
     def generate_static_meshes_data(self, found_meshes):
-        ans = [self.generate_static_mesh_data(obj, transform) for obj, transform in found_meshes]
+        ans = [self.generate_static_mesh_data(obj, transform, matid) for obj, transform, matid in found_meshes]
         return ans
     
     def generate_static_liquids_data(self, found_liquids):
-        ans = [self.generate_liquid_data(obj, transform) for obj, transform in found_liquids]
+        ans = [self.generate_liquid_data(obj, transform, matid) for obj, transform, matid in found_liquids]
         return ans
 
     def generate_static_lights_data(self, found_lights):
@@ -1378,7 +1385,7 @@ class DataGenerator:
     # region Generate Animated Data
 
     def generate_animated_meshes_data(self, found_meshes):
-        ans = [self.generate_animated_mesh_data(obj, transform) for obj, transform in found_meshes]
+        ans = [self.generate_animated_mesh_data(obj, transform, matid) for obj, transform, matid in found_meshes]
         return ans
 
     def generate_animated_lights_data(self, found_lights):
