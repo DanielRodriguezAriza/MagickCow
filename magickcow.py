@@ -813,7 +813,8 @@ class DataGenerator:
                 elif obj.data.magickcow_mesh_type == "FORCE_FIELD":
                     # Only add it to the global scope because animated level parts cannot contain force fields.
                     # Allows "malformed" (with a hierarchy that would not be correct in game) scenes to export successfully and work correctly in game.
-                    found_objects_global.force_fields.append((obj, transform))
+                    # found_objects_global.force_fields.append((obj, transform))
+                    self.gsd_add_mesh(found_objects_global.force_fields, obj, transform)
             
             elif obj.type == "LIGHT":
                 
@@ -1055,9 +1056,9 @@ class DataGenerator:
         
         return (vertices, indices, matname, can_drown, freezable, autofreeze)
 
-    def generate_force_field_data(self, obj, transform):
+    def generate_force_field_data(self, obj, transform, matid):
         # Generate the mesh data (vertex buffer, index buffer and effect / material, altough the material is ignored in this case)
-        vertices, indices, matname = self.generate_mesh_data(obj, transform, False)
+        vertices, indices, matname = self.generate_mesh_data(obj, transform, True, matid)
         return (vertices, indices, matname)
 
     def generate_light_reference_data(self, obj, transform):
@@ -1408,7 +1409,7 @@ class DataGenerator:
         return ans
     
     def generate_static_force_fields_data(self, found_fields):
-        ans = [self.generate_force_field_data(obj, transform) for obj, transform in found_fields]
+        ans = [self.generate_force_field_data(obj, transform, matid) for obj, transform, matid in found_fields]
         return ans
 
     # region Comment
