@@ -733,7 +733,7 @@ class DataGenerator:
             if obj.type == "MESH":
                 if obj.data.magickcow_mesh_type == "GEOMETRY":
                     # found_objects_current.meshes.append((obj, transform))
-                    gsd_add_mesh(found_objects_current.meshes, obj, transform)
+                    self.gsd_add_mesh(found_objects_current.meshes, obj, transform)
                     
                     if obj.magickcow_collision_enabled:
                         self.gsd_add_found_collision(found_objects_current, obj, transform, parent)
@@ -743,11 +743,11 @@ class DataGenerator:
                     
                 elif obj.data.magickcow_mesh_type == "WATER":
                     # found_objects_current.waters.append((obj, transform))
-                    gsd_add_mesh(found_objects_current.waters, obj, transform)
+                    self.gsd_add_mesh(found_objects_current.waters, obj, transform)
                 
                 elif obj.data.magickcow_mesh_type == "LAVA":
                     # found_objects_current.lavas.append((obj, transform))
-                    gsd_add_mesh(found_objects_current.lavas, obj, transform)
+                    self.gsd_add_mesh(found_objects_current.lavas, obj, transform)
                 
                 elif obj.data.magickcow_mesh_type == "NAV":
                     found_objects_current.nav_meshes.append((obj, transform)) # Nav meshes ignore materials, for now. In the future, they could use it as a reference for the type of navigation offered by an area.
