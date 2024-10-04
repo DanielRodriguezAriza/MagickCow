@@ -550,6 +550,10 @@ class DataGenerator:
     # Each point is a tuple of 3 numeric values.
     # The resulting AABB is represented as the min and max points of the bounding box.
     def get_bounding_box_internal(self, points):
+        # NOTE : Discarded check because empty meshes are ignored on the get stage instead.
+        # if len(points) <= 0: # Safety check in case there's an empty mesh in the scene
+        #     return ((0, 0, 0), (0, 0, 0)) # Just return an empty AABB with the min and max points set to <0,0,0>
+        # Otherwise, create a proper AABB iterating over all of the points and finding the min and max points of the mesh
         minx, miny, minz = points[0]
         maxx, maxy, maxz = points[0]
         for point in points:
@@ -731,6 +735,10 @@ class DataGenerator:
             
             # Handle object data creation according to object type.
             if obj.type == "MESH":
+                
+                if len(obj.data.vertices) <= 0:
+                    continue # Discard meshes with no vertices, as they are empty meshes and literally have no data worth exporting.
+
                 if obj.data.magickcow_mesh_type == "GEOMETRY":
                     # found_objects_current.meshes.append((obj, transform))
                     self.gsd_add_mesh(found_objects_current.meshes, obj, transform)
