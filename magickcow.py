@@ -262,6 +262,23 @@ def get_action_keyframes(action):
 # region Generator classes
 
 # region Comment - DataGenerator
+    # A generic class for data generation.
+    # This class contains methods to generate data that is generic to all types of assets.
+    # Each specific Data generator class will implement data generation methods that are specific for each type of asset to be exported.
+# endregion
+class DataGenerator:
+    def __init__(self):
+        return
+    
+    def make_xnb_file(self, generated_scene_data, shared_resources_list):
+        ans = {
+            "primaryObject" : self.make_level_model(generated_scene_data),
+            "numSharedResources" : len(shared_resources_list),
+            "sharedResources" : shared_resources_list
+        }
+        return ans
+
+# region Comment - DataGeneratorMap
     # This class is the one in charge of getting, generating and storing in a final dict the data that is found within the scene.
     # The reason this class exists outside of the main exporter operator class is to prevent its generated data from staying around in memory after the export process has finished.
     # This could also be avoided by passing all variables around through functions, but that was getting too messy for global-state-like stuff like shared resources and other information
