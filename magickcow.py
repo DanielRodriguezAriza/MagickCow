@@ -2824,9 +2824,18 @@ class MagickCowExporterOperatorPhysicsEntity(bpy.types.Operator, bpy_extras.io_u
     filter_glob : bpy.props.StringProperty(default = "*.json", options = {'HIDDEN'})
 
     # TODO : Add some kind of standardized set of properties that are shared across all of the export panels so that exporting makes a bit more sense to users... also bring over all of the JSON related export operations to this panel too.
+    # TODO : Maybe try to figure out how to bundle these settings into a dict / object / struct that contains all of the props so that it is easier to access and bundle together the data on the side of the code, so we could access settings.json.pretty and settings.json.indent, etc...
     settings_export_pretty : bpy.props.BoolProperty(
         name = "Pretty JSON Format",
         description = "The JSON file will be exported with indentation and newlines for easier reading. Slows down export times due to the extra processing required. Also increasing the resulting file size."
+    )
+
+    settings_export_indent : bpy.props.IntProperty(
+        name = "Indent Depth",
+        description = "Number of space characters to use in the output JSON file for indentation. This setting is ignored if pretty JSON formatting is disabled.",
+        default = 2,
+        min = 1,
+        max = 256 # Again, who in the name of fuck will ever use this? I don't know, but fuck you if you do! lmao...
     )
 
     # endregion
@@ -2845,7 +2854,7 @@ class MagickCowExporterOperatorPhysicsEntity(bpy.types.Operator, bpy_extras.io_u
         if self.settings_export_pretty:
             json_str = json.dumps(xnb_dict, indent = None, separators = (",", ":"), check_circular = False)
         else:
-            json_str = json.dumps(xnb_dict, indect = 4, seprators = (",", ":"), check_circular = False) # TODO : Add customizable indent
+            json_str = json.dumps(xnb_dict, indect = self.settings_export_indent, seprators = (",", ":"), check_circular = False) # TODO : Add customizable indent
 
         try:
             with open(self.filepath, 'w') as outfile:
