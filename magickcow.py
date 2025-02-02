@@ -3130,7 +3130,7 @@ class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
 # endregion
 
 class MagickCowScenePanel(bpy.types.Panel):
-    bl_label = "MagickCow Scene Tools"
+    bl_label = "MagickCow Scene Configuration"
     bl_idname = "SCENE_PT_MagickCow_Scene_Tools"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
@@ -3140,8 +3140,8 @@ class MagickCowScenePanel(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
 
-        layout.label(text="Scene Settings")
-        # layout.prop(scene, "my_scene_property") # TODO : Implement some properties
+        # layout.label(text="Scene Settings")
+        layout.prop(scene, "mcow_scene_mode")
 
 # endregion
 
@@ -3579,12 +3579,31 @@ def unregister_exporters():
 
 def register_scene_properties():
 
+    # Register properties for the scene panel
+
+    # By default, it will be marked as None, so you need to manually select what type of object you want to export the scene as.
+    # This is done as a safeguard to prevent unexpectedly long export times or receiving an unexpected output exported file, which would needlessly waste the user's time if they
+    # forget to pick the type when this could just error out quickly.
+    # The resulting behaviour is that the program simply displays an error when the export button is pressed, notifying the user that the export process failed because no export type was chosen / selected.
+    bpy.types.Scene.mcow_scene_mode = bpy.props.EnumProperty(
+        name = "Export Mode",
+        description = "Select the type of object that will be exported when exporting the current scene to a JSON file.",
+        items = [
+            ("NONE", "None", "The current scene will not be exported as any type of object. Exporting as a MagickaPUP JSON file will be disabled until the user selects what type of export they want to perform with the current scene."),
+            ("MAP", "Map", "The current scene will be exported as an asset containing a map for Magicka."),
+            ("PHYSICS_ENTITY", "Physics Entity", "The current scene will be exported as an asset containing a physics entity for Magicka.")
+        ],
+        default = "NONE"
+    )
+
     # Register the scene panel
     bpy.utils.register_class(MagickCowScenePanel)
     
 
 def unregister_scene_properties():
     
+    # Unregister properties for the scene panel
+
     # Unregister the scene panel
     bpy.utils.unregister_class(MagickCowScenePanel)
 
