@@ -274,7 +274,7 @@ def get_action_keyframes(action):
     # Also that would make things harder to handle caching materials, shared resources and implementing object instance caching as well, etc... because what happens when you modify a Blender scene?
     # In short, that would add quite a bit of complexity, and it is not really worth it as of now.
 #endregion
-class DataGenerator:
+class DataGeneratorMap:
 
     # region Constructor
 
@@ -2921,7 +2921,7 @@ class MagickCowExporterOperatorMap(bpy.types.Operator, bpy_extras.io_utils.Expor
         self.report({"INFO"}, "Exporting to MagickaPUP .json Map file...")
         
         # Create a generator instance and generate all of the data
-        generator = DataGenerator(self.mcow_setting_export_path, self.mcow_setting_export_animation_data)
+        generator = DataGeneratorMap(self.mcow_setting_export_path, self.mcow_setting_export_animation_data)
         xnb_json_dict = generator.process_scene_data()
         
         # Generate the string (json.dump is absurdly slow, but json.dumps and then writing the generated string into a file is way faster... weird python buffering? How I miss fprintf...)
