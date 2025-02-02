@@ -2811,10 +2811,27 @@ class DataGeneratorMap(DataGenerator):
     # The export process is pretty different from that of map scenes, but it also has multiple similarities.
     # One of the similarities is that physics entities contain an XNB model class within it, which means that the animated level part side of the code is pretty much almost identical to what this class requires.
 # endregion
-class DataGeneratorPhysicsEntity:
+class DataGeneratorPhysicsEntity(DataGenerator):
+
+    # region Constructor
 
     def __init__(self):
         return
+    
+    # endregion
+
+    # region Get Stage
+
+    # endregion
+
+    # region Generate Stage
+
+    # endregion
+
+    # region Make Stage
+
+    # endregion
+    
 
 # endregion
 
