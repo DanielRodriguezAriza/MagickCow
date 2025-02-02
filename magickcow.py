@@ -2832,7 +2832,7 @@ class MagickCowExporterOperatorPhysicsEntity(bpy.types.Operator, bpy_extras.io_u
 
 
 # This class is the exporter operator for Map files.
-class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
+class MagickCowExporterOperatorMap(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
     
     # region Blender specific configuration:
     
@@ -3439,14 +3439,14 @@ def unregister_properties():
 # region Blender Export Panel functions, Register and Unregister functions
 
 def menu_func_map(self, context):
-    self.layout.operator(MagickCowExporterOperator.bl_idname, text = "Export Mesh to MagickaPUP JSON Map file (.json)")
+    self.layout.operator(MagickCowExporterOperatorMap.bl_idname, text = "Export Mesh to MagickaPUP JSON Map file (.json)")
 
 def menu_func_physics_entity(self, context):
     self.layout.operator(MagickCowExporterOperatorPhysicsEntity.bl_idname, text = "Export Mesh to MagickaPUP JSON Physics Entity file (.json)")
 
 def register_exporters():
     # Register the Map Exporter
-    bpy.utils.register_class(MagickCowExporterOperator)
+    bpy.utils.register_class(MagickCowExporterOperatorMap)
     bpy.types.TOPBAR_MT_file_export.append(menu_func_map)
 
     # Register the Physics Entity Exporter
@@ -3455,7 +3455,7 @@ def register_exporters():
 
 def unregister_exporters():
     # Unregister the Map Exporter
-    bpy.utils.unregister_class(MagickCowExporterOperator)
+    bpy.utils.unregister_class(MagickCowExporterOperatorMap)
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_map)
 
     # Unregister the Physics Entity Exporter
