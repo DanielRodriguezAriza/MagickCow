@@ -270,11 +270,11 @@ class DataGenerator:
     def __init__(self):
         return
     
-    def make_xnb_file(self, generated_scene_data, shared_resources_list):
+    def make_xnb_file(self, primary_object, shared_resources):
         ans = {
-            "primaryObject" : self.make_level_model(generated_scene_data),
-            "numSharedResources" : len(shared_resources_list),
-            "sharedResources" : shared_resources_list
+            "primaryObject" : primary_object,
+            "numSharedResources" : len(shared_resources),
+            "sharedResources" : shared_resources
         }
         return ans
 
@@ -291,7 +291,7 @@ class DataGenerator:
     # Also that would make things harder to handle caching materials, shared resources and implementing object instance caching as well, etc... because what happens when you modify a Blender scene?
     # In short, that would add quite a bit of complexity, and it is not really worth it as of now.
 #endregion
-class DataGeneratorMap:
+class DataGeneratorMap(DataGenerator):
 
     # region Constructor
 
@@ -2694,11 +2694,7 @@ class DataGeneratorMap:
     # endregion
 
     def make_scene_data(self, generated_scene_data, shared_resources_list):
-        ans = {
-            "primaryObject" : self.make_level_model(generated_scene_data),
-            "numSharedResources" : len(shared_resources_list),
-            "sharedResources" : shared_resources_list
-        }
+        ans = self.make_xnb_file(self.make_level_model(generated_scene_data), shared_resources_list)
         return ans
 
     # endregion
