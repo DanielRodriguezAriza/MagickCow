@@ -2632,7 +2632,6 @@ class DataGenerator:
 
     # region Make - Level Model
     
-    # TODO : Finish implementing leftover stuff (for example, force fields, etc... btw, right now I think that force fields MIGHT be things that apply forces to entities, like the wind stuff in R'lyeh)
     def make_level_model(self, generated_scene_data):
         
         roots = self.make_root_nodes(generated_scene_data.meshes)
