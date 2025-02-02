@@ -3428,27 +3428,49 @@ def unregister_properties():
 
 # endregion
 
-# region Main Addon Entry Point
+# region Blender Export Panel functions, Register and Unregister functions
 
-def menu_func(self, context):
+def menu_func_map(self, context):
     self.layout.operator(MagickCowExporterOperator.bl_idname, text = "Export Mesh to MagickaPUP JSON Map file (.json)")
+
+def menu_func_physics_entity(self, context):
     self.layout.operator(MagickCowExporterOperatorPhysicsEntity.bl_idname, text = "Export Mesh to MagickaPUP JSON Physics Entity file (.json)")
 
-def register():
-    # Register the exporter
+def register_exporters():
+    # Register the Map Exporter
     bpy.utils.register_class(MagickCowExporterOperator)
-    bpy.types.TOPBAR_MT_file_export.append(menu_func)
-    
-    # Register the properties panel
+    bpy.types.TOPBAR_MT_file_export.append(menu_func_map)
+
+    # Register the Physics Entity Exporter
+    bpy.utils.register_class(MagickCowExporterOperatorPhysicsEntity)
+    bpy.types.TOPBAR_MT_file_export.append(menu_func_physics_entity)
+
+def unregister_exporters():
+    # Unregister the Map Exporter
+    bpy.utils.unregister_class(MagickCowExporterOperator)
+    bpy.types.TOPBAR_MT_file_export.remove(menu_func_map)
+
+    # Unregister the Physics Entity Exporter
+    bpy.utils.unregister_class(MagickCowExporterOperatorPhysicsEntity)
+    bpy.types.TOPBAR_MT_file_export.remove(menu_func_physics_entity)
+
+# endregion
+
+# region Main Addon Entry Point
+
+def register():
+    # Register the Export Panel
+    register_exporters()
+
+    # Register the Properties Panel
     register_properties()
     bpy.utils.register_class(OBJECT_PT_MagickCowPropertiesPanel)
 
 def unregister():
-    # Unregister the exporter
-    bpy.utils.unregister_class(MagickCowExporterOperator)
-    bpy.types.TOPBAR_MT_file_export.remove(menu_func)
-    
-    # Unregister the properties panel
+    # Unregister the Export Panel
+    unregister_exporters()
+
+    # Unregister the Properties Panel
     unregister_properties()
     bpy.utils.unregister_class(OBJECT_PT_MagickCowPropertiesPanel)
 
