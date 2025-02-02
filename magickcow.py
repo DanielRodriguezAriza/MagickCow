@@ -2804,8 +2804,8 @@ class MagickCowExporterOperatorPhysicsEntity(bpy.types.Operator, bpy_extras.io_u
     # region Blender specific configuration:
     
     bl_idname = "object.magickcow_phys"
-    bl_label = "MagickCow Export"
-    bl_description = "MagickCow JSON Export"
+    bl_label = "MagickCow Export Physics Entity"
+    bl_description = "MagickCow Export Physics Entity to JSON file"
     filename_ext = ".json"
     
     #endregion
@@ -2817,8 +2817,8 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
     # region Blender specific configuration:
     
     bl_idname = "object.magickcow_map"
-    bl_label = "MagickCow Export"
-    bl_description = "MagickCow JSON Export"
+    bl_label = "MagickCow Export Map"
+    bl_description = "MagickCow Export Map to JSON file"
     filename_ext = ".json"
 
     # endregion
