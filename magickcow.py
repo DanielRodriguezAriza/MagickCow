@@ -2810,6 +2810,26 @@ class MagickCowExporterOperatorPhysicsEntity(bpy.types.Operator, bpy_extras.io_u
     
     #endregion
 
+    # region Exporter Panel Config
+
+    filter_glob : bpy.props.StringProperty(default = "*.json", options = {'HIDDEN'})
+
+    # TODO : Add some kind of standardized set of properties that are shared across all of the export panels so that exporting makes a bit more sense to users... also bring over all of the JSON related export operations to this panel too.
+    mcow_setting_export_pretty : bpy.props.BoolProperty(
+        name = "Pretty JSON Format",
+        description = "The JSON file will be exported with indentation and newlines for easier reading. Slows down export times due to the extra processing required. Also increasing the resulting file size."
+    )
+
+    # endregion
+
+    # region Main Exporter Code
+
+    def execute(self, context):
+        # TODO : Implement the actual export code...
+        return {'FINISHED'}
+
+    # endregion
+
 
 # This class is the exporter operator for Map files.
 class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
