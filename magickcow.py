@@ -3527,7 +3527,7 @@ def unregister_properties_light():
     del light.magickcow_light_shadow_map_size
     del light.magickcow_light_casts_shadows
 
-def register_properties():
+def register_object_properties():
     # Register the properties for each object type
     register_properties_empty()
     register_properties_mesh()
@@ -3536,7 +3536,7 @@ def register_properties():
     # Register the class for the properties panel itself
     bpy.utils.register_class(OBJECT_PT_MagickCowPropertiesPanel)
 
-def unregister_properties():
+def unregister_object_properties():
     # Unregister the properties for each object type
     unregister_properties_empty()
     unregister_properties_mesh()
@@ -3575,21 +3575,42 @@ def unregister_exporters():
 
 # endregion
 
+# region Blender Scene Panel functions, Register and Unregister functions
+
+def register_scene_properties():
+
+    # Register the scene panel
+    bpy.utils.register_class(MagickCowScenePanel)
+    
+
+def unregister_scene_properties():
+    
+    # Unregister the scene panel
+    bpy.utils.unregister_class(MagickCowScenePanel)
+
+# endregion
+
 # region Main Addon Entry Point
 
 def register():
     # Register the Export Panel
     register_exporters()
 
-    # Register the Properties Panel
-    register_properties()
+    # Register the Object Properties Panel
+    register_object_properties()
+
+    # Register the Scene Properties Panel
+    register_scene_properties()
 
 def unregister():
     # Unregister the Export Panel
     unregister_exporters()
 
-    # Unregister the Properties Panel
-    unregister_properties()
+    # Unregister the Object Properties Panel
+    unregister_object_properties()
+
+    # Unregister the Scene Properties Panel
+    unregister_scene_properties()
 
 if __name__ == "__main__":
     register()
