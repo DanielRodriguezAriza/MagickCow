@@ -2825,8 +2825,7 @@ class MagickCowExporterOperatorPhysicsEntity(bpy.types.Operator, bpy_extras.io_u
     # region Main Exporter Code
 
     def execute(self, context):
-        self.export_data(context)
-        return {'FINISHED'}
+        return self.export_data(context)
 
     def export_data(self, context):
         self.report({"INFO"}, "Exporting to MagickaPUP .json Physics Entity file...")
@@ -2898,8 +2897,7 @@ class MagickCowExporterOperatorMap(bpy.types.Operator, bpy_extras.io_utils.Expor
     # region Main Exporter Code
 
     def execute(self, context):
-        self.export_data(context)
-        return {'FINISHED'}
+        return self.export_data(context)
     
     def export_data(self, context):
         # Start export process...
