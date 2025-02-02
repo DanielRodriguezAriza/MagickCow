@@ -2830,6 +2830,9 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
     # region Make Stage
 
+    def make_physics_entity(self): # TODO : Add parameters
+        return self.make_xnb_file({}, []) # TODO : Replace this with the actual input parameters once this is implemented
+
     # endregion
     
 
