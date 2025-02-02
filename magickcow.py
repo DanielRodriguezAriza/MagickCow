@@ -91,6 +91,8 @@ class SceneObjectsGeneratedAnimated:
 
 # region General Purpose Utility Functions
 
+# TODO : Move a lot of this functionality into the generic DataGenerator base class...
+
 # Get transform of an object relative to the transform of another object.
 # Returns transform of object_b relative to object_a
 # We have 2 transforms, A and B. We want to get B relative to A. We have to calculate the inverse of A and apply it to B.
@@ -2852,7 +2854,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
 # endregion
 
-# region Blender Operator class for JSON Exporter.
+# region Blender Operator classes for JSON Exporter.
 
 # This class is the exporter operator for the Physics Entity files.
 class MagickCowExporterOperatorPhysicsEntity(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
@@ -3004,8 +3006,9 @@ class MagickCowExporterOperatorMap(bpy.types.Operator, bpy_extras.io_utils.Expor
 
 # endregion
 
-# region Blender Operator class that controls the N-Key panel for selected object configuration.
+# region Blender Operator classes for N-Key Panel
 
+# This class is the one that controls the N-Key panel for selected object configuration.
 class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
     bl_label = "MagickCow Properties"
     bl_idname = "OBJECT_PT_MagickCowProperties_panel"
@@ -3113,6 +3116,32 @@ class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
     
     # def draw_mesh_vertex_properties(self, layout, obj):
     #     layout.prop(obj.data, "magickcow_vertex_color_enabled")
+
+# endregion
+
+# region Blender Operator classes for Scene Panel
+
+# This class is the one that controls the N-Key panel for global scene config.
+# region Comment
+    # It is inspired by Valve's blender source tools, where they have the equivalent of this panel on the scene menu.
+    # In my case, I am not sure this is the best way to go, as we could also make this an N-Key panel that works without selecting any objects, but as of now I have decided to make it like this because it feels
+    # like it would make things less cluttered. The right most panel, which is where the scene panel is located by default, is pretty large by default and it is a location that makes sense for the kind of configuration
+    # that it will store, so I'd rather put it there, since I believe this is more intuitive for Blender users than coming up with my own conventions.
+# endregion
+
+class MagickCowScenePanel(bpy.types.Panel):
+    bl_label = "MagickCow Scene Tools"
+    bl_idname = "SCENE_PT_MagickCow_Scene_Tools"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "scene" # This makes the panel appear on under the Scene Properties.
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+
+        layout.label(text="Scene Settings")
+        # layout.prop(scene, "my_scene_property") # TODO : Implement some properties
 
 # endregion
 
