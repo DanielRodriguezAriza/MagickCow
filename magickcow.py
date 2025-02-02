@@ -2799,10 +2799,24 @@ class DataGenerator:
 
 # region Blender Operator class for JSON Exporter.
 
+# This class is the exporter operator for the Physics Entity files.
+class MagickCowExporterOperatorPhysicsEntity(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
+    # region Blender specific configuration:
+    
+    bl_idname = "object.magickcow_phys"
+    bl_label = "MagickCow Export"
+    bl_description = "MagickCow JSON Export"
+    filename_ext = ".json"
+    
+    #endregion
+
+
+# This class is the exporter operator for Map files.
 class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
     
     # region Blender specific configuration:
-    bl_idname = "object.magickcow"
+    
+    bl_idname = "object.magickcow_map"
     bl_label = "MagickCow Export"
     bl_description = "MagickCow JSON Export"
     filename_ext = ".json"
@@ -3398,6 +3412,7 @@ def unregister_properties():
 
 def menu_func(self, context):
     self.layout.operator(MagickCowExporterOperator.bl_idname, text = "Export Mesh to MagickaPUP JSON Map file (.json)")
+    self.layout.operator(MagickCowExporterOperatorPhysicsEntity.bl_idname, text = "Export Mesh to MagickaPUP JSON Physics Entity file (.json)")
 
 def register():
     # Register the exporter
