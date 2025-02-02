@@ -2823,7 +2823,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
     # region Process Scene Data
 
     # TODO : Implement
-    def process_scene_data():
+    def process_scene_data(self):
         # Get
 
         # Generate
@@ -2898,9 +2898,9 @@ class MagickCowExporterOperatorPhysicsEntity(bpy.types.Operator, bpy_extras.io_u
         xnb_dict = generator.process_scene_data()
 
         if self.settings_export_pretty:
-            json_str = json.dumps(xnb_dict, indent = None, separators = (",", ":"), check_circular = False)
+            json_str = json.dumps(xnb_dict, indent = self.settings_export_indent, separators = (",", ":"), check_circular = False)
         else:
-            json_str = json.dumps(xnb_dict, indect = self.settings_export_indent, seprators = (",", ":"), check_circular = False) # TODO : Add customizable indent
+            json_str = json.dumps(xnb_dict, indent = None, separators = (",", ":"), check_circular = False)
 
         try:
             with open(self.filepath, 'w') as outfile:
