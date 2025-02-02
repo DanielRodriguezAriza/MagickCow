@@ -2815,7 +2815,7 @@ class MagickCowExporterOperatorPhysicsEntity(bpy.types.Operator, bpy_extras.io_u
     filter_glob : bpy.props.StringProperty(default = "*.json", options = {'HIDDEN'})
 
     # TODO : Add some kind of standardized set of properties that are shared across all of the export panels so that exporting makes a bit more sense to users... also bring over all of the JSON related export operations to this panel too.
-    mcow_setting_export_pretty : bpy.props.BoolProperty(
+    settings_export_pretty : bpy.props.BoolProperty(
         name = "Pretty JSON Format",
         description = "The JSON file will be exported with indentation and newlines for easier reading. Slows down export times due to the extra processing required. Also increasing the resulting file size."
     )
@@ -2825,9 +2825,29 @@ class MagickCowExporterOperatorPhysicsEntity(bpy.types.Operator, bpy_extras.io_u
     # region Main Exporter Code
 
     def execute(self, context):
-        # TODO : Implement the actual export code...
+        self.export_data(context)
         return {'FINISHED'}
 
+    def export_data(self, context):
+        self.report({"INFO"}, "Exporting to MagickaPUP .json Physics Entity file...")
+
+        generator = DataGeneratorPhysicsEntity() # TODO : Implement this class
+        xnb_dict = generator.process_scene_data()
+
+        if self.settings_export_pretty:
+            json_str = json.dumps(xnb_dict, indent = None, separators = (",", ":"), check_circular = False)
+        else:
+            json_str = json.dumps(xnb_dict, indect = 4, seprators = (",", ":"), check_circular = False) # TODO : Add customizable indent
+
+        try:
+            with open(self.filepath, 'w') as outfile:
+                outfile.write(json_str)
+            self.report({"INFO"}, f"Successfully exported data to file \"{self.filepath}\"")
+            return {"FINISHED"}
+        except Exception as e:
+            self.report({"ERROR"}, f"Failed to export data: {e}")
+            return {"CANCELLED"}
+    
     # endregion
 
 
