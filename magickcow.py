@@ -3417,14 +3417,22 @@ def unregister_properties_light():
     del light.magickcow_light_casts_shadows
 
 def register_properties():
+    # Register the properties for each object type
     register_properties_empty()
     register_properties_mesh()
     register_properties_light()
 
+    # Register the class for the properties panel itself
+    bpy.utils.register_class(OBJECT_PT_MagickCowPropertiesPanel)
+
 def unregister_properties():
+    # Unregister the properties for each object type
     unregister_properties_empty()
     unregister_properties_mesh()
     unregister_properties_light()
+
+    # Unregister the class for the properties panel itself
+    bpy.utils.unregister_class(OBJECT_PT_MagickCowPropertiesPanel)
 
 # endregion
 
@@ -3464,7 +3472,6 @@ def register():
 
     # Register the Properties Panel
     register_properties()
-    bpy.utils.register_class(OBJECT_PT_MagickCowPropertiesPanel)
 
 def unregister():
     # Unregister the Export Panel
@@ -3472,7 +3479,6 @@ def unregister():
 
     # Unregister the Properties Panel
     unregister_properties()
-    bpy.utils.unregister_class(OBJECT_PT_MagickCowPropertiesPanel)
 
 if __name__ == "__main__":
     register()
