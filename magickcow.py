@@ -259,20 +259,21 @@ def get_action_keyframes(action):
 
 # endregion
 
-# region Generator class
+# region Generator classes
 
-# This class is the one in charge of getting, generating and storing in a final dict the data that is found within the scene.
-# The reason this class exists outside of the main exporter operator class is to prevent its generated data from staying around in memory after the export process has finished.
-# This could also be avoided by passing all variables around through functions, but that was getting too messy for global-state-like stuff like shared resources and other information
-# that should be cacheable, so I ended up just making this intermediate class to handle that.
-# The main exporter operator makes an instance of this class and just calls the get(), generate() and make() methods when it has to.
-# That way, after the export function goes out of scope, so does the class and all of the generated and cached information gets freed.
-# It would be cool to be able to keep it in cache between exports, but what happens for example if a material / effect JSON file is modified and it is still in the cache?
-# The new version would never be read unless we would add a system that would allow this python script to check if the file has been updated from the last time it was cached, and that would be slower
-# than just reading the new file altogether, because sadly even small syscalls like getting a file's data are slooooooow in python.
-# Also that would make things harder to handle caching materials, shared resources and implementing object instance caching as well, etc... because what happens when you modify a Blender scene?
-# In short, that would add quite a bit of complexity, and it is not really worth it as of now.
-
+# region Comment - DataGenerator
+    # This class is the one in charge of getting, generating and storing in a final dict the data that is found within the scene.
+    # The reason this class exists outside of the main exporter operator class is to prevent its generated data from staying around in memory after the export process has finished.
+    # This could also be avoided by passing all variables around through functions, but that was getting too messy for global-state-like stuff like shared resources and other information
+    # that should be cacheable, so I ended up just making this intermediate class to handle that.
+    # The main exporter operator makes an instance of this class and just calls the get(), generate() and make() methods when it has to.
+    # That way, after the export function goes out of scope, so does the class and all of the generated and cached information gets freed.
+    # It would be cool to be able to keep it in cache between exports, but what happens for example if a material / effect JSON file is modified and it is still in the cache?
+    # The new version would never be read unless we would add a system that would allow this python script to check if the file has been updated from the last time it was cached, and that would be slower
+    # than just reading the new file altogether, because sadly even small syscalls like getting a file's data are slooooooow in python.
+    # Also that would make things harder to handle caching materials, shared resources and implementing object instance caching as well, etc... because what happens when you modify a Blender scene?
+    # In short, that would add quite a bit of complexity, and it is not really worth it as of now.
+#endregion
 class DataGenerator:
 
     # region Constructor
@@ -2792,8 +2793,16 @@ class DataGenerator:
         return mesh, bm # NOTE : mesh is freed automatically, bm needs to be freed manually by the caller.
 
     # endregion
-    
-    
+
+# region Comment - DataGeneratorPhysicsEntity
+    # This data generator class is dedicated toward generating the data for physics entities.
+    # The export process is pretty different from that of map scenes, but it also has multiple similarities.
+    # One of the similarities is that physics entities contain an XNB model class within it, which means that the animated level part side of the code is pretty much almost identical to what this class requires.
+# endregion
+class DataGeneratorPhysicsEntity:
+
+    def __init__(self):
+        return
 
 # endregion
 
