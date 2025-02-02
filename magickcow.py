@@ -2820,6 +2820,20 @@ class DataGeneratorPhysicsEntity(DataGenerator):
     
     # endregion
 
+    # region Process Scene Data
+
+    # TODO : Implement
+    def process_scene_data():
+        # Get
+
+        # Generate
+
+        # Make
+        return self.make_physics_entity()
+
+
+    # endregion
+
     # region Get Stage
 
     # endregion
