@@ -3287,7 +3287,7 @@ class MAGICKCOW_OT_Operator_Resistance_AddItem(bpy.types.Operator):
 class MAGICKCOW_OT_Operator_Resistance_RemoveItem(bpy.types.Operator):
     bl_label = "Remove"
     bl_idname = "magickcow.resistance_remove_item"
-    index : bpy.props.IntProperty()
+    index : bpy.props.IntProperty() # NOTE : For this property to be accessible from the outside without errors, we need to use ":" rather than "=" on assignment, for some reason...
     def execute(self, context):
         obj = context.object
         if self.index >= 0 and self.index < len(obj.mcow_physics_entity_resistances):
