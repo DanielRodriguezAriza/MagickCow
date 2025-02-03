@@ -3610,7 +3610,7 @@ def register_properties_physics_entity_empty():
     
     return
 
-def unregister_properties_physics_entity_empty()
+def unregister_properties_physics_entity_empty():
     empty = bpy.types.Object
 
     del empty.mcow_physics_entity_empty_type
