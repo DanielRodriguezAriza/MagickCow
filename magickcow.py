@@ -3317,13 +3317,6 @@ def register_properties_map_empty():
         ],
         default = "GENERIC"
     )
-    
-    # Allow export option for all objects:
-    empty.magickcow_allow_export = bpy.props.BoolProperty(
-        name = "Export",
-        description = "Determines whether this object will be exported or not. If set to false, the object will be ignored by the exporter, as well as all of its children objects.",
-        default = True
-    )
 
     # Physics Entity Properties
     empty.magickcow_physics_entity_name = bpy.props.StringProperty(
@@ -3345,7 +3338,6 @@ def unregister_properties_map_empty():
     del empty.magickcow_bone_affects_shields
     del empty.magickcow_collision_enabled
     del empty.magickcow_collision_material
-    del empty.magickcow_allow_export
     del empty.magickcow_physics_entity_name
 
 def register_properties_map_mesh():
@@ -3598,6 +3590,17 @@ def unregister_properties_physics_entity():
 # region Global Register and Unregister functions
 
 def register_properties_object():
+
+    # Register the properties that all objects should have
+    obj = bpy.types.Object
+
+    # Allow export option for all objects:
+    obj.magickcow_allow_export = bpy.props.BoolProperty(
+        name = "Export",
+        description = "Determines whether this object will be exported or not. If set to false, the object will be ignored by the exporter, as well as all of its children objects.",
+        default = True
+    )
+
     # Register the properties for each object type and for each scene mode type
     register_properties_map()
     register_properties_physics_entity()
@@ -3606,6 +3609,12 @@ def register_properties_object():
     bpy.utils.register_class(OBJECT_PT_MagickCowPropertiesPanel)
 
 def unregister_properties_object():
+
+    # Unregister the properties that all objects should have
+    obj = bpy.types.Object
+    
+    del obj.magickcow_allow_export
+
     # Unregister the properties for each object type and for each scene mode type
     unregister_properties_map()
     unregister_properties_physics_entity()
