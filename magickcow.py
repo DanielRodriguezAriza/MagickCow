@@ -3263,6 +3263,12 @@ class MagickCowProperty_Resistance(bpy.types.PropertyGroup):
         default = 0
     )
 
+def register_properties_classes():
+    bpy.utils.register_class(MagickCowProperty_Resistance)
+
+def unregister_properties_classes():
+    bpy.utils.unregister_class(MagickCowProperty_Resistance)
+
 # endregion
 
 # region Blender Object Properties Register, Unregister and Update
@@ -3889,6 +3895,9 @@ def unregister_properties_scene():
 # region Main Addon Entry Point
 
 def register():
+    # Register custom property classes
+    register_properties_classes()
+
     # Register the Export Panel
     register_exporters()
 
@@ -3899,6 +3908,9 @@ def register():
     register_properties_scene()
 
 def unregister():
+    # Register custom property classes
+    unregister_properties_classes()
+
     # Unregister the Export Panel
     unregister_exporters()
 
