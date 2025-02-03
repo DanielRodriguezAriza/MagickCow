@@ -2959,13 +2959,13 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
         self.report({"INFO"}, "Exporting to MagickaPUP .json Map file...")
         
         # Create a generator instance and generate all of the data
-        generator = DataGeneratorMap(context.mcow_scene_base_path, context.mcow_scene_animation)
+        generator = DataGeneratorMap(context.scene.mcow_scene_base_path, context.scene.mcow_scene_animation)
         xnb_json_dict = generator.process_scene_data()
         
         # Generate the string
         write_string_time_start = time.time()
         
-        json_string = self.json_dump_str(context, xnb_dict)
+        json_string = self.json_dump_str(context, xnb_json_dict)
         
         write_string_time_end = time.time()
         
