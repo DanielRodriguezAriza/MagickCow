@@ -3571,15 +3571,15 @@ def unregister_properties_map_light():
 
 def register_properties_map():
     # Register the properties for each object type
-    register_properties_empty()
-    register_properties_mesh()
-    register_properties_light()
+    register_properties_map_empty()
+    register_properties_map_mesh()
+    register_properties_map_light()
 
 def unregister_properties_map():
     # Unregister the properties for each object type
-    unregister_properties_empty()
-    unregister_properties_mesh()
-    unregister_properties_light()
+    unregister_properties_map_empty()
+    unregister_properties_map_mesh()
+    unregister_properties_map_light()
 
 # endregion
 
