@@ -3608,11 +3608,14 @@ def unregister_properties_map():
 # region Object Properties - Physics Entity
 
 # TODO : Implement
+# TODO : In the future maybe rework the system so that custom properties are stored within dicts so that we can actually have a better organization and just delete the dict rather than each prop one by one?
 
 def register_properties_physics_entity_empty():
     
     empty = bpy.types.Object
     
+    # region Properties - Generic
+
     # Object type for empty objects
     empty.mcow_physics_entity_empty_type = bpy.props.EnumProperty(
         name = "Type",
@@ -3624,6 +3627,53 @@ def register_properties_physics_entity_empty():
         ],
         default = "NONE", # By default, it will be marked as none, so you need to manually select what type of point data object you want this to be
     )
+
+    # endregion
+
+    # region Properties - Root
+
+    # region Deprecated
+    
+    # NOTE : Discarded for now because I'm actually going to get the name / ID from the name of the root object in the inspector panel.
+    # empty.mcow_physics_entity_id = bpy.props.StringProperty(
+    #     name = "ID", # NOTE : The ID must be unique!!! each physics entity asset must have its own unique name within the game's data!!!
+    #     description = "Determine the ID of this physics entity",
+    #     default = "root"
+    # )
+
+    # endregion
+
+    empty.mcow_physics_entity_is_movable = bpy.props.BoolProperty(
+        name = "Is Movable", # This hurts me... movable is the "correct" modern spelling used nowadays, moveable is my preferred spelling, altough it is an archaism and nobody really uses it anymore... fuck me, but yeah, I'll pick whatever people use the most so as to make it more user friendly I guess...
+        description = "Determines whether this physics entity can be moved or not.",
+        default = False
+    )
+
+    empty.mcow_physics_entity_is_pushable = bpy.props.BoolProperty(
+        name = "Is Pushable",
+        description = "Determines whether this physics entity can be pushed or not.",
+        default = False
+    )
+
+    empty.mcow_physics_entity_is_solid = bpy.props.BoolProperty(
+        name = "Is Solid",
+        description = "Determines whether this physics entity is solid or not.",
+        default = True
+    )
+
+    empty.mcow_physics_entity_mass = bpy.props.FloatProperty(
+        name = "Mass",
+        description = "Determines the mass of this physics object.",
+        default = 200
+    )
+
+    empty.mcow_physics_entity_hitpoints = bpy.props.FloatProperty(
+        name = "Health",
+        description = "Determines the number of hit points for this physics object.",
+        default = 300
+    )
+
+    # endregion
     
     return
 
@@ -3631,6 +3681,12 @@ def unregister_properties_physics_entity_empty():
     empty = bpy.types.Object
 
     del empty.mcow_physics_entity_empty_type
+
+    del empty.mcow_physics_entity_is_movable
+    del empty.mcow_physics_entity_is_pushable
+    del empty.mcow_physics_entity_is_solid
+    del empty.mcow_physics_entity_mass
+    del empty.mcow_physics_entity_hitpoints
 
     return
 
