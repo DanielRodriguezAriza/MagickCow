@@ -3591,11 +3591,25 @@ def unregister_properties_map():
 
 # TODO : Implement
 
-def register_properties_physics_entity():
+def register_properties_physics_entity_empty():
     return
 
-def unregister_properties_physics_entity():
+def unregister_properties_physics_entity_empty()
     return
+
+def register_properties_physics_entity_mesh():
+    return
+
+def unregister_properties_physics_entity_mesh():
+    return
+
+def register_properties_physics_entity():
+    register_properties_physics_entity_empty()
+    register_properties_physics_entity_mesh()
+
+def unregister_properties_physics_entity():
+    unregister_properties_physics_entity_empty()
+    unregister_properties_physics_entity_mesh()
 
 # endregion
 
