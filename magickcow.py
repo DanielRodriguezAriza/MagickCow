@@ -2874,31 +2874,34 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
 
     filter_glob : bpy.props.StringProperty(default = "*.json", options = {'HIDDEN'})
     
-    mcow_setting_export_path : bpy.props.StringProperty(
-        name = "Config Path",
-        description = "Select the path in which the exporter will look for the base folder. This folder contains JSON files which correspond to effects (materials) that will be applied to the surfaces that have a material with the name of the corresponding effect file to be used.",
-        default = "C:\\"
-    )
-    
-    mcow_setting_export_animation_data : bpy.props.BoolProperty(
-        name = "Export Animation Data",
-        description = "Determines whether the animation side of the scene will be exported or not.\n - If True : The animated level parts will be exported, including all of the child objects and animation data.\n - If False : The animated level parts will be completely ignored and not exported. All children components, including geometry, lights, and any other type of object, that is attached to animated level parts, will also be ignored.\n - Note : The animated level parts root still needs to be present for the exporter to properly generate the level data.",
-        default = False
-    )
-    
-    mcow_setting_export_pretty : bpy.props.BoolProperty(
-        name = "Pretty JSON Format",
-        description = "The JSON file will be exported with indentation and newlines for easier reading. Slows down export times due to the extra processing required. It also increases the resulting file size due to the extra characters required for newlines and indentation. Recommended to only enable this setting if debugging the output of the generated JSON file is absolutely necessary, specially when working with large maps with high level of detail.",
-        default = False
-    )
-    
-    mcow_setting_export_indent : bpy.props.IntProperty(
-        name = "Indent Depth",
-        description = "Number of space characters to use in the output JSON file for indentation. This setting is ignored if pretty JSON formatting is disabled.",
-        default = 2,
-        min = 1,
-        max = 256 # Who the fuck is going to need this tho??? Anyone who is dicking around and wants to find out the limit, I guess.
-    )
+    # Discarded code where the properties used to depend on the export operator itself. Now they are global to the scene config / data instead.
+    # region Deprecated Code
+    # mcow_setting_export_path : bpy.props.StringProperty(
+    #     name = "Config Path",
+    #     description = "Select the path in which the exporter will look for the base folder. This folder contains JSON files which correspond to effects (materials) that will be applied to the surfaces that have a material with the name of the corresponding effect file to be used.",
+    #     default = "C:\\"
+    # )
+    # 
+    # mcow_setting_export_animation_data : bpy.props.BoolProperty(
+    #     name = "Export Animation Data",
+    #     description = "Determines whether the animation side of the scene will be exported or not.\n - If True : The animated level parts will be exported, including all of the child objects and animation data.\n - If False : The animated level parts will be completely ignored and not exported. All children components, including geometry, lights, and any other type of object, that is attached to animated level parts, will also be ignored.\n - Note : The animated level parts root still needs to be present for the exporter to properly generate the level data.",
+    #     default = False
+    # )
+    # 
+    # mcow_setting_export_pretty : bpy.props.BoolProperty(
+    #     name = "Pretty JSON Format",
+    #     description = "The JSON file will be exported with indentation and newlines for easier reading. Slows down export times due to the extra processing required. It also increases the resulting file size due to the extra characters required for newlines and indentation. Recommended to only enable this setting if debugging the output of the generated JSON file is absolutely necessary, specially when working with large maps with high level of detail.",
+    #     default = False
+    # )
+    # 
+    # mcow_setting_export_indent : bpy.props.IntProperty(
+    #     name = "Indent Depth",
+    #     description = "Number of space characters to use in the output JSON file for indentation. This setting is ignored if pretty JSON formatting is disabled.",
+    #     default = 2,
+    #     min = 1,
+    #     max = 256 # Who the fuck is going to need this tho??? Anyone who is dicking around and wants to find out the limit, I guess.
+    # )
+    # endregion
 
     # endregion
 
