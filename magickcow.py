@@ -3723,6 +3723,12 @@ def register_properties_physics_entity_empty():
         default = 300
     )
 
+    empty.mcow_physics_entity_resistances = bpy.props.CollectionProperty(
+        type = MagickCowProperty_Resistance,
+        name = "Resistances",
+        description = "Determines the elemental resistances and weaknesses of this physics entity."
+    )
+
     # endregion
     
     return
