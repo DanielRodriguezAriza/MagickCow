@@ -3003,6 +3003,14 @@ class MagickCowPanelObjectPropertiesNone:
     def draw(self, layout, obj):
         layout.label(text = "No available properties...")
 
+class MagickCowPanelObjectPropertiesGeneric:
+    # Properties that must be displayed for all objects no matter their type
+    def draw(self, layout, obj):
+        # NOTE : For information stored within an Ojbect, we use obj directly. For information stored within a specific type, we must access obj.data
+        layout.prop(obj, "magickcow_allow_export")
+        return
+
+
 class MagickCowPanelObjectPropertiesMap:
     
     # Base draw function. Calls the specific drawing functions based on the type of the selected object.
@@ -3123,6 +3131,7 @@ class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
     bl_category = "MagickCow"
 
     mcow_panel_none = MagickCowPanelObjectPropertiesNone()
+    mcow_panel_generic = MagickCowPanelObjectPropertiesGeneric()
     mcow_panel_map = MagickCowPanelObjectPropertiesMap()
     mcow_panel_physics_entity = MagickCowPanelObjectPropertiesPhysicsEntity()
 
@@ -3138,7 +3147,7 @@ class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
         # Draw selected object properties
         if obj:
             # Draw all properties that are common to all object types
-            self.draw_default(layout, obj)
+            self.mcow_panel_generic.draw(layout, obj)
             
             # Call the specific draw functions according to the selected scene mode
             if mode == "MAP":
@@ -3147,12 +3156,6 @@ class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
                 self.mcow_panel_physics_entity.draw(layout, obj)
             else:
                 self.mcow_panel_none.draw(layout, obj) # case "NONE" or any other invalid value
-    
-    # Properties that must be displayed for all objects no matter their type
-    def draw_default(self, layout, obj):
-        # NOTE : For information stored within an Ojbect, we use obj directly. For information stored within a specific type, we must access obj.data
-        layout.prop(obj, "magickcow_allow_export")
-        return
 
 # endregion
 
