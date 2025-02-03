@@ -3114,6 +3114,7 @@ class MagickCowPanelObjectPropertiesPhysicsEntity:
     
     def draw_empty(self, layout, obj):
         # TODO : Implement
+        layout.prop(obj, "mcow_physics_entity_empty_type")
         return
     
     def draw_mesh(self, layout, obj):
@@ -3596,7 +3597,7 @@ def register_properties_physics_entity_empty():
     empty = bpy.types.Object
     
     # Object type for empty objects
-    empty.mcow_physics_entity_type = bpy.props.EnumProperty(
+    empty.mcow_physics_entity_empty_type = bpy.props.EnumProperty(
         name = "Type",
         description = "Determine the type of this object",
         items = [
@@ -3612,7 +3613,7 @@ def register_properties_physics_entity_empty():
 def unregister_properties_physics_entity_empty()
     empty = bpy.types.Object
 
-    del empty.mcow_physics_entity_type
+    del empty.mcow_physics_entity_empty_type
 
     return
 
