@@ -3129,6 +3129,8 @@ class MagickCowScenePanel(bpy.types.Panel):
 
         layout.label(text="Scene Export Settings")
         layout.prop(scene, "mcow_scene_mode")
+        layout.prop(scene, "mcow_scene_base_path")
+        layout.prop(scene, "mcow_scene_animation")
         
         layout.label(text="JSON Export Settings")
         layout.prop(scene, "mcow_scene_json_pretty")
