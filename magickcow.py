@@ -2902,6 +2902,8 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
 
     # endregion
 
+    
+
     # region Main Exporter Code
 
     def execute(self, context):
@@ -2929,8 +2931,8 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
         generator = DataGeneratorPhysicsEntity() # TODO : Implement this class
         xnb_dict = generator.process_scene_data()
 
-        if self.settings_export_pretty:
-            json_str = json.dumps(xnb_dict, indent = self.settings_export_indent, separators = (",", ":"), check_circular = False)
+        if context.scene.mcow_scene_json_pretty:
+            json_str = json.dumps(xnb_dict, indent = context.scene.mcow_scene_json_indent, separators = (",", ":"), check_circular = False)
         else:
             json_str = json.dumps(xnb_dict, indent = None, separators = (",", ":"), check_circular = False)
 
