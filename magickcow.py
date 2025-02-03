@@ -3239,7 +3239,7 @@ class MagickCowScenePanel(bpy.types.Panel):
 
 # endregion
 
-# region Custom Blender Property types
+# region Custom Blender Property types and related Blender Operator classes
 
 # This region contains classes that describe custom property types for Blender.
 # Note that these properties can be used on any place in Blender, such as object properties or scene properties.
@@ -3273,11 +3273,34 @@ class MagickCowProperty_Resistance(bpy.types.PropertyGroup):
         default = 0
     )
 
+class MAGICKCOW_OT_Operator_Resistance_AddItem(bpy.types.Operator):
+    bl_label = "Add"
+    bl_idname = "magickcow.resistance_add_item"
+    def execute(self, context):
+        obj = context.object
+        obj.mcow_physics_entity_resistances.add()
+        return {"FINISHED"}
+
+class MAGICKCOW_OT_Operator_Resistance_RemoveItem(bpy.types.Operator):
+    bl_label = "Remove"
+    bl_idname = "magickcow.resistance_remove_item"
+    def execute(self, context):
+        obj = context.object
+        if len(obj.mcow_physics_entity_resistances) > 0:
+            obj.mcow_physics_entity_resistances.remove(self.index)
+        return {"FINISHED"}
+
 def register_properties_classes():
+    # Resistance
     bpy.utils.register_class(MagickCowProperty_Resistance)
+    bpy.utils.register_class(MAGICKCOW_OT_Operator_Resistance_AddItem)
+    bpy.utils.register_class(MAGICKCOW_OT_Operator_Resistance_RemoveItem)
 
 def unregister_properties_classes():
+    # Resistance
     bpy.utils.unregister_class(MagickCowProperty_Resistance)
+    bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Resistance_AddItem)
+    bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Resistance_RemoveItem)
 
 # endregion
 
