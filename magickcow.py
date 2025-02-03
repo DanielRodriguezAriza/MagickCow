@@ -3587,6 +3587,19 @@ def register_scene_properties():
         max = 256 # Again, who in the name of fuck will ever use this? I don't know, but fuck you if you do! lmao...
     )
 
+    bpy.types.Scene.mcow_scene_base_path = bpy.props.StringProperty(
+        name = "Base Directory Path",
+        description = "Select the path in which the exporter will look for the base directory. This directory contains JSON files which correspond to effects (materials) that will be applied to the surfaces that have a material with the name of the corresponding effect file to be used.",
+        default = "C:\\"
+    )
+
+    # TODO : Improve the description string so that it is more generic and also applies to all other forms of exportable object types / scene types rather than being specific to level (map) export.
+    bpy.types.Scene.mcow_scene_animation = bpy.props.BoolProperty(
+        name = "Export Animation Data",
+        description = "Determines whether the animation data of the current scene will be exported or not.\n - If True : The animated level parts will be exported, including all of the child objects and animation data.\n - If False : The animated level parts will be completely ignored and not exported. All children components, including geometry, lights, and any other type of object, that is attached to animated level parts, will also be ignored.\n - Note : The animated level parts root still needs to be present for the exporter to properly generate the level data.",
+        default = False
+    )
+
     # Register the scene panel itself
     bpy.utils.register_class(MagickCowScenePanel)
     
