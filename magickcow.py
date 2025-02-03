@@ -3105,20 +3105,20 @@ class MagickCowPanelObjectPropertiesMap:
 
 class MagickCowPanelObjectPropertiesPhysicsEntity:
     
-    # Base draw function. Calls the specific drawing functions based on the type of the selected object.
     def draw(self, layout, obj):
-        return # TODO : Implement logic for each specific type supported by physics entities...
-        # If the object exists (the user is currently selecting an object), draw the properties in the panel
-        # The displayed properties are changed depending on the type of the selected object
-        # This "if obj" thing could be an early return with "if not obj" or whatever, but all examples I've seen do it like this, so there must be a pythonic reason to do this...
-        # if obj:
-        #     self.draw_default(layout, obj) # Draw all properties that are common to all object types
-        #     if obj.type == "LIGHT":
-        #         self.draw_light(layout, obj)
-        #     elif obj.type == "MESH":
-        #         self.draw_mesh(layout, obj)
-        #     elif obj.type == "EMPTY":
-        #         self.draw_empty(layout, obj)
+        if obj:
+            if obj.type == "EMPTY":
+                self.draw_empty(layout, obj)
+            elif obj.type == "MESH":
+                self.draw_mesh(layout, obj)
+    
+    def draw_empty(self, layout, obj):
+        # TODO : Implement
+        return
+    
+    def draw_mesh(self, layout, obj):
+        # TODO : Implement
+        return
 
 # endregion
 
