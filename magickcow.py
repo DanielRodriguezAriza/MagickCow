@@ -3130,10 +3130,24 @@ class MagickCowPanelObjectPropertiesPhysicsEntity:
                 self.draw_mesh(layout, obj)
     
     def draw_empty(self, layout, obj):
-        # TODO : Implement
+        obj_type = obj.mcow_physics_entity_empty_type
         layout.prop(obj, "mcow_physics_entity_empty_type")
-        return
+        if obj_type == "ROOT":
+            self.draw_empty_root(layout, obj)
+        elif obj_type == "BONE":
+            self.draw_empty_bone(layout, obj)
     
+    def draw_empty_root(self, layout, obj):
+        layout.prop(obj, "mcow_physics_entity_is_movable")
+        layout.prop(obj, "mcow_physics_entity_is_pushable")
+        layout.prop(obj, "mcow_physics_entity_is_solid")
+        layout.prop(obj, "mcow_physics_entity_mass")
+        layout.prop(obj, "mcow_physics_entity_hitpoints")
+    
+    def draw_empty_bone(self, layout, obj):
+        # TODO : Implement
+        return
+
     def draw_mesh(self, layout, obj):
         # TODO : Implement
         return
