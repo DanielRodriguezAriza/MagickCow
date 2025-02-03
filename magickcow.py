@@ -3383,7 +3383,7 @@ def register_properties_map_mesh():
     )
     mesh.magickcow_mesh_autofreeze = bpy.props.BoolProperty(
         name = "Auto Freeze",
-        description = "Determines whether the liquid will freeze automatically or not. Useful for cold maps and areas like \"Frostjord\" where the environment is cold and water would logically freeze automatically into ice.",
+        description = "Determines whether the liquid will freeze automatically or not. Useful for cold maps and areas like \"Frostjord\" where the environment is cold and water would logically freeze automatically into ice as time passes.",
         default = False
     )
 
