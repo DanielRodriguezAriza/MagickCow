@@ -3590,6 +3590,11 @@ def register_scene_properties():
         max = 256 # Again, who in the name of fuck will ever use this? I don't know, but fuck you if you do! lmao...
     )
 
+    # NOTE : A list of benefits of storing all of the export config within the scene panel rather than the export menu:
+    # - The settings are saved across sessions (extremely useful for the base folder path, it used to be extremely fucking annoying for it to disappear all the time when reopening a Blender project...)
+    # - The settings are tied to a specific blend file within a single session rather than being carried over across scenes (if you have multiple scenes, and some are maps and others are assets, it can become a fucking pain in the ass to constantly have to change the export settings and fine tune them, when you could just do it once and be done with it...)
+    # Note that having to reconfigure the export each time you make a new project is an extremely minor inconvenience compared to the crap one had to put up with before... not to mention that this is how Valve does it in their source tools for blender...
+    # In short, it is far more benefitial to associate these settings on a per project basis than on a global basis for the entire editor...
     bpy.types.Scene.mcow_scene_base_path = bpy.props.StringProperty(
         name = "Base Directory Path",
         description = "Select the path in which the exporter will look for the base directory. This directory contains JSON files which correspond to effects (materials) that will be applied to the surfaces that have a material with the name of the corresponding effect file to be used.",
