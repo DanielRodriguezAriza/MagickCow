@@ -3138,11 +3138,21 @@ class MagickCowPanelObjectPropertiesPhysicsEntity:
             self.draw_empty_bone(layout, obj)
     
     def draw_empty_root(self, layout, obj):
+        # Simple properties
         layout.prop(obj, "mcow_physics_entity_is_movable")
         layout.prop(obj, "mcow_physics_entity_is_pushable")
         layout.prop(obj, "mcow_physics_entity_is_solid")
         layout.prop(obj, "mcow_physics_entity_mass")
         layout.prop(obj, "mcow_physics_entity_hitpoints")
+
+        # Resistances list
+        # layout.prop(obj, "mcow_physics_entity_resistances") # NOTE : This method does not work for lists of properties. You must use a box instead.
+        layout.label(text="Resistances")
+        for item in obj.mcow_physics_entity_resistances:
+            box = layout.box()
+            box.prop(item, "element")
+            box.prop(item, "multiplier")
+            box.prop(item, "modifier")
     
     def draw_empty_bone(self, layout, obj):
         # TODO : Implement
