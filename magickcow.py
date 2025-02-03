@@ -2996,19 +2996,17 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
 
 # region Blender Operator classes for N-Key Panel
 
-# This class is the one that controls the N-Key panel for selected object configuration.
-class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
-    bl_label = "MagickCow Properties"
-    bl_idname = "OBJECT_PT_MagickCowProperties_panel"
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "UI"
-    bl_category = "MagickCow"
+# region Internal logic classes
+
+# NOTE : This is a dummy class that exists to draw empty panels
+class MagickCowPanelObjectPropertiesNone:
+    def draw(self, layout, obj):
+        layout.label(text = "No available properties...")
+
+class MagickCowPanelObjectPropertiesMap:
     
     # Base draw function. Calls the specific drawing functions based on the type of the selected object.
-    def draw(self, context):
-        # Get the panel's layout and the currently selected object
-        layout = self.layout
-        obj = context.object
+    def draw(self, layout, obj):
         
         # If the object exists (the user is currently selecting an object), draw the properties in the panel
         # The displayed properties are changed depending on the type of the selected object
@@ -3104,6 +3102,54 @@ class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
     
     # def draw_mesh_vertex_properties(self, layout, obj):
     #     layout.prop(obj.data, "magickcow_vertex_color_enabled")
+
+class MagickCowPanelObjectPropertiesPhysicsEntity:
+    
+    # Base draw function. Calls the specific drawing functions based on the type of the selected object.
+    def draw(self, layout, obj):
+        return # TODO : Implement logic for each specific type supported by physics entities...
+        # If the object exists (the user is currently selecting an object), draw the properties in the panel
+        # The displayed properties are changed depending on the type of the selected object
+        # This "if obj" thing could be an early return with "if not obj" or whatever, but all examples I've seen do it like this, so there must be a pythonic reason to do this...
+        # if obj:
+        #     self.draw_default(layout, obj) # Draw all properties that are common to all object types
+        #     if obj.type == "LIGHT":
+        #         self.draw_light(layout, obj)
+        #     elif obj.type == "MESH":
+        #         self.draw_mesh(layout, obj)
+        #     elif obj.type == "EMPTY":
+        #         self.draw_empty(layout, obj)
+
+# endregion
+
+# This class is the one that controls the N-Key panel for selected object configuration.
+class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
+    
+    bl_label = "MagickCow Properties"
+    bl_idname = "OBJECT_PT_MagickCowProperties_panel"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "MagickCow"
+
+    mcow_panel_none = MagickCowPanelObjectPropertiesNone()
+    mcow_panel_map = MagickCowPanelObjectPropertiesMap()
+    mcow_panel_physics_entity = MagickCowPanelObjectPropertiesPhysicsEntity()
+
+    # Base draw function. Calls the specific drawing functions based on the type of the selected object.
+    def draw(self, context):
+        # Get the panel's layout and the currently selected object
+        layout = self.layout
+        obj = context.object
+        
+        # Get the scene config to check what scene mode we're in
+        mode = context.scene.mcow_scene_mode
+
+        if mode == "MAP":
+            self.mcow_panel_map.draw(layout, obj)
+        elif mode == "PHYSICS_ENTITY":
+            self.mcow_panel_physics_entity.draw(layout, obj)
+        else:
+            self.mcow_panel_none.draw(layout, obj) # case "NONE" or any other invalid value
 
 # endregion
 
