@@ -3148,11 +3148,14 @@ class MagickCowPanelObjectPropertiesPhysicsEntity:
         # Resistances list
         # layout.prop(obj, "mcow_physics_entity_resistances") # NOTE : This method does not work for lists of properties. You must use a box instead.
         layout.label(text="Resistances")
-        for item in obj.mcow_physics_entity_resistances:
+        layout.operator("magickcow.resistance_add_item")
+        for index, item in enumerate(obj.mcow_physics_entity_resistances):
             box = layout.box()
             box.prop(item, "element")
             box.prop(item, "multiplier")
             box.prop(item, "modifier")
+            remove_op = box.operator("magickcow.resistance_remove_item")
+            remove_op.index = index
     
     def draw_empty_bone(self, layout, obj):
         # TODO : Implement
@@ -3284,9 +3287,10 @@ class MAGICKCOW_OT_Operator_Resistance_AddItem(bpy.types.Operator):
 class MAGICKCOW_OT_Operator_Resistance_RemoveItem(bpy.types.Operator):
     bl_label = "Remove"
     bl_idname = "magickcow.resistance_remove_item"
+    index : bpy.props.IntProperty()
     def execute(self, context):
         obj = context.object
-        if len(obj.mcow_physics_entity_resistances) > 0:
+        if self.index >= 0 and self.index < len(obj.mcow_physics_entity_resistances):
             obj.mcow_physics_entity_resistances.remove(self.index)
         return {"FINISHED"}
 
