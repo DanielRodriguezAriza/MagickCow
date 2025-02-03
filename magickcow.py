@@ -3001,7 +3001,8 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
 # NOTE : This is a dummy class that exists to draw empty panels
 class MagickCowPanelObjectPropertiesNone:
     def draw(self, layout, obj):
-        layout.label(text = "No available properties...")
+        layout.label(text = "No available properties:")
+        layout.label(text = " - Export mode is \"None\"!")
 
 class MagickCowPanelObjectPropertiesGeneric:
     # Properties that must be displayed for all objects no matter their type
