@@ -3145,17 +3145,22 @@ class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
         mode = context.scene.mcow_scene_mode
 
         # Draw selected object properties
+        # Calls the specific draw functions according to the selected scene mode
         if obj:
-            # Draw all properties that are common to all object types
-            self.mcow_panel_generic.draw(layout, obj)
-            
-            # Call the specific draw functions according to the selected scene mode
             if mode == "MAP":
-                self.mcow_panel_map.draw(layout, obj)
+                self.draw_panel(layout, obj, self.mcow_panel_map)
             elif mode == "PHYSICS_ENTITY":
-                self.mcow_panel_physics_entity.draw(layout, obj)
+                self.draw_panel(layout, obj, self.mcow_panel_physics_entity)
             else:
-                self.mcow_panel_none.draw(layout, obj) # case "NONE" or any other invalid value
+                self.draw_none(layout, obj) # Object panel draw call for case "NONE" or any other invalid value
+
+    # NOTE : The reason I've implemented it like this is because I don't want the generic object properties to be displayed when working with the NONE scene export mode, that way we can quickly signal to the users that they forgot to configure their scene and avoid confusion when they look for settings on a panel and don't find it...
+    def draw_panel(self, layout, obj, mcow_panel_type):
+        self.mcow_panel_generic.draw(layout, obj) # Draw all of the properties that are common to all object types.
+        mcow_panel_type.draw(layout, obj) # Draw all of the properties that are specific to the selected object type.
+
+    def draw_none(self, layout, obj):
+        self.mcow_panel_none.draw(layout, obj)
 
 # endregion
 
