@@ -3612,6 +3612,8 @@ def unregister_scene_properties():
     del bpy.types.Scene.mcow_scene_mode
     del bpy.types.Scene.mcow_scene_json_pretty
     del bpy.types.Scene.mcow_scene_json_indent
+    del bpy.types.Scene.mcow_scene_base_path
+    del bpy.types.Scene.mcow_scene_animation
 
     # Unregister the scene panel
     bpy.utils.unregister_class(MagickCowScenePanel)
