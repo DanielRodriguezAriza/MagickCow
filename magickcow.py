@@ -2902,7 +2902,16 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
 
     # endregion
 
-    
+    # region JSON aux methods
+
+    # NOTE : We use json.dumps to make a string rather than json.dump to dump directly into a file because json.dump is absurdly slow, but json.dumps and then writing the generated string into a file is way faster...
+    # Maybe some weird python buffering shenanigans? Oh how I miss fprintf...
+    def json_dump_str(self, context, obj_dict):
+        if context.scene.mcow_scene_json_pretty:
+            return json.dumps(obj_dict, indent = context.scene.mcow_scene_json_indent, separators = (",", ":"), check_circular = False)
+        return json.dumps(obj_dict, indent = None, separators = (",", ":"), check_circular = False)
+
+    # endregion
 
     # region Main Exporter Code
 
@@ -2930,11 +2939,8 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
 
         generator = DataGeneratorPhysicsEntity() # TODO : Implement this class
         xnb_dict = generator.process_scene_data()
-
-        if context.scene.mcow_scene_json_pretty:
-            json_str = json.dumps(xnb_dict, indent = context.scene.mcow_scene_json_indent, separators = (",", ":"), check_circular = False)
-        else:
-            json_str = json.dumps(xnb_dict, indent = None, separators = (",", ":"), check_circular = False)
+        
+        json_str = self.json_dump_str(context, xnb_dict)
 
         try:
             with open(self.filepath, 'w') as outfile:
@@ -2953,13 +2959,11 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
         generator = DataGeneratorMap(self.mcow_setting_export_path, self.mcow_setting_export_animation_data)
         xnb_json_dict = generator.process_scene_data()
         
-        # Generate the string (json.dump is absurdly slow, but json.dumps and then writing the generated string into a file is way faster... weird python buffering? How I miss fprintf...)
-        json_string = ""
+        # Generate the string
         write_string_time_start = time.time()
-        if self.mcow_setting_export_pretty:
-            json_string = json.dumps(xnb_json_dict, indent = self.mcow_setting_export_indent, check_circular = False)
-        else:
-            json_string = json.dumps(xnb_json_dict, indent = None, separators = (",", ":"), check_circular = False)
+        
+        json_string = self.json_dump_str(context, xnb_dict)
+        
         write_string_time_end = time.time()
         
         # Write the data into the file
