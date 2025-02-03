@@ -3229,6 +3229,42 @@ class MagickCowScenePanel(bpy.types.Panel):
 
 # endregion
 
+# region Custom Blender Property types
+
+# This region contains classes that describe custom property types for Blender.
+# Note that these properties can be used on any place in Blender, such as object properties or scene properties.
+
+class MagickCowProperty_Resistance(bpy.types.PropertyGroup):
+    element : bpy.props.EnumProperty(
+        name = "Element",
+        description = "Magical element described by this entry",
+        items = [
+            ("Q", "Water", "Water Element"),
+            ("W", "Heal", "Heal Element"),
+            ("E", "Shield", "Shield Element"),
+            ("R", "Cold", "Cold Element"),
+            ("A", "Electricity", "Electricity Element"),
+            ("S", "Arcane", "Arcane Element"),
+            ("D", "Earth", "Earth Element"),
+            ("F", "Fire", "Fire Element"),
+            ("QF", "Steam", "Steam Element"),
+            ("QR", "Ice", "Ice Element"),
+        ],
+        default = "D"
+    )
+    multiplier : bpy.props.FloatProperty(
+        name = "Multiplier",
+        description = "Multiplies the effects applied by the selected element. If set to 1, the value will be unchanged and the default damage will be applied. If set to a negative value, the effects of the spell will be inverted. If set to 0, the spell will have no effect unless specified on the modifier property.",
+        default = 1
+    )
+    modifier : bpy.props.FloatProperty(
+        name = "Modifier",
+        description = "Modifies the effects applied by the selected element. If set to 0, the value will be unchaged.",
+        default = 0
+    )
+
+# endregion
+
 # region Blender Object Properties Register, Unregister and Update
 
 # region Object Properties - Map / Level
