@@ -3124,7 +3124,7 @@ class MagickCowPanelObjectPropertiesPhysicsEntity:
 
 # This class is the one that controls the N-Key panel for selected object configuration.
 class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
-    
+
     bl_label = "MagickCow Properties"
     bl_idname = "OBJECT_PT_MagickCowProperties_panel"
     bl_space_type = "VIEW_3D"
@@ -3187,9 +3187,11 @@ class MagickCowScenePanel(bpy.types.Panel):
 
 # region Blender Object Properties Register, Unregister and Update
 
-# The name of these parameters is important, as Blender internally calls them using "self = ..." and "context = ...".
+# region Object Properties - Map / Level
+
+# NOTE : The name of these parameters is important, as Blender internally calls them using "self = ..." and "context = ...".
 # If the names are different, the function will not properly allow objects to be modified.
-def update_properties_empty(self, context):
+def update_properties_map_empty(self, context):
     
     if self.magickcow_empty_original_setting_must_update:
         # Restore the original settings and mark as updated / restored
@@ -3227,7 +3229,7 @@ def update_properties_empty(self, context):
             self.empty_display_type = "ARROWS"
             self.show_name = False
 
-def register_properties_empty():
+def register_properties_map_empty():
     empty = bpy.types.Object
     
     # Object type for empty objects
@@ -3244,7 +3246,7 @@ def register_properties_empty():
             ("HIERARCHY_NODE", "Hierarchy Node", "This object will be used to structure the hierarchy of the scene. Allows the exporter to organize the objects in the scene.")
         ],
         default = "NONE", # By default, it will be marked as none, so you need to manually select whether you want the empty to be a locator or a trigger
-        update = update_properties_empty
+        update = update_properties_map_empty
     )
     
     # Locator Properties
@@ -3330,7 +3332,7 @@ def register_properties_empty():
         default = "barrel_explosive"
     )
 
-def unregister_properties_empty():
+def unregister_properties_map_empty():
     empty = bpy.types.Object
     
     del empty.magickcow_empty_type
@@ -3346,7 +3348,7 @@ def unregister_properties_empty():
     del empty.magickcow_allow_export
     del empty.magickcow_physics_entity_name
 
-def register_properties_mesh():
+def register_properties_map_mesh():
     mesh = bpy.types.Mesh
     
     # region Object type for mesh objects:
@@ -3427,7 +3429,7 @@ def register_properties_mesh():
     """
     # endregion
 
-def unregister_properties_mesh():
+def unregister_properties_map_mesh():
     mesh = bpy.types.Mesh
     
     del mesh.magickcow_mesh_type
@@ -3440,7 +3442,7 @@ def unregister_properties_mesh():
     # del mesh.magickcow_vertex_tangent_enabled
     # del mesh.magickcow_vertex_color_enabled
 
-def register_properties_light():
+def register_properties_map_light():
     light = bpy.types.Light
 
     # Light Variation Settings:
@@ -3549,7 +3551,7 @@ def register_properties_light():
         default = True
     )
 
-def unregister_properties_light():
+def unregister_properties_map_light():
     light = bpy.types.Light
     
     del light.magickcow_light_variation_type
@@ -3567,23 +3569,51 @@ def unregister_properties_light():
     del light.magickcow_light_shadow_map_size
     del light.magickcow_light_casts_shadows
 
-def register_object_properties():
+def register_properties_map():
     # Register the properties for each object type
     register_properties_empty()
     register_properties_mesh()
     register_properties_light()
 
-    # Register the class for the properties panel itself
-    bpy.utils.register_class(OBJECT_PT_MagickCowPropertiesPanel)
-
-def unregister_object_properties():
+def unregister_properties_map():
     # Unregister the properties for each object type
     unregister_properties_empty()
     unregister_properties_mesh()
     unregister_properties_light()
 
+# endregion
+
+# region Object Properties - Physics Entity
+
+# TODO : Implement
+
+def register_properties_physics_entity():
+    return
+
+def unregister_properties_physics_entity():
+    return
+
+# endregion
+
+# region Global Register and Unregister functions
+
+def register_properties_object():
+    # Register the properties for each object type and for each scene mode type
+    register_properties_map()
+    register_properties_physics_entity()
+
+    # Register the class for the properties panel itself
+    bpy.utils.register_class(OBJECT_PT_MagickCowPropertiesPanel)
+
+def unregister_properties_object():
+    # Unregister the properties for each object type and for each scene mode type
+    unregister_properties_map()
+    unregister_properties_physics_entity()
+
     # Unregister the class for the properties panel itself
     bpy.utils.unregister_class(OBJECT_PT_MagickCowPropertiesPanel)
+
+# endregion
 
 # endregion
 
@@ -3604,7 +3634,7 @@ def unregister_exporters():
 
 # region Blender Scene Panel functions, Register and Unregister functions
 
-def register_scene_properties():
+def register_properties_scene():
 
     # Register properties for the scene panel
 
@@ -3658,7 +3688,7 @@ def register_scene_properties():
     bpy.utils.register_class(MagickCowScenePanel)
     
 
-def unregister_scene_properties():
+def unregister_properties_scene():
     
     # Unregister properties for the scene panel
     del bpy.types.Scene.mcow_scene_mode
@@ -3678,21 +3708,21 @@ def register():
     # Register the Export Panel
     register_exporters()
 
-    # Register the Object Properties Panel
-    register_object_properties()
+    # Register the Object Properties and Object Properties Panel
+    register_properties_object()
 
-    # Register the Scene Properties Panel
-    register_scene_properties()
+    # Register the Scene Properties and Scene Properties Panel
+    register_properties_scene()
 
 def unregister():
     # Unregister the Export Panel
     unregister_exporters()
 
-    # Unregister the Object Properties Panel
-    unregister_object_properties()
+    # Unregister the Object Properties and Object Properties Panel
+    unregister_properties_object()
 
-    # Unregister the Scene Properties Panel
-    unregister_scene_properties()
+    # Unregister the Scene Properties and Scene Properties Panel
+    unregister_properties_scene()
 
 if __name__ == "__main__":
     register()
