@@ -2959,7 +2959,7 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
         self.report({"INFO"}, "Exporting to MagickaPUP .json Map file...")
         
         # Create a generator instance and generate all of the data
-        generator = DataGeneratorMap(self.mcow_setting_export_path, self.mcow_setting_export_animation_data)
+        generator = DataGeneratorMap(context.mcow_scene_base_path, context.mcow_scene_animation)
         xnb_json_dict = generator.process_scene_data()
         
         # Generate the string
@@ -2969,6 +2969,7 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
         
         write_string_time_end = time.time()
         
+        # TODO : Abstract this process into a simpler generic function that can be used to write the generated JSON data to the resulting file by all of the implemented export types.
         # Write the data into the file
         write_file_time_start = time.time()
         try:
