@@ -3262,6 +3262,7 @@ class MagickCowProperty_Resistance(bpy.types.PropertyGroup):
             ("F", "Fire", "Fire Element"),
             ("QF", "Steam", "Steam Element"),
             ("QR", "Ice", "Ice Element"),
+            ("QS", "Poison", "Poison Element")
         ],
         default = "D"
     )
@@ -3290,7 +3291,7 @@ class MAGICKCOW_OT_Operator_Resistance_RemoveItem(bpy.types.Operator):
     index : bpy.props.IntProperty() # NOTE : For this property to be accessible from the outside without errors, we need to use ":" rather than "=" on assignment, for some reason...
     def execute(self, context):
         obj = context.object
-        if self.index >= 0 and self.index < len(obj.mcow_physics_entity_resistances):
+        if self.index >= 0 and self.index < len(obj.mcow_physics_entity_resistances): # NOTE : This check is not really necessary considering how we're assured that the index should theoretically always be correct when iterating on the collection.
             obj.mcow_physics_entity_resistances.remove(self.index)
         return {"FINISHED"}
 
