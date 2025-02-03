@@ -2846,8 +2846,25 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
     # region Make Stage
 
-    def make_physics_entity(self): # TODO : Add parameters
-        return self.make_xnb_file({}, []) # TODO : Replace this with the actual input parameters once this is implemented
+    def make_physics_entity(self, generated_data): # TODO : Add parameters
+        # TODO : Implement literally everything
+        ans = {
+            "$type" : "PhysicsEntity",
+            "PhysicsEntityID" : "default",
+            "IsMovable" : False,
+            "IsPushable" : False,
+            "IsSolid" : True,
+            "Mass" : 140,
+            "MaxHitPoints" : 300,
+            "CanHaveStatus" : true,
+            "Resistances" : [],
+            "Gibs" : []
+            # TODO : Continue later on
+        }
+        return ans
+
+    def make(self, generated_scene_data, shared_resources_list):
+        return self.make_xnb_file(self.make_physics_entity(generated_scene_data), shared_Resources_list)
 
     # endregion
     
