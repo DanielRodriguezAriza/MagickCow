@@ -2952,7 +2952,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             if obj.type == "EMPTY":
                 if obj.mcow_physics_entity_empty_type == "BONE":
                     found_objects.model.bones.add(obj)
-                    
+                    self.get_scene_data_rec(found_objects, obj.children, len(found_objects.model.bones) - 1) # NOTE : The index we pass is literally the index of the bone we just added in the previous line of code.
 
             # NOTE : We ignore objects of any type other than empties and meshes when getting objects to be processed for physics entity generation.
             # No need for an else case because we do nothing else within the loop.
