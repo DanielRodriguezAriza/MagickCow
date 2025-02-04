@@ -4017,19 +4017,26 @@ def unregister_exporters():
 
 # region Blender Scene Panel functions, Register and Unregister functions
 
+def update_properties_scene_empty(self, context):
+    # NOTE : This is an aux function whose purpose is to restore all of the empties to their saved state
+    self.show_name = self.magickcow_empty_original_setting_display_name
+    self.empty_display_type = self.magickcow_empty_original_setting_display_type
+
 def update_properties_scene(self, context):
+    
     # NOTE : The "self" parameter is simply ignored in this case, we just want to iterate over all of the objects of type empty in the scene and call their respective update methods.
     if context.scene.mcow_scene_mode == "MAP":
         fn = update_properties_map_empty
+    
     elif context.scene.mcow_scene_mode == "PHYSICS_ENTITY":
         fn = update_properties_physics_entity_empty
-    else:
-        fn = None
     
-    if fn is not None:
-        empties = [obj for obj in bpy.data.objects if obj.type == "EMPTY"]
-        for empty in empties:
-            fn(empty, context)
+    else:
+        fn = update_properties_scene_empty
+    
+    empties = [obj for obj in bpy.data.objects if obj.type == "EMPTY"]
+    for empty in empties:
+        fn(empty, context)
 
 def register_properties_scene():
 
