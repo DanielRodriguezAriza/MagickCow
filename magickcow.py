@@ -3007,18 +3007,30 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
     def make_physics_entity(self, generated_data): # TODO : Add parameters
         # TODO : Implement literally everything
+        idstr, is_movable, is_pushable, is_solid, mass, hp, can_have_status, resistances, gibs, gib_trail_effect, hit_effect, visual_effects, sound_banks, model, has_collision, collision_vertices, collision_triangles, bounding_boxes, events, has_advanced_settings, advanced_settings = generated_data
         ans = {
             "$type" : "PhysicsEntity",
-            "PhysicsEntityID" : "default",
-            "IsMovable" : False,
-            "IsPushable" : False,
-            "IsSolid" : True,
-            "Mass" : 140,
-            "MaxHitPoints" : 300,
-            "CanHaveStatus" : true,
-            "Resistances" : [],
-            "Gibs" : []
-            # TODO : Continue later on
+            "PhysicsEntityID" : idstr,
+            "IsMovable" : is_movable,
+            "IsPushable" : is_pushable,
+            "IsSolid" : is_solid,
+            "Mass" : mass,
+            "MaxHitPoints" : hp,
+            "CanHaveStatus" : can_have_status,
+            "Resistances" : resistances,
+            "Gibs" : gibs,
+            "GibTrailEffect" : gib_trail_effect,
+            "HitEffect" : hit_effect,
+            "VisualEffects" : visual_effects,
+            "SoundBanks" : sound_banks,
+            "Model" : model,
+            "HasCollision" : has_collision,
+            "CollisionVertices" : collision_vertices,
+            "CollisionTriangles" : collision_triangles,
+            "BoundingBoxes" : bounding_boxes,
+            "Events" : events,
+            "HasAdvancedSettings" : has_advanced_settings,
+            "AdvancedSettings" : advanced_settings
         }
         return ans
 
