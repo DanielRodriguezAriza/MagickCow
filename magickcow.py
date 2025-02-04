@@ -2924,11 +2924,12 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         # Get the objects in the scene and form a tree-like structure for exporting.
         found_objects = Storage_PhysicsEntity()
         found_objects.root = root_objects[0]
-        self.get_scene_data_rec(found_objects, root_objects[0].children, None)
+        found_objects.model.bones.add(root_bojects[0]) # The root object will act as a bone for us when exporting the mesh.
+        self.get_scene_data_rec(found_objects, root_objects[0].children, 0)
         
         return ans
     
-    def get_scene_data_rec(self, found_objects, current_objects, current_parent):
+    def get_scene_data_rec(self, found_objects, current_objects, parent_bone_index):
         
         for obj in current_objects:
 
@@ -2942,7 +2943,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
                 mesh_type = mesh.mcow_physics_entity_mesh_type
 
                 if mesh_type == "GEOMETRY":
-                    found_objects.model.meshes.add(obj)
+                    found_objects.model.meshes.add((obj, parent_bone_index)) # (mesh_object, parent_bone_index)
                 
                 elif mesh_type == "COLLISION":
                     found_objects.collisions.add(obj)
@@ -2950,7 +2951,8 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             # Process objects of type empty, which should be roots and bones
             if obj.type == "EMPTY":
                 if obj.mcow_physics_entity_empty_type == "BONE":
-                    found_objects.bones.add(obj)
+                    found_objects.model.bones.add(obj)
+                    
 
             # NOTE : We ignore objects of any type other than empties and meshes when getting objects to be processed for physics entity generation.
             # No need for an else case because we do nothing else within the loop.
