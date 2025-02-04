@@ -2848,20 +2848,32 @@ class DataGeneratorPhysicsEntity(DataGenerator):
     # TODO : Implement
     def process_scene_data(self):
         # Get
+        get_stage_physics_entity = self.get()
 
         # Generate
+        generate_stage_physics_entity = self.generate()
 
         # Make
-        return self.make_physics_entity()
+        make_stage_physics_entity = self.make()
+
+        return make_stage_physics_entity
 
 
     # endregion
 
     # region Get Stage
 
+    def get():
+        # TODO : Implement
+        return {}
+
     # endregion
 
     # region Generate Stage
+
+    def generate():
+        # TODO : Implement
+        return {}
 
     # endregion
 
