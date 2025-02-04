@@ -2903,13 +2903,11 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
     def get_scene_data(self):
         root_objects_physics_entities = [obj for obj in bpy.data.objects if (obj.parent is None and obj.type == "EMPTY" and obj.mcow_physics_entity_empty_type == "ROOT")]
-
         found_objects = Storage_PE_Part()
-        found_objects.bones.append()
-
-        return
+        self.get_scene_data_rec(found_objects)
+        return found_objects
     
-    def get_scene_data_rec(self):
+    def get_scene_data_rec(self, found_objects):
 
         return
 
