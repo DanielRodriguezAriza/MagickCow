@@ -2967,9 +2967,10 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
     # region Generate Stage
 
-    def generate(self):
-        # TODO : Implement
-        return {}
+    def generate(self, found_objects):
+        # TODO : Implement everything else
+        ans = generate_physics_entity_data(found_objects.root)
+        return ans
 
     def generate_physics_entity_data(self, obj):
         idstr = obj.name
@@ -2998,7 +2999,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         advanced_settings = {}
         shared_resources = [] # NOTE : This should be a global var of the generator class
 
-        return ()
+        return (idstr, is_movable, is_pushable, is_solid, mass, hp, can_have_status, resistances, gibs, gib_trail_effect, hit_effect, visual_effects, sound_banks, model, has_collision, collision_vertices, collision_triangles, bounding_boxes, events, has_advanced_settings, advanced_settings)
 
     # endregion
 
