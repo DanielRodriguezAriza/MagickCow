@@ -110,6 +110,35 @@ class Storage_PE_Part: # NOTE : Roots found within child elements are simply ign
 
 # endregion
 
+# region Utility Class
+
+class MagickCowUtility:
+    def GetSceneObjectsAll():
+        objects = bpy.data.objects
+        return objects
+    
+    def GetSceneObjectsRoot():
+        bpyobjects = bpy.data.objects
+        objects = [obj for obj in bpyobjects if obj.parent is None]
+        return objects
+    
+    def GetSceneObjectsChildrenAll(obj):
+        objects = []
+        MagickCowUtility.GetSceneObjectsChildrenAllRec(obj, objects)
+        return objects
+    
+    def GetSceneObjectsChildrenAllRec(obj, children_list):
+        # NOTE : Alternatively we could use children_list.extend(obj.children) and then iterate over the list making the recursive calls.
+        for child in obj.children:
+            children_list.append(child)
+            MagickCowUtility.GetSceneObjectsChildrenAllRec(child, children_list)
+
+    def GetSceneObjectsChildrenImmediate(obj):
+        objects = obj.children
+        return objects
+
+# endregion
+
 # region General Purpose Utility Functions
 
 # TODO : Move a lot of this functionality into the generic DataGenerator base class...
@@ -2870,8 +2899,19 @@ class DataGeneratorPhysicsEntity(DataGenerator):
     # region Get Stage
 
     def get(self):
-        root_objects_physics_entities = [obj.name for obj in bpy.data.objects if (obj.parent is None and obj.type == "EMPTY" and obj.mcow_physics_entity_empty_type == "ROOT")] # TODO : RETURN OBJ, NOT OBJ.NAME, THIS IS DONE FOR TESTING PURPOSES AS OF NOW!!!
-        return root_objects_physics_entities
+        return self.get_scene_data()
+
+    def get_scene_data(self):
+        root_objects_physics_entities = [obj for obj in bpy.data.objects if (obj.parent is None and obj.type == "EMPTY" and obj.mcow_physics_entity_empty_type == "ROOT")]
+
+        found_objects = Storage_PE_Part()
+        found_objects.bones.append()
+
+        return
+    
+    def get_scene_data_rec(self):
+
+        return
 
     # endregion
 
