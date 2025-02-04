@@ -2911,6 +2911,10 @@ class DataGeneratorPhysicsEntity(DataGenerator):
     
     def get_scene_data_rec(self, current_found_objects, current_child_objects, current_parent):
         for child in current_child_objects:
+
+            if not child.magickcow_allow_export: # Ignore objects that are marked as no export. This also excludes all children from the export process.
+                continue
+
             if child.type == "EMPTY": # Process objects of type empty, which should be roots and bones
                 break
             else if child.type == "MESH": # Process objects of type mesh, which should be visual geometry meshes and collision meshes
