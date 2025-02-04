@@ -3268,11 +3268,13 @@ class MagickCowPanelObjectPropertiesPhysicsEntity:
             self.draw_mesh_collision(layout, obj)
     
     def draw_mesh_geometry(self, layout, obj):
-        # TODO : Implement
+        layout.prop(obj, "magickcow_collision_enabled")
+        if(obj.magickcow_collision_enabled):
+            layout.prop(obj, "magickcow_collision_material")
         return
     
     def draw_mesh_collision(self, layout, obj):
-        # TODO : Implement
+        layout.prop(obj, "magickcow_collision_material")
         return
 
 # endregion
