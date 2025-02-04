@@ -2903,8 +2903,8 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
     def get_scene_data(self):
         root_objects = [obj for obj in bpy.data.objects if (obj.parent is None and obj.type == "EMPTY" and obj.mcow_physics_entity_empty_type == "ROOT")]
-        if len(root_objects > 1): # NOTE : For now, we only handle exporting 1 single physics entity object per physics entity scene.
-            raise Exception("Cannot contain more than one physics entity root per scene!")
+        if len(root_objects) != 1: # NOTE : For now, we only handle exporting 1 single physics entity object per physics entity scene.
+            raise Exception("Physics Entity Scene must contain exactly 1 Root!")
         
         found_objects = Storage_PE_Part()
         self.get_scene_data_rec(found_objects, root_objects[0].children, None)
