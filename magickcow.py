@@ -2899,7 +2899,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         generate_stage_physics_entity = self.generate(get_stage_physics_entity)
 
         # Make
-        make_stage_physics_entity = self.make(generate_stage_physics_entity)
+        make_stage_physics_entity = self.make(generate_stage_physics_entity, []) # TODO : Implement actual shared resources list here
 
         return make_stage_physics_entity
 
@@ -2930,7 +2930,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         # Get the objects in the scene and form a tree-like structure for exporting.
         found_objects = Storage_PhysicsEntity()
         found_objects.root = root_objects[0]
-        found_objects.model.bones.add(root_bojects[0]) # The root object will act as a bone for us when exporting the mesh.
+        found_objects.model.bones.append(root_objects[0]) # The root object will act as a bone for us when exporting the mesh.
         self.get_scene_data_rec(found_objects, root_objects[0].children, 0)
         
         return found_objects
@@ -2969,7 +2969,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
     def generate(self, found_objects):
         # TODO : Implement everything else
-        ans = generate_physics_entity_data(found_objects.root)
+        ans = self.generate_physics_entity_data(found_objects.root)
         return ans
 
     def generate_physics_entity_data(self, obj):
@@ -2981,7 +2981,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         hp = obj.mcow_physics_entity_hitpoints
         can_have_status = obj.mcow_physics_entity_can_have_status
 
-        resistances = [(resistance.element, resistance.multipler, resistance.modifier) for resistance in mcow_physics_entity_resistances]
+        resistances = [(resistance.element, resistance.multiplier, resistance.modifier) for resistance in obj.mcow_physics_entity_resistances]
         
         # TODO : Implement everything below this comment
         gibs = []
@@ -3035,7 +3035,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         return ans
 
     def make(self, generated_scene_data, shared_resources_list):
-        return self.make_xnb_file(self.make_physics_entity(generated_scene_data), shared_Resources_list)
+        return self.make_xnb_file(self.make_physics_entity(generated_scene_data), shared_resources_list)
 
     # endregion
     
