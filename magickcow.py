@@ -96,14 +96,17 @@ class SceneObjectsGeneratedAnimated:
 # Basically, here, rather than having different structures for the get and generate stages, since we're going to be storing the same type of data in both cases, just in different states / forms, what I've done is
 # that I'm basically having a "stroage" data structure for each type of data structure that exists within physics entities in the format of their XNB files.
 
-class Storage_PE_Root:
+class Storage_PhysicsEntity:
     def __init__(self):
-        self.roots = [] # NOTE : If we have more than one root, what do we do? do we error out or do we export multiple objects? and if we export multiple objects, do we put them into the same file in a list like structure and modify MagickaPUP to support input JSON files with lists of docs inside, or do we export each object to its own file? and what naming scheme to use? etc etc...
+        # self.roots = [] # NOTE : If we have more than one root, what do we do? do we error out or do we export multiple objects? and if we export multiple objects, do we put them into the same file in a list like structure and modify MagickaPUP to support input JSON files with lists of docs inside, or do we export each object to its own file? and what naming scheme to use? etc etc...
+        self.root = None
+        self.collision_meshes = []
+        self.bounding_boxes = []
+        self.model = Storage_PhysicsEntity_Part()
 
-class Storage_PE_Part: # NOTE : Roots found within child elements are simply ignored and not stored anywhere, they just don't serve any purpose and are a malformed structure.
+class Storage_PhysicsEntity_Model:
     def __init__(self):
         self.meshes = []
-        self.collisions = [[] for i in range(10)]
         self.bones = []
 
 # endregion
@@ -2927,7 +2930,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         
         return ans
     
-    def get_scene_data_rec(self, current_found_objects, current_objects, current_parent):
+    def get_scene_data_rec(self, found_objects, current_objects, current_parent):
         
         for obj in current_objects:
 
@@ -2941,15 +2944,15 @@ class DataGeneratorPhysicsEntity(DataGenerator):
                 mesh_type = mesh.mcow_physics_entity_mesh_type
 
                 if mesh_type == "GEOMETRY":
-                    continue # TODO : Implement
+                    found_objects.meshes.add(obj)
                 
                 elif mesh_type == "COLLISION":
-                    continue # TODO : Implement
+                    found_objects.collision.add(obj)
             
             # Process objects of type empty, which should be roots and bones
             if obj.type == "EMPTY":
                 if obj.mcow_physics_entity_empty_type == "BONE":
-                    current_found_objects.bones.add(obj)
+                    found_objects.bones.add(obj)
 
             # NOTE : We ignore objects of any type other than empties and meshes when getting objects to be processed for physics entity generation.
             # No need for an else case because we do nothing else within the loop.
