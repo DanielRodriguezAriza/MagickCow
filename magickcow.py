@@ -3023,13 +3023,17 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
     def export_data(self, context):
         scene = context.scene
         export_mode = scene.mcow_scene_mode
-        ans = {}
-        if export_mode == "MAP":
-            ans = self.export_data_map(context)
-        elif export_mode == "PHYSICS_ENTITY":
-            ans = self.export_data_physics_entity(context)
-        else:
-            ans = self.export_data_none(context)
+        ans = {} # This is an empty object, but the type of answer object we expect from the export functions is a Blender message, something like {"FINISHED"} or {"CANCELLED"} or whatever.
+        try:
+            if export_mode == "MAP":
+                ans = self.export_data_map(context)
+            elif export_mode == "PHYSICS_ENTITY":
+                ans = self.export_data_physics_entity(context)
+            else:
+                ans = self.export_data_none(context)
+        except Exception as e:
+            self.report({"ERROR"}, f"Failed to export data: {e}")
+            return {"CANCELLED"}
         return ans
 
     def export_data_none(self, context):
