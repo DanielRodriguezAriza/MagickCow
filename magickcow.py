@@ -3963,6 +3963,12 @@ def register_properties_physics_entity_empty():
         default = 300
     )
 
+    empty.mcow_physics_entity_can_have_status = bpy.props.BoolProperty(
+        name = "Can Have Status",
+        description = "Determines whether the physics entity can have a status or not.",
+        default = True
+    )
+
     empty.mcow_physics_entity_resistances = bpy.props.CollectionProperty(
         type = MagickCowProperty_Resistance,
         name = "Resistances",
