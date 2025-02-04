@@ -3815,6 +3815,36 @@ def unregister_properties_map():
 # TODO : Implement
 # TODO : In the future maybe rework the system so that custom properties are stored within dicts so that we can actually have a better organization and just delete the dict rather than each prop one by one?
 
+def update_properties_physics_entity_empty(self, context):
+    
+    if self.magickcow_empty_original_setting_must_update:
+        # Restore the original settings and mark as updated / restored
+        self.magickcow_empty_original_setting_must_update = False
+        self.empty_display_type = self.magickcow_empty_original_setting_display_type
+        self.show_name = self.magickcow_empty_original_setting_display_name
+    
+    else:
+        # Save / Back Up the original settings
+        self.magickcow_empty_original_setting_display_type = self.empty_display_type
+        self.magickcow_empty_original_setting_display_name = self.show_name
+    
+    if self.mcow_physics_entity_empty_type != "NONE":
+        # Mark for restoration so that it will restore its original settings when returning to the default empty type ("NONE")
+        self.magickcow_empty_original_setting_must_update = True
+        
+        # Perform the corresponding updates for each empty type
+        if self.mcow_physics_entity_empty_type == "BONE":
+            self.empty_display_type = "PLAIN_AXES"
+            self.show_name = True
+        
+        elif self.mcow_physics_entity_empty_type == "ROOT":
+            self.empty_display_type = "SPHERE"
+            self.show_name = False
+        
+        elif self.mcow_physics_entity_empty_type == "BOUNDING_BOX":
+            self.empty_display_type = "CUBE"
+            self.show_name = True
+
 def register_properties_physics_entity_empty():
     
     empty = bpy.types.Object
@@ -3832,6 +3862,7 @@ def register_properties_physics_entity_empty():
             ("BOUNDING_BOX", "Bounding Box", "This Object will be exported as a bounding box for the physics entity.")
         ],
         default = "NONE", # By default, it will be marked as none, so you need to manually select what type of point data object you want this to be
+        update = update_properties_physics_entity_empty
     )
 
     # endregion
