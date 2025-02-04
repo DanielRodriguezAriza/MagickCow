@@ -3988,6 +3988,7 @@ def unregister_properties_physics_entity_empty():
     del empty.mcow_physics_entity_is_pushable
     del empty.mcow_physics_entity_is_solid
     del empty.mcow_physics_entity_mass
+    del empty.mcow_physics_entity_can_have_status
     del empty.mcow_physics_entity_hitpoints
 
     return
