@@ -39,6 +39,8 @@ from collections import namedtuple
 
 # region Classes and Named Tuples
 
+# region Map
+
 class SceneObjectsFound:
     def __init__(self):
         self.meshes = []
@@ -86,6 +88,25 @@ class SceneObjectsGeneratedAnimated:
         self.animation = None
         self.animated_parts = []
 
+# endregion
+
+# region Physics Entity
+
+# NOTE : The Map side of the code could be reworked to be similar to how the physics entity side is going to work.
+# Basically, here, rather than having different structures for the get and generate stages, since we're going to be storing the same type of data in both cases, just in different states / forms, what I've done is
+# that I'm basically having a "stroage" data structure for each type of data structure that exists within physics entities in the format of their XNB files.
+
+class Storage_PE_Root:
+    def __init__(self):
+        self.roots = [] # NOTE : If we have more than one root, what do we do? do we error out or do we export multiple objects? and if we export multiple objects, do we put them into the same file in a list like structure and modify MagickaPUP to support input JSON files with lists of docs inside, or do we export each object to its own file? and what naming scheme to use? etc etc...
+
+class Storage_PE_Part: # NOTE : Roots found within child elements are simply ignored and not stored anywhere, they just don't serve any purpose and are a malformed structure.
+    def __init__(self):
+        self.meshes = []
+        self.collisions = [[] for i in range(10)]
+        self.bones = []
+
+# endregion
 
 # endregion
 
