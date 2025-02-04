@@ -2902,10 +2902,23 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         return self.get_scene_data()
 
     def get_scene_data(self):
-        root_objects = [obj for obj in bpy.data.objects if (obj.parent is None and obj.type == "EMPTY" and obj.mcow_physics_entity_empty_type == "ROOT")]
-        if len(root_objects) != 1: # NOTE : For now, we only handle exporting 1 single physics entity object per physics entity scene.
+
+        # NOTE : We have to make sure that we only have 1 single object of type "ROOT" in the scene, and that it is also a root within the scene. All other root objects that are not of type "ROOT" will be ignored.
+        # Objects of type "ROOT" within the tree hierarchy but that are not true roots will trigger an error.
+
+        # NOTE : For now, we only handle exporting 1 single physics entity object per physics entity scene.
+
+        # Get all of the objects in the scene that are of type "ROOT"
+        all_objects_of_type_root = [obj for obj in bpy.data.objects if (obj.type == "EMPTY" and obj.mcow_physics_entity_empty_type == "ROOT")]
+        if len(all_objects_of_type_root) != 1:
             raise Exception("Physics Entity Scene must contain exactly 1 Root!")
-        
+
+        # Get all of the objects in the scene that are roots (have no parent) and are of type "ROOT"
+        root_objects = [obj for obj in bpy.data.objects if (obj.parent is None and obj.type == "EMPTY" and obj.mcow_physics_entity_empty_type == "ROOT")]
+        if len(root_objects) != 1:
+            raise Exception("Physics Entity Scene Root object must be at the root of the scene!")
+
+        # Get the objects in the scene and form a tree-like structure for exporting.
         found_objects = Storage_PE_Part()
         self.get_scene_data_rec(found_objects, root_objects[0].children, None)
         
