@@ -102,7 +102,7 @@ class Storage_PhysicsEntity:
         self.root = None
         self.collision_meshes = []
         self.bounding_boxes = []
-        self.model = Storage_PhysicsEntity_Part()
+        self.model = Storage_PhysicsEntity_Model()
 
 class Storage_PhysicsEntity_Model:
     def __init__(self):
@@ -2922,11 +2922,9 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             raise Exception("Physics Entity Scene Root object must be at the root of the scene!")
 
         # Get the objects in the scene and form a tree-like structure for exporting.
-        found_objects = Storage_PE_Part()
+        found_objects = Storage_PhysicsEntity()
+        found_objects.root = root_objects[0]
         self.get_scene_data_rec(found_objects, root_objects[0].children, None)
-        
-        ans = Storage_PE_Root()
-        ans.roots.append((root_objects[0], found_objects))
         
         return ans
     
