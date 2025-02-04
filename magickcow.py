@@ -3889,10 +3889,22 @@ def unregister_properties_physics_entity_empty():
     return
 
 def register_properties_physics_entity_mesh():
-    return
+    mesh = bpy.types.Mesh
+
+    mesh.mcow_physics_entity_mesh_type = bpy.props.EnumProperty(
+        name = "Type",
+        description = "Determines the type of object this piece of geometry will be exported as.",
+        items = [
+            ("GEOMETRY", "Geometry", "This mesh will be exported as a piece of visual geometry for the physics entity."),
+            ("COLLISION", "Collision", "This mesh will be exported as a collision mesh for the physics entity.")
+        ],
+        default = "GEOMETRY"
+    )
 
 def unregister_properties_physics_entity_mesh():
-    return
+    mesh = bpy.types.Mesh
+
+    del mesh.mcow_physics_entity_mesh_type
 
 def register_properties_physics_entity():
     register_properties_physics_entity_empty()
