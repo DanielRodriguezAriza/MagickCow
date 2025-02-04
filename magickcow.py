@@ -2896,19 +2896,12 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         get_stage_physics_entity = self.get()
 
         # Generate
-        generate_stage_physics_entity = self.generate()
+        generate_stage_physics_entity = self.generate(get_stage_physics_entity)
 
         # Make
-        # make_stage_physics_entity = self.make()
+        make_stage_physics_entity = self.make(generate_stage_physics_entity)
 
-        # return make_stage_physics_entity
-
-        # TODO : Remove this temp test thing
-        ans = {
-            "movida" : get_stage_physics_entity
-        }
-        return ans
-
+        return make_stage_physics_entity
 
     # endregion
 
