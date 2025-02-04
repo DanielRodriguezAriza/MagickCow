@@ -3267,14 +3267,13 @@ class MagickCowPanelObjectPropertiesPhysicsEntity:
         elif mesh_type == "COLLISION":
             self.draw_mesh_collision(layout, obj)
     
+    # NOTE : Collision meshes for physics entities don't have specific collision materials / "channels", so we don't display them, unlike for level part collisions, which do have specific collision materials support.
     def draw_mesh_geometry(self, layout, obj):
-        layout.prop(obj, "magickcow_collision_enabled")
-        if(obj.magickcow_collision_enabled):
-            layout.prop(obj, "magickcow_collision_material")
-        return
+        layout.prop(obj, "magickcow_collision_enabled") # Determines if complex collision is enabled or not for this visual mesh.
     
     def draw_mesh_collision(self, layout, obj):
-        layout.prop(obj, "magickcow_collision_material")
+        # NOTE : In the case of physics entities, draw nothing else, because they don't have collision material support, so we don't need to specify it.
+        # layout.prop(obj, "magickcow_collision_material")
         return
 
 # endregion
