@@ -2923,7 +2923,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             if child.type == "EMPTY": # Process objects of type empty, which should be roots and bones
                 if child.mcow_physics_entity_empty_type == "BONE":
                     current_found_objects.bones.add(obj)
-            else if child.type == "MESH": # Process objects of type mesh, which should be visual geometry meshes and collision meshes
+            elif child.type == "MESH": # Process objects of type mesh, which should be visual geometry meshes and collision meshes
                 break
             else:
                 continue # Ignore objects of any type other than empties and meshes when getting objects to be processed for physics entity generation
