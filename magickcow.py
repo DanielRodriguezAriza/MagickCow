@@ -2854,24 +2854,30 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         generate_stage_physics_entity = self.generate()
 
         # Make
-        make_stage_physics_entity = self.make()
+        # make_stage_physics_entity = self.make()
 
-        return make_stage_physics_entity
+        # return make_stage_physics_entity
+
+        # TODO : Remove this temp test thing
+        ans = {
+            "movida" : get_stage_physics_entity
+        }
+        return ans
 
 
     # endregion
 
     # region Get Stage
 
-    def get():
-        # TODO : Implement
-        return {}
+    def get(self):
+        root_objects_physics_entities = [obj.name for obj in bpy.data.objects if (obj.parent is None and obj.type == "EMPTY" and obj.mcow_physics_entity_empty_type == "ROOT")] # TODO : RETURN OBJ, NOT OBJ.NAME, THIS IS DONE FOR TESTING PURPOSES AS OF NOW!!!
+        return root_objects_physics_entities
 
     # endregion
 
     # region Generate Stage
 
-    def generate():
+    def generate(self):
         # TODO : Implement
         return {}
 
