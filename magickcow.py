@@ -2927,19 +2927,32 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         
         return ans
     
-    def get_scene_data_rec(self, current_found_objects, current_child_objects, current_parent):
-        for child in current_child_objects:
+    def get_scene_data_rec(self, current_found_objects, current_objects, current_parent):
+        
+        for obj in current_objects:
 
-            if not child.magickcow_allow_export: # Ignore objects that are marked as no export. This also excludes all children from the export process.
+            # Ignore objects that are marked as no export. This also excludes all children from the export process.
+            if not obj.magickcow_allow_export:
                 continue
+            
+            # Process objects of type mesh, which should be visual geometry meshes and collision meshes
+            elif obj.type == "MESH":
+                mesh = obj.data
+                mesh_type = mesh.mcow_physics_entity_mesh_type
 
-            if child.type == "EMPTY": # Process objects of type empty, which should be roots and bones
-                if child.mcow_physics_entity_empty_type == "BONE":
+                if mesh_type == "GEOMETRY":
+                    continue # TODO : Implement
+                
+                elif mesh_type == "COLLISION":
+                    continue # TODO : Implement
+            
+            # Process objects of type empty, which should be roots and bones
+            if obj.type == "EMPTY":
+                if obj.mcow_physics_entity_empty_type == "BONE":
                     current_found_objects.bones.add(obj)
-            elif child.type == "MESH": # Process objects of type mesh, which should be visual geometry meshes and collision meshes
-                break
-            else:
-                continue # Ignore objects of any type other than empties and meshes when getting objects to be processed for physics entity generation
+
+            # NOTE : We ignore objects of any type other than empties and meshes when getting objects to be processed for physics entity generation.
+            # No need for an else case because we do nothing else within the loop.
 
     # endregion
 
