@@ -2927,7 +2927,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         found_objects.model.bones.add(root_bojects[0]) # The root object will act as a bone for us when exporting the mesh.
         self.get_scene_data_rec(found_objects, root_objects[0].children, 0)
         
-        return ans
+        return found_objects
     
     def get_scene_data_rec(self, found_objects, current_objects, parent_bone_index):
         
