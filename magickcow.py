@@ -92,6 +92,8 @@ class SceneObjectsGeneratedAnimated:
 
 # region Physics Entity
 
+# region Get Stage Classes
+
 # NOTE : The Map side of the code could be reworked to be similar to how the physics entity side is going to work.
 # Basically, here, rather than having different structures for the get and generate stages, since we're going to be storing the same type of data in both cases, just in different states / forms, what I've done is
 # that I'm basically having a "stroage" data structure for each type of data structure that exists within physics entities in the format of their XNB files.
@@ -108,6 +110,17 @@ class Storage_PhysicsEntity_Model:
     def __init__(self):
         self.meshes = []
         self.bones = []
+
+# endregion
+
+# region Generate Stage Classes
+
+# TODO : Cleanup
+# class PE_Generate_PhysicsEntityData:
+#     def __init__(self):
+#         self.
+
+# endregion
 
 # endregion
 
@@ -2964,6 +2977,17 @@ class DataGeneratorPhysicsEntity(DataGenerator):
     def generate(self):
         # TODO : Implement
         return {}
+
+    def generate_physics_entity_data(self, obj):
+        idstr = obj.name
+        is_movable = obj.mcow_physics_entity_is_movable
+        is_pushable = obj.mcow_physics_entity_is_pushable
+        is_solid = obj.mcow_physics_entity_is_solid
+        mass = obj.mcow_physics_entity_mass
+        hp = obj.mcow_physics_entity_hitpoints
+        status = obj.mcow_physics_entity_can_have_status
+        # TODO : Implement
+        return ()
 
     # endregion
 
