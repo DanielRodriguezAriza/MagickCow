@@ -2902,14 +2902,19 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         return self.get_scene_data()
 
     def get_scene_data(self):
-        root_objects_physics_entities = [obj for obj in bpy.data.objects if (obj.parent is None and obj.type == "EMPTY" and obj.mcow_physics_entity_empty_type == "ROOT")]
+        root_objects = [obj for obj in bpy.data.objects if (obj.parent is None and obj.type == "EMPTY" and obj.mcow_physics_entity_empty_type == "ROOT")]
         found_objects = Storage_PE_Part()
-        self.get_scene_data_rec(found_objects)
+        self.get_scene_data_rec(found_objects, root_objects, None)
         return found_objects
     
-    def get_scene_data_rec(self, found_objects):
-
-        return
+    def get_scene_data_rec(self, current_found_objects, current_child_objects, current_parent):
+        for child in current_child_objects:
+            if child.type == "EMPTY": # Process objects of type empty, which should be roots and bones
+                break
+            else if child.type == "MESH": # Process objects of type mesh, which should be visual geometry meshes and collision meshes
+                break
+            else:
+                continue # Ignore objects of any type other than empties and meshes when getting objects to be processed for physics entity generation
 
     # endregion
 
