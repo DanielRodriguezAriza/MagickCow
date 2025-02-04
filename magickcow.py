@@ -4017,6 +4017,20 @@ def unregister_exporters():
 
 # region Blender Scene Panel functions, Register and Unregister functions
 
+def update_properties_scene(self, context):
+    # NOTE : The "self" parameter is simply ignored in this case, we just want to iterate over all of the objects of type empty in the scene and call their respective update methods.
+    if context.scene.mcow_scene_mode == "MAP":
+        fn = update_properties_map_empty
+    elif context.scene.mcow_scene_mode == "PHYSICS_ENTITY":
+        fn = update_properties_physics_entity_empty
+    else:
+        fn = None
+    
+    if fn is not None:
+        empties = [obj for obj in bpy.data.objects if obj.type == "EMPTY"]
+        for empty in empties:
+            fn(empty, context)
+
 def register_properties_scene():
 
     # Register properties for the scene panel
@@ -4033,7 +4047,8 @@ def register_properties_scene():
             ("MAP", "Map", "The current scene will be exported as an asset containing a map for Magicka."),
             ("PHYSICS_ENTITY", "Physics Entity", "The current scene will be exported as an asset containing a physics entity for Magicka.")
         ],
-        default = "NONE"
+        default = "NONE",
+        update = update_properties_scene
     )
 
     bpy.types.Scene.mcow_scene_json_pretty = bpy.props.BoolProperty(
