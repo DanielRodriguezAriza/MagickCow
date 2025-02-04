@@ -3260,6 +3260,18 @@ class MagickCowPanelObjectPropertiesPhysicsEntity:
         return
 
     def draw_mesh(self, layout, obj):
+        mesh_type = obj.mesh.mcow_physics_entity_mesh_type
+        layout.prop(obj.mesh, "mcow_physics_entity_mesh_type")
+        if mesh_type == "GEOMETRY":
+            self.draw_mesh_geometry(layout, obj)
+        elif mesh_type == "COLLISION":
+            self.draw_mesh_collision(layout, obj)
+    
+    def draw_mesh_geometry(self, layout, obj):
+        # TODO : Implement
+        return
+    
+    def draw_mesh_collision(self, layout, obj):
         # TODO : Implement
         return
 
