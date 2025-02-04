@@ -3294,6 +3294,7 @@ class MagickCowPanelObjectPropertiesPhysicsEntity:
         layout.prop(obj, "mcow_physics_entity_is_pushable")
         layout.prop(obj, "mcow_physics_entity_is_solid")
         layout.prop(obj, "mcow_physics_entity_mass")
+        layout.prop(obj, "mcow_physics_entity_can_have_status")
         layout.prop(obj, "mcow_physics_entity_hitpoints")
 
         # Resistances list
