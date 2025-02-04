@@ -2985,8 +2985,26 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         is_solid = obj.mcow_physics_entity_is_solid
         mass = obj.mcow_physics_entity_mass
         hp = obj.mcow_physics_entity_hitpoints
-        status = obj.mcow_physics_entity_can_have_status
-        # TODO : Implement
+        can_have_status = obj.mcow_physics_entity_can_have_status
+
+        resistances = [(resistance.element, resistance.multipler, resistance.modifier) for resistance in mcow_physics_entity_resistances]
+        
+        # TODO : Implement everything below this comment
+        gibs = []
+        gib_trail_effect = ""
+        hit_effect = ""
+        visual_effects = []
+        sound_banks = ""
+        model = None # TODO : Implement generate function
+        has_collision = False # TODO : Figure out the cleanest way to pass this over from the geometry objects
+        collision_vertices = []
+        collision_triangles = []
+        bounding_boxes = []
+        events = [] # TODO : Implement event classes for input panel
+        has_advanced_settings = False # TODO : Same shit
+        advanced_settings = {}
+        shared_resources = [] # NOTE : This should be a global var of the generator class
+
         return ()
 
     # endregion
