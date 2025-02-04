@@ -100,8 +100,8 @@ class Storage_PhysicsEntity:
     def __init__(self):
         # self.roots = [] # NOTE : If we have more than one root, what do we do? do we error out or do we export multiple objects? and if we export multiple objects, do we put them into the same file in a list like structure and modify MagickaPUP to support input JSON files with lists of docs inside, or do we export each object to its own file? and what naming scheme to use? etc etc...
         self.root = None
-        self.collision_meshes = []
-        self.bounding_boxes = []
+        self.collisions = [] # Collision meshes
+        self.boxes = [] # Bounding boxes
         self.model = Storage_PhysicsEntity_Model()
 
 class Storage_PhysicsEntity_Model:
@@ -2942,10 +2942,10 @@ class DataGeneratorPhysicsEntity(DataGenerator):
                 mesh_type = mesh.mcow_physics_entity_mesh_type
 
                 if mesh_type == "GEOMETRY":
-                    found_objects.meshes.add(obj)
+                    found_objects.model.meshes.add(obj)
                 
                 elif mesh_type == "COLLISION":
-                    found_objects.collision.add(obj)
+                    found_objects.collisions.add(obj)
             
             # Process objects of type empty, which should be roots and bones
             if obj.type == "EMPTY":
