@@ -3824,11 +3824,12 @@ def register_properties_physics_entity_empty():
     # Object type for empty objects
     empty.mcow_physics_entity_empty_type = bpy.props.EnumProperty(
         name = "Type",
-        description = "Determine the type of this object",
+        description = "Determine the type of this object.",
         items = [
-            ("NONE", "None", "This object will be treated as a regular empty object and will be ignored by the exporter"),
-            ("ROOT", "Root", "This object will be exported as the root of a physics entity"),
-            ("BONE", "Bone", "This object will be exported as a model bone for a physics entity")
+            ("NONE", "None", "This object will be treated as a regular empty object and will be ignored by the exporter."),
+            ("ROOT", "Root", "This object will be exported as the root of a physics entity."),
+            ("BONE", "Bone", "This object will be exported as a model bone for a physics entity."),
+            ("BOUNDING_BOX", "Bounding Box", "This Object will be exported as a bounding box for the physics entity.")
         ],
         default = "NONE", # By default, it will be marked as none, so you need to manually select what type of point data object you want this to be
     )
