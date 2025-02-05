@@ -3083,10 +3083,12 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
     def generate(self, found_objects):
         # TODO : Implement everything else
-        ans = self.generate_physics_entity_data(found_objects.root)
+        ans = self.generate_physics_entity_data(found_objects)
         return ans
 
-    def generate_physics_entity_data(self, obj):
+    def generate_physics_entity_data(self, data):
+
+        obj = data.root
 
         ans = PE_Generate_PhysicsEntityData()
 
@@ -3101,6 +3103,20 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         ans.resistances = [(resistance.element, resistance.multiplier, resistance.modifier) for resistance in obj.mcow_physics_entity_resistances]
         
         # TODO : Finish adding all of the remaining values for the ans object
+
+        ans.bounding_boxes = self.generate_bounding_boxes_data(data.boxes)
+
+        return ans
+
+    def generate_bounding_boxes_data(self, boxes):
+        ans = [generate_bounding_box_data(box) for box in boxes]
+        return ans
+    
+    def generate_bounding_box_data(self, box):
+        obj = box
+
+        ans = PE_Generate_BoundingBox()
+        # TODO : Implement
 
         return ans
 
