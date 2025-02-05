@@ -3025,14 +3025,18 @@ class DataGeneratorPhysicsEntity(DataGenerator):
                 mesh = obj.data
                 mesh_type = mesh.mcow_physics_entity_mesh_type
 
+                # Process meshes for visual geometry
                 if mesh_type == "GEOMETRY":
                     found_objects.model.meshes.append((obj, parent_bone_index)) # (mesh_object, parent_bone_index)
                 
+                # Process meshes for collision geometry
                 elif mesh_type == "COLLISION":
                     found_objects.collisions.append(obj)
             
             # Process objects of type empty, which should be roots and bones
             if obj.type == "EMPTY":
+                
+                # Process empties for bones
                 if obj.mcow_physics_entity_empty_type == "BONE":
                     
                     # Throw an exception if the found bone has a name that is reserved
@@ -3054,6 +3058,12 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
                     # Make recursive call to get all of the data of the child objects of this bone.
                     self.get_scene_data_rec(found_objects, obj.children, bone_idx) # NOTE : The index we pass is literally the index of the bone we just added to the found objects' bones list.
+
+                # Process empties for bounding boxes
+                elif obj.mcow_physics_entity_empty_type == "BOUNDING_BOX":
+                    # TODO : Implement
+                    return
+
 
             # NOTE : We ignore objects of any type other than empties and meshes when getting objects to be processed for physics entity generation.
             # No need for an else case because we do nothing else within the loop.
