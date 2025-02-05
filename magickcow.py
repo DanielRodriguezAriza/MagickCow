@@ -130,7 +130,7 @@ class PE_Generate_PhysicsEntityData:
         self.hit_effect = ""
         self.visual_effects = []
         self.sound_banks = ""
-        self.model = PE_Generate_Model()
+        self.model = XNA_Model()
         self.has_collision = False
         self.collision_vertices = []
         self.collision_triangles = []
@@ -140,7 +140,7 @@ class PE_Generate_PhysicsEntityData:
         self.advanced_settings = None
 
 # TODO : Maybe rename this class when you make the code across level data generation and physics entity data generation more generic, since this is a class that both types of scene use internally...
-class PE_Generate_Model:
+class XNA_Model:
     def __init__(self):
         self.tag = None # Always null in Magicka, so we should not care about this tbh...
         self.bones = []
