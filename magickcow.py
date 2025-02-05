@@ -115,10 +115,29 @@ class Storage_PhysicsEntity_Model:
 
 # region Generate Stage Classes
 
-# TODO : Cleanup
-# class PE_Generate_PhysicsEntityData:
-#     def __init__(self):
-#         self.
+class PE_Generate_PhysicsEntityData:
+    def __init__(self):
+        self.physics_entity_id = "default"
+        self.is_movable = False
+        self.is_pushable = False
+        self.is_solid = True
+        self.mass = 200
+        self.max_hit_points = 300
+        self.can_have_status = True
+        self.resistances = []
+        self.gibs = []
+        self.gib_trail_effect = ""
+        self.hit_effect = ""
+        self.visual_effects = []
+        self.sound_banks = ""
+        self.model = None
+        self.has_collision = False
+        self.collision_vertices = []
+        self.collision_triangles = []
+        self.bounding_boxes = []
+        self.events = []
+        self.has_advanced_settings = True
+        self.advanced_settings = None
 
 # endregion
 
