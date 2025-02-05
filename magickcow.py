@@ -197,6 +197,13 @@ class PE_Generate_PhysicsEntityData:
         self.has_advanced_settings = True
         self.advanced_settings = None
 
+class PE_Generate_BoundingBox:
+    def __init__(self):
+        self.id = "bb"
+        self.position = None # vec3
+        self.scale = None # vec3
+        self.rotation = None # quaternion / vec4
+
 # endregion
 
 # endregion
