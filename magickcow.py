@@ -3113,10 +3113,15 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         return ans
     
     def generate_bounding_box_data(self, box):
-        obj = box
 
         ans = PE_Generate_BoundingBox()
-        # TODO : Implement
+        
+        ans.id = box.name
+
+        # TODO : Modify this data so that it is in a Y up coordinate system instead... this is just temporary stuff for now. Altough, a possible alternative would be to rotate the matrix of the root by 90º...
+        ans.position = tuple(box.location)
+        ans.scale = tuple(box.scale)
+        ans.rotation = tuple(box.rotation_euler.to_quaternion())
 
         return ans
 
