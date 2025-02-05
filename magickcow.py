@@ -151,9 +151,10 @@ class XNA_Model_Bone:
     def __init__(self):
         self.index = 0
         self.name = "none"
-        self.transform = None
+        self.transform = None # NOTE : This is a transform matrix, and we could either use a tuple for it or structure it with a blender matrix class or use our own class for this.
         self.parent = -1
         self.children = []
+
 
 # endregion
 
