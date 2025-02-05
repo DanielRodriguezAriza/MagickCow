@@ -39,7 +39,7 @@ from collections import namedtuple
 
 # region Classes and Named Tuples
 
-# region Generic
+# region XNA classes
 
 # NOTE : This class' implementation looks to me like it's pretty inefficient and could be improved by a lot by using a single linear buffer rather than a list of lists, but whatever... we'll deal with this shit for now.
 # NOTE : Matrices in XNA are always 4x4
@@ -67,6 +67,22 @@ class XNA_Matrix:
         self.matrix[3][1] = M42
         self.matrix[3][2] = M43
         self.matrix[3][3] = M44
+
+# TODO : Maybe rename this class when you make the code across level data generation and physics entity data generation more generic, since this is a class that both types of scene use internally...
+class XNA_Model:
+    def __init__(self):
+        self.tag = None # Always null in Magicka, so we should not care about this tbh...
+        self.bones = []
+        self.vertex_declarations = [] # NOTE : These I had chosen to always generate to be the same on the make stage for map generation, so maybe we can just discard this property and never use it for anything?
+        self.model_meshes = []
+
+class XNA_Model_Bone:
+    def __init__(self):
+        self.index = 0
+        self.name = "none"
+        self.transform = None # NOTE : This is a transform matrix, and we could either use a tuple for it or structure it with a blender matrix class or use our own class for this.
+        self.parent = -1
+        self.children = []
 
 # endregion
 
@@ -169,23 +185,6 @@ class PE_Generate_PhysicsEntityData:
         self.events = []
         self.has_advanced_settings = True
         self.advanced_settings = None
-
-# TODO : Maybe rename this class when you make the code across level data generation and physics entity data generation more generic, since this is a class that both types of scene use internally...
-class XNA_Model:
-    def __init__(self):
-        self.tag = None # Always null in Magicka, so we should not care about this tbh...
-        self.bones = []
-        self.vertex_declarations = [] # NOTE : These I had chosen to always generate to be the same on the make stage for map generation, so maybe we can just discard this property and never use it for anything?
-        self.model_meshes = []
-
-class XNA_Model_Bone:
-    def __init__(self):
-        self.index = 0
-        self.name = "none"
-        self.transform = None # NOTE : This is a transform matrix, and we could either use a tuple for it or structure it with a blender matrix class or use our own class for this.
-        self.parent = -1
-        self.children = []
-
 
 # endregion
 
