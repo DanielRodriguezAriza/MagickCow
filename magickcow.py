@@ -3026,10 +3026,10 @@ class DataGeneratorPhysicsEntity(DataGenerator):
                 mesh_type = mesh.mcow_physics_entity_mesh_type
 
                 if mesh_type == "GEOMETRY":
-                    found_objects.model.meshes.add((obj, parent_bone_index)) # (mesh_object, parent_bone_index)
+                    found_objects.model.meshes.append((obj, parent_bone_index)) # (mesh_object, parent_bone_index)
                 
                 elif mesh_type == "COLLISION":
-                    found_objects.collisions.add(obj)
+                    found_objects.collisions.append(obj)
             
             # Process objects of type empty, which should be roots and bones
             if obj.type == "EMPTY":
@@ -3038,11 +3038,11 @@ class DataGeneratorPhysicsEntity(DataGenerator):
                     # Add the current bone to the list of found bones
                     bone_obj = obj
                     bone_idx = len(found_objects.model.bones) # NOTE : We don't subtract 1 because the current bone has not been added to the list yet!!!
-                    found_objects.model.bones.add((bone_obj, [])) # (bone_obj, list_of_child_bones)
+                    found_objects.model.bones.append((bone_obj, [])) # (bone_obj, list_of_child_bones)
                     
                     # Update the list of child bone indices for the parent bone
                     parent_bone_obj, parent_bones_indices_list = found_objects.model.bones[parent_bone_index]
-                    parent_bones_list.append(bone_idx)
+                    parent_bones_indices_list.append(bone_idx)
                     found_objects.model.bones[parent_bone_index] = (parent_bone_obj, parent_bones_indices_list)
 
                     # Make recursive call to get all of the data of the child objects of this bone.
@@ -3106,7 +3106,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             "BoundingBoxes" : generated_data.bounding_boxes,
             "Events" : generated_data.events, # TODO : Implement make events method
             "HasAdvancedSettings" : generated_data.has_advanced_settings,
-            "AdvancedSettings" : advanced_settings # TODO : Implement make advanced settings method
+            "AdvancedSettings" : generated_data.advanced_settings # TODO : Implement make advanced settings method
         }
         return ans
 
