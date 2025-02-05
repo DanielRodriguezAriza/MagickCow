@@ -139,6 +139,14 @@ class PE_Generate_PhysicsEntityData:
         self.has_advanced_settings = True
         self.advanced_settings = None
 
+# TODO : Maybe rename this class when you make the code across level data generation and physics entity data generation more generic, since this is a class that both types of scene use internally...
+class PE_Generate_Model:
+    def __init__(self):
+        self.tag = None # Always null in Magicka, so we should not care about this tbh...
+        self.bones = []
+        self.vertex_declarations = []
+        self.model_meshes = []
+
 # endregion
 
 # endregion
