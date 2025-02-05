@@ -2910,6 +2910,8 @@ class DataGeneratorMap(DataGenerator):
     # This is because the rotation of the transform obtained after rotating the scene is only useful for objects where we need to translate other data, such as points and vectors (meshes, etc...)
     # In the case of locators, we directly use the transform matrix of the object itself, which means that the extra 90 degree rotation is going to change the orientation of the locators by 90 degrees.
     # This can be fixed by manually rotating the locators... or by having the rotate_scene() function do it for us, so the users will never know that it even happened! 
+    # NOTE : Another fix would be to have a single world root object of sorts, and having to attach all objects to that root. That way, we would only have to rotate that one single root by 90 degrees and nothing else, no corrections required...
+    # TODO : Basically make it so that we also have a root object in map scenes, just like we do in physics entity scenes...
     def rotate_scene(self, angle_degrees = 90, axis = "X"):
         # Objects that are "roots" of the Blender scene
         root_objects = []
