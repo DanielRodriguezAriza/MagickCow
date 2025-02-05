@@ -3166,8 +3166,28 @@ class DataGeneratorPhysicsEntity(DataGenerator):
     
     def make_bounding_box(self, box):
 
+        px, py, pz = box.position
+        sx, sy, sz = box.scale
+        rx, ry, rz, rw = box.rotation
+
         ans = {
-            # TODO : Implement
+            "ID" : box.id,
+            "Position" : {
+                "x" : px,
+                "y" : py,
+                "z" : pz
+            },
+            "Scale" : {
+                "x" : sx,
+                "y" : sy,
+                "z" : sz
+            },
+            "Rotation" : {
+                "x" : rx,
+                "y" : ry,
+                "z" : rz,
+                "w" : rw
+            }
         }
 
         return ans
