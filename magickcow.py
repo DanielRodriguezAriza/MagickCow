@@ -144,7 +144,7 @@ class XNA_Model:
     def __init__(self):
         self.tag = None # Always null in Magicka, so we should not care about this tbh...
         self.bones = []
-        self.vertex_declarations = []
+        self.vertex_declarations = [] # NOTE : These I had chosen to always generate to be the same on the make stage for map generation, so maybe we can just discard this property and never use it for anything?
         self.model_meshes = []
 
 class XNA_Model_Bone:
