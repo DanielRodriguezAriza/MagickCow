@@ -67,6 +67,8 @@ class XNA_Matrix:
         self.matrix[3][1] = M42
         self.matrix[3][2] = M43
         self.matrix[3][3] = M44
+    
+    # TODO : Maybe add some "consturctor" static methods that return matrices constructed from specific input types? stuff like XNA_Matrix.FromBlenderMatrix(mat), XNA_Matrix.FromWhatever(...), etc...
 
 # TODO : Maybe rename this class when you make the code across level data generation and physics entity data generation more generic, since this is a class that both types of scene use internally...
 class XNA_Model:
