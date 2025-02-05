@@ -442,6 +442,26 @@ class DataGenerator:
     
     # endregion
 
+    # region Aux
+
+    # NOTE : First we rotate by -90º, then to unrotate we rotate by +90º, this way we can pass from Z up to to Y up coords
+    # TODO : Once you implement the new scene root system for the map exporting side of the code, you will be capable of getting rid of the _aux suffix for this method's name.
+    # Also, get rid of the rotate_scene() method within the map data generator class...
+    def rotate_scene_aux(self, angle_degrees, axis = "X"):
+        roots = 
+    
+    def get_scene_roots_map(self):
+        roots = [obj for obj in bpy.data.objects if (obj.parent is None and obj.magickcow_empty_type == "ROOT")]
+        return roots
+    
+    def get_scene_roots_physics_entity(self):
+        roots = [obj for obj in bpy.data.objects if (obj.parent is None and obj.mcow_physics_entity_empty_type == "ROOT")]
+        return roots
+
+    
+
+    # endregion
+
     # region Make
 
     # region Make - XNA
