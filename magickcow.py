@@ -421,9 +421,18 @@ def get_action_keyframes(action):
     # Each specific Data generator class will implement data generation methods that are specific for each type of asset to be exported.
 # endregion
 class DataGenerator:
+    
+    # region Constructor
+    
     def __init__(self):
         return
     
+    # endregion
+
+    # region Make
+
+    # region Make - XNA
+
     def make_xnb_file(self, primary_object, shared_resources):
         ans = {
             "primaryObject" : primary_object,
@@ -431,6 +440,89 @@ class DataGenerator:
             "sharedResources" : shared_resources
         }
         return ans
+    
+    # endregion
+
+    # region Make - Math
+
+    # region Matrices
+    
+    def make_matrix(self, transform_matrix):
+        m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44 = transform_matrix
+        ans = {
+            "M11" : m11,
+            "M12" : m12,
+            "M13" : m13,
+            "M14" : m14,
+            "M21" : m21,
+            "M22" : m22,
+            "M23" : m23,
+            "M24" : m24,
+            "M31" : m31,
+            "M32" : m32,
+            "M33" : m33,
+            "M34" : m34,
+            "M41" : m41,
+            "M42" : m42,
+            "M43" : m43,
+            "M44" : m44
+        }
+        return ans
+    
+    def make_matrix_identity(self):
+        ans = {
+            "M11" : 1,
+            "M12" : 0,
+            "M13" : 0,
+            "M14" : 0,
+            "M21" : 0,
+            "M22" : 1,
+            "M23" : 0,
+            "M24" : 0,
+            "M31" : 0,
+            "M32" : 0,
+            "M33" : 1,
+            "M34" : 0,
+            "M41" : 0,
+            "M42" : 0,
+            "M43" : 0,
+            "M44" : 1
+        }
+        return ans
+
+    # endregion
+
+    # region Vectors
+
+    def make_vector_2(self, vec2):
+        ans = {
+            "x" : vec2[0],
+            "y" : vec2[1]
+        }
+        return ans
+    
+    def make_vector_3(self, vec3):
+        ans = {
+            "x" : vec3[0],
+            "y" : vec3[1],
+            "z" : vec3[2]
+        }
+        return ans
+    
+    def make_vector_4(self, vec4):
+        ans = {
+            "x" : vec4[0],
+            "y" : vec4[1],
+            "z" : vec4[2],
+            "w" : vec4[3]
+        }
+        return ans
+
+    # endregion
+
+    # endregion
+
+    # endregion
 
 # region Comment - DataGeneratorMap
     # This class is the one in charge of getting, generating and storing in a final dict the data that is found within the scene.
@@ -1859,81 +1951,6 @@ class DataGeneratorMap(DataGenerator):
     # endregion
 
     # region "Make Data" / "Format Data" Functions
-
-    # region Make - Math 1 (Matrices)
-    
-    def make_matrix(self, transform_matrix):
-        m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44 = transform_matrix
-        ans = {
-            "M11" : m11,
-            "M12" : m12,
-            "M13" : m13,
-            "M14" : m14,
-            "M21" : m21,
-            "M22" : m22,
-            "M23" : m23,
-            "M24" : m24,
-            "M31" : m31,
-            "M32" : m32,
-            "M33" : m33,
-            "M34" : m34,
-            "M41" : m41,
-            "M42" : m42,
-            "M43" : m43,
-            "M44" : m44
-        }
-        return ans
-    
-    def make_matrix_identity(self):
-        ans = {
-            "M11" : 1,
-            "M12" : 0,
-            "M13" : 0,
-            "M14" : 0,
-            "M21" : 0,
-            "M22" : 1,
-            "M23" : 0,
-            "M24" : 0,
-            "M31" : 0,
-            "M32" : 0,
-            "M33" : 1,
-            "M34" : 0,
-            "M41" : 0,
-            "M42" : 0,
-            "M43" : 0,
-            "M44" : 1
-        }
-        return ans
-
-    # endregion
-
-    # region Make - Math 2 (Vectors)
-
-    def make_vector_2(self, vec2):
-        ans = {
-            "x" : vec2[0],
-            "y" : vec2[1]
-        }
-        return ans
-    
-    def make_vector_3(self, vec3):
-        ans = {
-            "x" : vec3[0],
-            "y" : vec3[1],
-            "z" : vec3[2]
-        }
-        return ans
-    
-    def make_vector_4(self, vec4):
-        ans = {
-            "x" : vec4[0],
-            "y" : vec4[1],
-            "z" : vec4[2],
-            "w" : vec4[3]
-        }
-        return ans
-
-    # endregion
 
     # region Make - Boundaries (Bounding Box, Bounding Sphere)
 
