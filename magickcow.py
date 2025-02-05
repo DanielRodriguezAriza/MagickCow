@@ -3183,31 +3183,12 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         return ans
     
     def make_bounding_box(self, box):
-
-        px, py, pz = box.position
-        sx, sy, sz = box.scale
-        rx, ry, rz, rw = box.rotation
-
         ans = {
             "ID" : box.id,
-            "Position" : {
-                "x" : px,
-                "y" : py,
-                "z" : pz
-            },
-            "Scale" : {
-                "x" : sx,
-                "y" : sy,
-                "z" : sz
-            },
-            "Rotation" : {
-                "x" : rx,
-                "y" : ry,
-                "z" : rz,
-                "w" : rw
-            }
+            "Position" : self.make_vector_3(box.position),
+            "Scale" : self.make_vector_3(box.scale),
+            "Rotation" : self.make_vector_4(box.rotation)
         }
-
         return ans
 
     # endregion
