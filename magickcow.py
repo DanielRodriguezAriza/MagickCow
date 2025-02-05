@@ -215,29 +215,30 @@ class PE_Generate_BoundingBox:
 # region Utility Class
 
 class MagickCowUtility:
-    def GetSceneObjectsAll():
-        objects = bpy.data.objects
-        return objects
-    
-    def GetSceneObjectsRoot():
-        bpyobjects = bpy.data.objects
-        objects = [obj for obj in bpyobjects if obj.parent is None]
-        return objects
-    
-    def GetSceneObjectsChildrenAll(obj):
-        objects = []
-        MagickCowUtility.GetSceneObjectsChildrenAllRec(obj, objects)
-        return objects
-    
-    def GetSceneObjectsChildrenAllRec(obj, children_list):
-        # NOTE : Alternatively we could use children_list.extend(obj.children) and then iterate over the list making the recursive calls.
-        for child in obj.children:
-            children_list.append(child)
-            MagickCowUtility.GetSceneObjectsChildrenAllRec(child, children_list)
+    class Scene:
+        def GetObjectsAll():
+            objects = bpy.data.objects
+            return objects
+        
+        def GetObjectsRoot():
+            bpyobjects = bpy.data.objects
+            objects = [obj for obj in bpyobjects if obj.parent is None]
+            return objects
+        
+        def GetObjectsChildrenAll(obj):
+            objects = []
+            MagickCowUtility.Scene.GetObjectsChildrenAllRec(obj, objects)
+            return objects
+        
+        def GetObjectsChildrenAllRec(obj, children_list):
+            # NOTE : Alternatively we could use children_list.extend(obj.children) and then iterate over the list making the recursive calls.
+            for child in obj.children:
+                children_list.append(child)
+                MagickCowUtility.Scene.GetObjectsChildrenAllRec(child, children_list)
 
-    def GetSceneObjectsChildrenImmediate(obj):
-        objects = obj.children
-        return objects
+        def GetObjectsChildrenImmediate(obj):
+            objects = obj.children
+            return objects
 
 # endregion
 
