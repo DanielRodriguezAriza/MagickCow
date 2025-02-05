@@ -3059,33 +3059,22 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         return ans
 
     def generate_physics_entity_data(self, obj):
-        idstr = obj.name
-        is_movable = obj.mcow_physics_entity_is_movable
-        is_pushable = obj.mcow_physics_entity_is_pushable
-        is_solid = obj.mcow_physics_entity_is_solid
-        mass = obj.mcow_physics_entity_mass
-        hp = obj.mcow_physics_entity_hitpoints
-        can_have_status = obj.mcow_physics_entity_can_have_status
 
-        resistances = [(resistance.element, resistance.multiplier, resistance.modifier) for resistance in obj.mcow_physics_entity_resistances]
+        ans = PE_Generate_PhysicsEntityData()
+
+        ans.physics_entity_id = obj.name
+        ans.is_movable = obj.mcow_physics_entity_is_movable
+        ans.is_pushable = obj.mcow_physics_entity_is_pushable
+        ans.is_solid = obj.mcow_physics_entity_is_solid
+        ans.mass = obj.mcow_physics_entity_mass
+        ans.max_hit_points = obj.mcow_physics_entity_hitpoints
+        ans.can_have_status = obj.mcow_physics_entity_can_have_status
+
+        ans.resistances = [(resistance.element, resistance.multiplier, resistance.modifier) for resistance in obj.mcow_physics_entity_resistances]
         
-        # TODO : Implement everything below this comment
-        gibs = []
-        gib_trail_effect = ""
-        hit_effect = ""
-        visual_effects = []
-        sound_banks = ""
-        model = None # TODO : Implement generate function
-        has_collision = False # TODO : Figure out the cleanest way to pass this over from the geometry objects
-        collision_vertices = []
-        collision_triangles = []
-        bounding_boxes = []
-        events = [] # TODO : Implement event classes for input panel
-        has_advanced_settings = False # TODO : Same shit
-        advanced_settings = {}
-        shared_resources = [] # NOTE : This should be a global var of the generator class
+        # TODO : Finish adding all of the remaining values for the ans object
 
-        return (idstr, is_movable, is_pushable, is_solid, mass, hp, can_have_status, resistances, gibs, gib_trail_effect, hit_effect, visual_effects, sound_banks, model, has_collision, collision_vertices, collision_triangles, bounding_boxes, events, has_advanced_settings, advanced_settings)
+        return ans
 
     # endregion
 
@@ -3093,30 +3082,29 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
     def make_physics_entity(self, generated_data): # TODO : Add parameters
         # TODO : Implement literally everything
-        idstr, is_movable, is_pushable, is_solid, mass, hp, can_have_status, resistances, gibs, gib_trail_effect, hit_effect, visual_effects, sound_banks, model, has_collision, collision_vertices, collision_triangles, bounding_boxes, events, has_advanced_settings, advanced_settings = generated_data
         ans = {
             "$type" : "PhysicsEntity",
-            "PhysicsEntityID" : idstr,
-            "IsMovable" : is_movable,
-            "IsPushable" : is_pushable,
-            "IsSolid" : is_solid,
-            "Mass" : mass,
-            "MaxHitPoints" : hp,
-            "CanHaveStatus" : can_have_status,
-            "Resistances" : resistances,
-            "Gibs" : gibs,
-            "GibTrailEffect" : gib_trail_effect,
-            "HitEffect" : hit_effect,
-            "VisualEffects" : visual_effects,
-            "SoundBanks" : sound_banks,
-            "Model" : model,
-            "HasCollision" : has_collision,
-            "CollisionVertices" : collision_vertices,
-            "CollisionTriangles" : collision_triangles,
-            "BoundingBoxes" : bounding_boxes,
-            "Events" : events,
-            "HasAdvancedSettings" : has_advanced_settings,
-            "AdvancedSettings" : advanced_settings
+            "PhysicsEntityID" : generated_data.physics_entity_id,
+            "IsMovable" : generated_data.is_movable,
+            "IsPushable" : generated_data.is_pushable,
+            "IsSolid" : generated_data.is_solid,
+            "Mass" : generated_data.mass,
+            "MaxHitPoints" : generated_data.max_hit_points,
+            "CanHaveStatus" : generated_data.can_have_status,
+            "Resistances" : generated_data.resistances,
+            "Gibs" : generated_data.gibs,
+            "GibTrailEffect" : generated_data.gib_trail_effect,
+            "HitEffect" : generated_data.hit_effect,
+            "VisualEffects" : generated_data.visual_effects,
+            "SoundBanks" : generated_data.sound_banks,
+            "Model" : None, # TODO : Implement make model method
+            "HasCollision" : generated_data.has_collision,
+            "CollisionVertices" : generated_data.collision_vertices,
+            "CollisionTriangles" : generated_data.collision_triangles,
+            "BoundingBoxes" : generated_data.bounding_boxes,
+            "Events" : generated_data.events, # TODO : Implement make events method
+            "HasAdvancedSettings" : generated_data.has_advanced_settings,
+            "AdvancedSettings" : advanced_settings # TODO : Implement make advanced settings method
         }
         return ans
 
