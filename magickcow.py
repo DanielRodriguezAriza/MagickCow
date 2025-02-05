@@ -3129,6 +3129,9 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
     # region Make Stage
 
+    def make(self, generated_scene_data, shared_resources_list):
+        return self.make_xnb_file(self.make_physics_entity(generated_scene_data), shared_resources_list)
+
     def make_physics_entity(self, generated_data): # TODO : Add parameters
         # TODO : Implement literally everything
         ans = {
@@ -3150,15 +3153,24 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             "HasCollision" : generated_data.has_collision,
             "CollisionVertices" : generated_data.collision_vertices,
             "CollisionTriangles" : generated_data.collision_triangles,
-            "BoundingBoxes" : generated_data.bounding_boxes,
+            "BoundingBoxes" : self.make_bounding_boxes(generated_data.bounding_boxes),
             "Events" : generated_data.events, # TODO : Implement make events method
             "HasAdvancedSettings" : generated_data.has_advanced_settings,
             "AdvancedSettings" : generated_data.advanced_settings # TODO : Implement make advanced settings method
         }
         return ans
 
-    def make(self, generated_scene_data, shared_resources_list):
-        return self.make_xnb_file(self.make_physics_entity(generated_scene_data), shared_resources_list)
+    def make_bounding_boxes(self, boxes):
+        ans = [self.make_bounding_box(box) for box in boxes]
+        return ans
+    
+    def make_bounding_box(self, box):
+
+        ans = {
+            # TODO : Implement
+        }
+
+        return ans
 
     # endregion
     
