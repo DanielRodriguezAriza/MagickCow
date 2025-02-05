@@ -448,7 +448,11 @@ class DataGenerator:
     # TODO : Once you implement the new scene root system for the map exporting side of the code, you will be capable of getting rid of the _aux suffix for this method's name.
     # Also, get rid of the rotate_scene() method within the map data generator class...
     def rotate_scene_aux(self, angle_degrees, axis = "X"):
-        roots = 
+        roots = self.get_scene_roots()
+        rotation_matrix = mathutils.Matrix.Rotation(math.radians(angle_degrees), 4, axis)
+        for root in roots: # We should only have 1 single root, which is validated on the exporter side, but we support multi-root scenes here to prevent getting funny results if we make any changes in the future...
+            root.matrix_world = rotation_matrix @ root.matrix_world
+        bpy.context.view_layer.update() # Force the scene to update so that the rotation is properly applied before we start evaluating the objects in the scene.
     
     def get_scene_roots_map(self):
         roots = [obj for obj in bpy.data.objects if (obj.parent is None and obj.magickcow_empty_type == "ROOT")]
