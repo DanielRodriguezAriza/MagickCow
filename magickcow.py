@@ -3035,6 +3035,13 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             if obj.type == "EMPTY":
                 if obj.mcow_physics_entity_empty_type == "BONE":
                     
+                    # Throw an exception if the found bone has a name that is reserved
+                    reserved_bone_names = ["Root", "RootNode"]
+                    bone_name_lower = obj.name.lower()
+                    for name in reserved_bone_names: # NOTE : We could have used "if bone_name_lower in reserved_bone_names:" instead, but I would prefer to keep the reserved strings just as they are stored within the XNB file rather than hardcoding them in full lowercase. This is because I don't exactly remember as of now whether XNA checks for exact bone names or if it is not case sensitive. I'd need to check again, but whatever. Also, these reserved bone names are not because of XNA, they are just present in ALL physics entity files within Magicka's base game data, so it's a Magicka animation system requirement instead.
+                        if bone_name_lower == name.lower():
+                            raise Exception(f"The bone name \"{name}\" is reserved!")
+
                     # Add the current bone to the list of found bones
                     bone_obj = obj
                     bone_idx = len(found_objects.model.bones) # NOTE : We don't subtract 1 because the current bone has not been added to the list yet!!!
