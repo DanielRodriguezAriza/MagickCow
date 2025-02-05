@@ -3109,7 +3109,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         return ans
 
     def generate_bounding_boxes_data(self, boxes):
-        ans = [generate_bounding_box_data(box) for box in boxes]
+        ans = [self.generate_bounding_box_data(box) for box in boxes]
         return ans
     
     def generate_bounding_box_data(self, box):
