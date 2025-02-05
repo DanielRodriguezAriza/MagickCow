@@ -130,7 +130,7 @@ class PE_Generate_PhysicsEntityData:
         self.hit_effect = ""
         self.visual_effects = []
         self.sound_banks = ""
-        self.model = None
+        self.model = PE_Generate_Model()
         self.has_collision = False
         self.collision_vertices = []
         self.collision_triangles = []
