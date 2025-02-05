@@ -215,6 +215,7 @@ class PE_Generate_BoundingBox:
 # region Utility Class
 
 class MagickCowUtility:
+    
     class Scene:
         def GetObjectsAll():
             objects = bpy.data.objects
@@ -239,6 +240,17 @@ class MagickCowUtility:
         def GetObjectsChildrenImmediate(obj):
             objects = obj.children
             return objects
+    
+    # TODO : Either implement this or get rid of it, depends on how you decide to handle Y up conversion in the end...
+    class Math:
+        
+        # NOTE : As of now, it seems like Blender does not support non-trivial transform matrices, stuff such as shearing and whatnot... Magicka doesn't seem to support those either, and most of the objects that
+        # use transform matrices seem to be point data such as locators and whatnot, so it's not like it would be worth it to do any of that...
+        # The point I'm trying to bring across is the fact that basically for this reason we're doing the cheap, quick and dirty Z up to Y up conversion by switching axes and flipping a sign rather than using
+        # a transform matrix, because matrix operations are just far less optimal IN PYTHON... sad, I know, but whatever, good enough for now...
+
+        def transform_to_y_up(transform_matrix):
+            reutnr
 
 # endregion
 
