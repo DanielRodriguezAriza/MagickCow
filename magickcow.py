@@ -147,6 +147,14 @@ class XNA_Model:
         self.vertex_declarations = []
         self.model_meshes = []
 
+class XNA_Model_Bone:
+    def __init__(self):
+        self.index = 0
+        self.name = "none"
+        self.transform = None
+        self.parent = -1
+        self.children = []
+
 # endregion
 
 # endregion
