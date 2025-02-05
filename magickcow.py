@@ -3061,8 +3061,8 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
                 # Process empties for bounding boxes
                 elif obj.mcow_physics_entity_empty_type == "BOUNDING_BOX":
-                    # TODO : Implement
-                    return
+                    # Add the found bounding box
+                    found_objects.boxes.append(obj)
 
 
             # NOTE : We ignore objects of any type other than empties and meshes when getting objects to be processed for physics entity generation.
