@@ -3118,7 +3118,8 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         
         ans.id = box.name
 
-        # TODO : Modify this data so that it is in a Y up coordinate system instead... this is just temporary stuff for now. Altough, a possible alternative would be to rotate the matrix of the root by 90º...
+        # TODO : Modify this data so that it is in a Y up coordinate system instead... this is just temporary stuff for now.
+        # Note that it is actually NOT possible to fix this by just rotating the matrix of the root by 90º since bounding boxes are not stored attached to the model bones in the final XNB file...
         ans.position = tuple(box.location)
         ans.scale = tuple(box.scale)
         ans.rotation = tuple(box.rotation_euler.to_quaternion())
