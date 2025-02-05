@@ -3005,7 +3005,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         # Get the objects in the scene and form a tree-like structure for exporting.
         found_objects = Storage_PhysicsEntity()
         found_objects.root = root_objects[0]
-        found_objects.model.bones.append(root_objects[0]) # The root object will act as a bone for us when exporting the mesh.
+        found_objects.model.bones.append((root_objects[0], [-1])) # The root object will act as a bone for us when exporting the mesh. We add a list with element -1 because that is how we signal that there are no parent bones for the root bone.
         self.get_scene_data_rec(found_objects, root_objects[0].children, 0)
         
         return found_objects
@@ -3032,8 +3032,19 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             # Process objects of type empty, which should be roots and bones
             if obj.type == "EMPTY":
                 if obj.mcow_physics_entity_empty_type == "BONE":
-                    found_objects.model.bones.add(obj)
-                    self.get_scene_data_rec(found_objects, obj.children, len(found_objects.model.bones) - 1) # NOTE : The index we pass is literally the index of the bone we just added in the previous line of code.
+                    
+                    # Add the current bone to the list of found bones
+                    bone_obj = obj
+                    bone_idx = len(found_objects.model.bones) # NOTE : We don't subtract 1 because the current bone has not been added to the list yet!!!
+                    found_objects.model.bones.add((bone_obj, [])) # (bone_obj, list_of_child_bones)
+                    
+                    # Update the list of child bone indices for the parent bone
+                    parent_bone_obj, parent_bones_indices_list = found_objects.model.bones[parent_bone_index]
+                    parent_bones_list.append(bone_idx)
+                    found_objects.model.bones[parent_bone_index] = (parent_bone_obj, parent_bones_indices_list)
+
+                    # Make recursive call to get all of the data of the child objects of this bone.
+                    self.get_scene_data_rec(found_objects, obj.children, bone_idx) # NOTE : The index we pass is literally the index of the bone we just added to the found objects' bones list.
 
             # NOTE : We ignore objects of any type other than empties and meshes when getting objects to be processed for physics entity generation.
             # No need for an else case because we do nothing else within the loop.
