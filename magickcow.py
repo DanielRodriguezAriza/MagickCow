@@ -459,9 +459,9 @@ class DataGenerator:
         return roots
 
     def get_scene_roots(self):
-        if bpy.data.scene.mcow_scene_mode == "MAP":
+        if bpy.context.scene.mcow_scene_mode == "MAP":
             return self.get_scene_roots_map()
-        elif bpy.data.scene.mcow_scene_mode == "PHYSICS_ENTITY":
+        elif bpy.context.scene.mcow_scene_mode == "PHYSICS_ENTITY":
             return self.get_scene_roots_physics_entity()
         return [] # In the case where the selected mode is not any of the implemented ones, we then return an empty list.
 
