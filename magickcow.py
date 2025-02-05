@@ -442,7 +442,9 @@ class DataGenerator:
     
     # endregion
 
-    # region Aux
+    # region Auxiliary Functions
+
+    # region Scene Rotation
 
     # NOTE : First we rotate by -90º, then to unrotate we rotate by +90º, this way we can pass from Z up to to Y up coords
     # TODO : Once you implement the new scene root system for the map exporting side of the code, you will be capable of getting rid of the _aux suffix for this method's name.
@@ -468,6 +470,16 @@ class DataGenerator:
         elif bpy.context.scene.mcow_scene_mode == "PHYSICS_ENTITY":
             return self.get_scene_roots_physics_entity()
         return [] # In the case where the selected mode is not any of the implemented ones, we then return an empty list.
+
+    # Aux functions to perform rotations without having to remember what values and axes are specifically required when exporting a scene to Magicka.
+    # Makes it easier to go from Z up to Y up, progress the scene, and then go back from Y up to Z up.
+    def do_scene_rotation(self):
+        self.rotate_scene_aux(-90, "X")
+    
+    def undo_scene_rotation(self):
+        self.rotate_scene_aux(90, "X")
+
+    # endregion
 
     # endregion
 
