@@ -197,6 +197,8 @@ class PE_Generate_PhysicsEntityData:
         self.has_advanced_settings = True
         self.advanced_settings = None
 
+# NOTE : In truth, the game only supports a single bounding box, but the reading code can take N bounding boxes.
+# The thing is that only the first read bounding box is preserved, the rest are just discarded. In any case, we add support for exporting as many bounding boxes as we want, even tho only one will be used in the end...
 class PE_Generate_BoundingBox:
     def __init__(self):
         self.id = "bb"
