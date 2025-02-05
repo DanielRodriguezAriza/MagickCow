@@ -84,6 +84,15 @@ class XNA_Model_Bone:
         self.parent = -1
         self.children = []
 
+class XNA_Model_Mesh:
+    def __init__(self):
+        self.name = "none"
+        self.parent_bone = 0
+        self.bounding_sphere = None
+        self.vertex_buffer = []
+        self.index_buffer = []
+        self.mesh_parts = None # NOTE : Rather than implementing mesh parts, what my exporter does is simply adding a new model mesh to the exported data, so this should always be pretty much almost the exact same for all types of models, so we could ignore implementing this here and always write the same data in the make stage (except for the number of vertices, primitive count, vertex declaration index and shared resource index. Other than that, the rest of the data is always the same.)
+
 # endregion
 
 # region Map
