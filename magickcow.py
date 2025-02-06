@@ -507,6 +507,9 @@ class DataGenerator:
     # NOTE : First we rotate by -90º, then to unrotate we rotate by +90º, this way we can pass from Z up to to Y up coords
     # TODO : Once you implement the new scene root system for the map exporting side of the code, you will be capable of getting rid of the _aux suffix for this method's name.
     # Also, get rid of the rotate_scene() method within the map data generator class...
+    # TODO : To be able to use this simpler root based rotation for map scenes, we need to find a way to translate rotations. We don't have to have the 90 degree rotation fix for empties anymore, sure, but
+    # previously we did not apply any rotation fix to lights either... why? because lights with a rotation apply over a direction vector. What this means is that without the rotation fix, all of my final rotations
+    # are Z up based, even tho my final points will be Y up based... or maybe I'm confused and this is actually wrong?
     def rotate_scene(self, angle_degrees, axis = "X"):
         roots = self.get_scene_roots()
         rotation_matrix = mathutils.Matrix.Rotation(math.radians(angle_degrees), 4, axis)
@@ -1044,7 +1047,7 @@ class DataGeneratorMap(DataGenerator):
         # underlying implementation, which is way faster and speeds up the export process by a ton (python is so slow!!! shocker!!! who would have thought???)
         # Note that this rotation will affect the actual objects of the scene, so we must undo it later.
         # Also, if the process ahead fails, the rotation won't get undone, so it would be wise to add a try-catch-finally block, but for now this is good enough.
-        self.rotate_scene(-90)
+        self.rotate_scene_old_2(-90)
 
         # Get Scene Objects (Get Stage)
         # Obtains the references to all of the blender objects in the scene
@@ -1062,7 +1065,7 @@ class DataGeneratorMap(DataGenerator):
 
         # Undo the rotation, as the data has already been generated and stored with the correct Y up coordinates.
         # NOTE : this could have some precission errors with certain rotations, so it would be wiser to save the old rotation and restore it rather than undoing the rotation, but it's ok for now.
-        self.rotate_scene(90)
+        self.rotate_scene_old_2(90)
         
         # Make Scene Data (Make Stage)
         # Make the dictionary objects that will be stored within the final exported JSON file.
