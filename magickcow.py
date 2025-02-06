@@ -3365,7 +3365,6 @@ class DataGeneratorPhysicsEntity(DataGenerator):
     def generate_model(self, model_data):
         meshes = self.generate_model_meshes(model_data.meshes)
         bones = self.generate_model_bones(model_data.bones)
-        
         return (bones, meshes)
 
     def generate_model_meshes(self, meshes):
@@ -3415,7 +3414,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             "HitEffect" : generated_data.hit_effect,
             "VisualEffects" : generated_data.visual_effects,
             "SoundBanks" : generated_data.sound_banks,
-            "Model" : None, # TODO : Implement make model method
+            "Model" : self.make_model(generated_data.model),
             "HasCollision" : generated_data.has_collision,
             "CollisionVertices" : generated_data.collision_vertices,
             "CollisionTriangles" : generated_data.collision_triangles,
@@ -3460,6 +3459,13 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             "Model" : gib.model,
             "Mass" : gib.mass,
             "Scale" : gib.scale
+        }
+        return ans
+
+    def make_model(self, model):
+        ans = {
+            "tag" : None, # Always null in Magicka...
+            # TODO : Finish implementing
         }
         return ans
 
