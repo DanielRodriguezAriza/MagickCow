@@ -446,24 +446,25 @@ class DataGenerator:
 
     # region Scene Rotation
 
+    # region Deprecated
 
     # Iterates over all of the root objects of the scene and rotates them by the input angle in degrees around the specified axis.
     # The rotation takes place around the world origin (0,0,0), so it would be equivalent to attaching all objects to a parent located in the world origin and then rotating said parent.
     # This way, there is no hierarchical requirements for scene export, since all root objects will be translated properly, and thus the child objects will also be automatically translated to the coorect coordinates.
-    def rotate_scene_old(self, angle_degrees = 90, axis = "X"):
+    def rotate_scene_old_1(self, angle_degrees = 90, axis = "X"):
         root_objects = get_scene_root_objects()
         for obj in root_objects:
             obj.rotation_euler.rotate_axis(axis, math.radians(angle_degrees))
         bpy.context.view_layer.update() # Force the scene to update so that the rotation is properly applied before we start evaluating the objects in the scene.
     
-    def rotate_objects_global(self, objects, angle_degrees, axis):
+    def rotate_objects_global_old_2(self, objects, angle_degrees, axis):
         rotation_matrix = mathutils.Matrix.Rotation(math.radians(angle_degrees), 4, axis)
         for obj in objects:
             # obj.rotation_euler.rotate_axis(axis, math.radians(angle_degrees)) # idk why this doesn't work for all objects, I guess I'd know if only Blender's documentation had any information related to it. Oh well!
             obj.matrix_world = rotation_matrix @ obj.matrix_world
 
     
-    def rotate_objects_local(self, objects, angle_degrees, axis):
+    def rotate_objects_local_old_2(self, objects, angle_degrees, axis):
         axis_num = find_element_index(["X", "Y", "Z"], axis, 0)
         for obj in objects:
             obj.rotation_euler[axis_num] += math.radians(angle_degrees)
@@ -474,7 +475,7 @@ class DataGenerator:
     # This can be fixed by manually rotating the locators... or by having the rotate_scene() function do it for us, so the users will never know that it even happened! 
     # NOTE : Another fix would be to have a single world root object of sorts, and having to attach all objects to that root. That way, we would only have to rotate that one single root by 90 degrees and nothing else, no corrections required...
     # TODO : Basically make it so that we also have a root object in map scenes, just like we do in physics entity scenes...
-    def rotate_scene(self, angle_degrees = 90, axis = "X"):
+    def rotate_scene_old_2(self, angle_degrees = 90, axis = "X"):
         # Objects that are "roots" of the Blender scene
         root_objects = []
 
@@ -501,12 +502,12 @@ class DataGenerator:
 
         bpy.context.view_layer.update() # Force the scene to update so that the rotation is properly applied before we start evaluating the objects in the scene.
 
-
+    # endregion
 
     # NOTE : First we rotate by -90º, then to unrotate we rotate by +90º, this way we can pass from Z up to to Y up coords
     # TODO : Once you implement the new scene root system for the map exporting side of the code, you will be capable of getting rid of the _aux suffix for this method's name.
     # Also, get rid of the rotate_scene() method within the map data generator class...
-    def rotate_scene_aux(self, angle_degrees, axis = "X"):
+    def rotate_scene(self, angle_degrees, axis = "X"):
         roots = self.get_scene_roots()
         rotation_matrix = mathutils.Matrix.Rotation(math.radians(angle_degrees), 4, axis)
         for root in roots: # We should only have 1 single root, which is validated on the exporter side, but we support multi-root scenes here to prevent getting funny results if we make any changes in the future...
@@ -531,10 +532,10 @@ class DataGenerator:
     # Aux functions to perform rotations without having to remember what values and axes are specifically required when exporting a scene to Magicka.
     # Makes it easier to go from Z up to Y up, progress the scene, and then go back from Y up to Z up.
     def do_scene_rotation(self):
-        self.rotate_scene_aux(-90, "X")
+        self.rotate_scene(-90, "X")
     
     def undo_scene_rotation(self):
-        self.rotate_scene_aux(90, "X")
+        self.rotate_scene(90, "X")
 
     # endregion
 
