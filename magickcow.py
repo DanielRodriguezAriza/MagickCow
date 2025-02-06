@@ -286,7 +286,7 @@ def get_relative_transform(matrix_a, matrix_b):
 # Get the object transform relative to its parent.
 # If the parent is a bone (animated level part), then the coordinates are relative to the parent.
 # Otherwise, the coordinates will be global (relative to the world origin, which means that we could think of it as the parent being "None")
-def get_object_transform(obj, parent = None, is_point_object = False):
+def get_object_transform(obj, parent = None):
     if parent is not None:
         return get_relative_transform(parent.matrix_world, obj.matrix_world) # returns a new matrix generated when using the @ operator to calculate the resulting transform matrix.
     return obj.matrix_world.copy() # make it into a copy to prevent carrying over a reference of the matrix.
