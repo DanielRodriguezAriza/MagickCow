@@ -3255,24 +3255,9 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             # No need for an else case because we do nothing else within the loop.
 
     def get_scene_data_add_mesh(self, found_objects, obj, transform):
-        mesh = obj.data
-        num_materials = len(mesh.materials)
-
-        # If there are no materials, then add the mesh to the list of found meshes 
-        if num_materials <= 0:
-            found_objects.meshes.append((obj, transform, 0))
-            return
-        
-        # If there are materials, then add each segment of the mesh that uses an specific material as a separate mesh for simplicity
-        found_polygons_with_material_index = [0 for i in range(0, num_materials)]
-        for poly in mesh.polygons:
-            found_polygons_with_material_index[poly.material_index] += 1
-        
-        for index, count in enumerate(found_polygons_with_material_index):
-            if count > 0:
-                found_objects.meshes.append((obj, transform, index))
-
-
+        segments = self.get_mesh_segments(obj)
+        ans = [(segment_obj, transform, material_index) for segment_obj, material_index in segments]
+        return ans
 
     # endregion
 
