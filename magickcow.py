@@ -3299,7 +3299,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         ans.sound_banks = ""
         # This is where the "unknown" properties end.
 
-
+        ans.model = self.generate_models(data.model)
 
 
         # TODO : Finish adding all of the remaining values for the ans object
@@ -3325,6 +3325,11 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         ans.rotation = tuple(box.rotation_euler.to_quaternion())
 
         return ans
+
+    def generate_models(self, model_data):
+        meshes = model_data.meshes
+        bones = model_data.bones
+        # TODO : Implement
 
     # endregion
 
