@@ -3623,52 +3623,10 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
         return {"CANCELLED"}
 
     def export_data_physics_entity(self, context):
-        self.report({"INFO"}, "Exporting to MagickaPUP .json Physics Entity file...")
-
-        generator = DataGeneratorPhysicsEntity()
-        xnb_dict = generator.process_scene_data()
-        
-        json_str = self.json_dump_str(context, xnb_dict)
-
-        try:
-            with open(self.filepath, 'w') as outfile:
-                outfile.write(json_str)
-            self.report({"INFO"}, f"Successfully exported data to file \"{self.filepath}\"")
-            return {"FINISHED"}
-        except Exception as e:
-            self.report({"ERROR"}, f"Failed to export data: {e}")
-            return {"CANCELLED"}
+        return self.export_data_func(context, "Physics Entity", DataGeneratorPhysicsEntity())
 
     def export_data_map(self, context):
-        self.report({"INFO"}, "Exporting to MagickaPUP .json Map file...")
-        
-        # Create a generator instance and generate all of the data
-        generator = DataGeneratorMap()
-        xnb_json_dict = generator.process_scene_data()
-        
-        # Generate the string
-        json_string = self.json_dump_str(context, xnb_json_dict)
-        
-        # TODO : Abstract this process into a simpler generic function that can be used to write the generated JSON data to the resulting file by all of the implemented export types.
-        # Write the data into the file
-        write_file_time_start = time.time()
-        try:
-            with open(self.filepath, 'w') as outfile:
-                outfile.write(json_string)
-                # json.dump(xnb_json_file, outfile, indent=4) # Old removed code because it was way slower than generating the entire string in memory and dumping it to the file later. Uses less memory tho, so it could be interesting to add a setting for low memory systems to make export possible on systems where you are working on a memory budget at the cost of being slower...
-            self.report({"INFO"}, f"Successfully exported data to file \"{self.filepath}\"")
-        
-        except Exception as e:
-            self.report({"ERROR"}, f"Failed to export data: {e}")
-            return {'CANCELLED'}
-        write_file_time_end = time.time()
-        
-        time_total_string = write_string_time_end - write_string_time_start
-        time_total_file = write_file_time_end - write_file_time_start
-        time_total = generator.time_get + generator.time_generate + generator.time_make + time_total_string + time_total_file
-        self.report({"INFO"}, f"Successfully exported data! (get = {generator.time_get} sec, gen = {generator.time_generate} sec, obj = {generator.time_make} sec, json = {time_total_string} sec, file = {time_total_file} sec, TOTAL = {time_total} sec)")
-        
-        return {'FINISHED'}
+        return self.export_data_func(context, "Map", DataGeneratorMap())
     
     def write_to_file(self, contents):
         try:
