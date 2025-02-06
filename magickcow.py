@@ -579,169 +579,6 @@ class DataGenerator:
 
     # endregion
 
-    # endregion
-
-    # region Generate
-
-    # region Generate - Math
-
-    def generate_matrix_data(self, transform):
-        matrix = transform
-        matrix = matrix.transposed() # XNA's matrices are row major, while Blender (and literally 90% of software in the planet) is column major... so we need to transpose the transform matrix.
-        m11 = matrix[0][0]
-        m12 = matrix[0][1]
-        m13 = matrix[0][2]
-        m14 = matrix[0][3]
-        m21 = matrix[1][0]
-        m22 = matrix[1][1]
-        m23 = matrix[1][2]
-        m24 = matrix[1][3]
-        m31 = matrix[2][0]
-        m32 = matrix[2][1]
-        m33 = matrix[2][2]
-        m34 = matrix[2][3]
-        m41 = matrix[3][0]
-        m42 = matrix[3][1]
-        m43 = matrix[3][2]
-        m44 = matrix[3][3]
-        ans = (m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44)
-        return ans
-
-    # endregion
-
-    # endregion
-
-    # region Make
-
-    # region Make - XNA
-
-    def make_xnb_file(self, primary_object, shared_resources):
-        ans = {
-            "primaryObject" : primary_object,
-            "numSharedResources" : len(shared_resources),
-            "sharedResources" : shared_resources
-        }
-        return ans
-    
-    # endregion
-
-    # region Make - Math
-
-    # region Make - Math - Matrices
-    
-    def make_matrix(self, transform_matrix):
-        m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44 = transform_matrix
-        ans = {
-            "M11" : m11,
-            "M12" : m12,
-            "M13" : m13,
-            "M14" : m14,
-            "M21" : m21,
-            "M22" : m22,
-            "M23" : m23,
-            "M24" : m24,
-            "M31" : m31,
-            "M32" : m32,
-            "M33" : m33,
-            "M34" : m34,
-            "M41" : m41,
-            "M42" : m42,
-            "M43" : m43,
-            "M44" : m44
-        }
-        return ans
-    
-    def make_matrix_identity(self):
-        ans = {
-            "M11" : 1,
-            "M12" : 0,
-            "M13" : 0,
-            "M14" : 0,
-            "M21" : 0,
-            "M22" : 1,
-            "M23" : 0,
-            "M24" : 0,
-            "M31" : 0,
-            "M32" : 0,
-            "M33" : 1,
-            "M34" : 0,
-            "M41" : 0,
-            "M42" : 0,
-            "M43" : 0,
-            "M44" : 1
-        }
-        return ans
-
-    # endregion
-
-    # region Make - Math - Vectors
-
-    def make_vector_2(self, vec2):
-        ans = {
-            "x" : vec2[0],
-            "y" : vec2[1]
-        }
-        return ans
-    
-    def make_vector_3(self, vec3):
-        ans = {
-            "x" : vec3[0],
-            "y" : vec3[1],
-            "z" : vec3[2]
-        }
-        return ans
-    
-    def make_vector_4(self, vec4):
-        ans = {
-            "x" : vec4[0],
-            "y" : vec4[1],
-            "z" : vec4[2],
-            "w" : vec4[3]
-        }
-        return ans
-
-    # endregion
-
-    # endregion
-
-    # endregion
-
-# region Comment - DataGeneratorMap
-    # This class is the one in charge of getting, generating and storing in a final dict the data that is found within the scene.
-    # The reason this class exists outside of the main exporter operator class is to prevent its generated data from staying around in memory after the export process has finished.
-    # This could also be avoided by passing all variables around through functions, but that was getting too messy for global-state-like stuff like shared resources and other information
-    # that should be cacheable, so I ended up just making this intermediate class to handle that.
-    # The main exporter operator makes an instance of this class and just calls the get(), generate() and make() methods when it has to.
-    # That way, after the export function goes out of scope, so does the class and all of the generated and cached information gets freed.
-    # It would be cool to be able to keep it in cache between exports, but what happens for example if a material / effect JSON file is modified and it is still in the cache?
-    # The new version would never be read unless we would add a system that would allow this python script to check if the file has been updated from the last time it was cached, and that would be slower
-    # than just reading the new file altogether, because sadly even small syscalls like getting a file's data are slooooooow in python.
-    # Also that would make things harder to handle caching materials, shared resources and implementing object instance caching as well, etc... because what happens when you modify a Blender scene?
-    # In short, that would add quite a bit of complexity, and it is not really worth it as of now.
-#endregion
-class DataGeneratorMap(DataGenerator):
-
-    # region Constructor
-
-    def __init__(self, export_path, export_animation):
-
-        super().__init__()
-
-        self.export_path = export_path
-        self.export_animation = export_animation
-
-        self.time_get = 0
-        self.time_generate = 0
-        self.time_make = 0
-
-        self.objects_get = None
-        self.objects_generate = None
-        self.objects_make = None
-
-        return
-    
-    # endregion
-
     # region Shared Resources Related Operations
 
     def add_shared_resource(self, resource_name, resource_content):
@@ -1005,6 +842,169 @@ class DataGeneratorMap(DataGenerator):
             return self.dict_effects[material_name]
         return self.generate_default_effect_data(fallback_type)
 
+    # endregion
+
+    # endregion
+
+    # region Generate
+
+    # region Generate - Math
+
+    def generate_matrix_data(self, transform):
+        matrix = transform
+        matrix = matrix.transposed() # XNA's matrices are row major, while Blender (and literally 90% of software in the planet) is column major... so we need to transpose the transform matrix.
+        m11 = matrix[0][0]
+        m12 = matrix[0][1]
+        m13 = matrix[0][2]
+        m14 = matrix[0][3]
+        m21 = matrix[1][0]
+        m22 = matrix[1][1]
+        m23 = matrix[1][2]
+        m24 = matrix[1][3]
+        m31 = matrix[2][0]
+        m32 = matrix[2][1]
+        m33 = matrix[2][2]
+        m34 = matrix[2][3]
+        m41 = matrix[3][0]
+        m42 = matrix[3][1]
+        m43 = matrix[3][2]
+        m44 = matrix[3][3]
+        ans = (m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44)
+        return ans
+
+    # endregion
+
+    # endregion
+
+    # region Make
+
+    # region Make - XNA
+
+    def make_xnb_file(self, primary_object, shared_resources):
+        ans = {
+            "primaryObject" : primary_object,
+            "numSharedResources" : len(shared_resources),
+            "sharedResources" : shared_resources
+        }
+        return ans
+    
+    # endregion
+
+    # region Make - Math
+
+    # region Make - Math - Matrices
+    
+    def make_matrix(self, transform_matrix):
+        m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44 = transform_matrix
+        ans = {
+            "M11" : m11,
+            "M12" : m12,
+            "M13" : m13,
+            "M14" : m14,
+            "M21" : m21,
+            "M22" : m22,
+            "M23" : m23,
+            "M24" : m24,
+            "M31" : m31,
+            "M32" : m32,
+            "M33" : m33,
+            "M34" : m34,
+            "M41" : m41,
+            "M42" : m42,
+            "M43" : m43,
+            "M44" : m44
+        }
+        return ans
+    
+    def make_matrix_identity(self):
+        ans = {
+            "M11" : 1,
+            "M12" : 0,
+            "M13" : 0,
+            "M14" : 0,
+            "M21" : 0,
+            "M22" : 1,
+            "M23" : 0,
+            "M24" : 0,
+            "M31" : 0,
+            "M32" : 0,
+            "M33" : 1,
+            "M34" : 0,
+            "M41" : 0,
+            "M42" : 0,
+            "M43" : 0,
+            "M44" : 1
+        }
+        return ans
+
+    # endregion
+
+    # region Make - Math - Vectors
+
+    def make_vector_2(self, vec2):
+        ans = {
+            "x" : vec2[0],
+            "y" : vec2[1]
+        }
+        return ans
+    
+    def make_vector_3(self, vec3):
+        ans = {
+            "x" : vec3[0],
+            "y" : vec3[1],
+            "z" : vec3[2]
+        }
+        return ans
+    
+    def make_vector_4(self, vec4):
+        ans = {
+            "x" : vec4[0],
+            "y" : vec4[1],
+            "z" : vec4[2],
+            "w" : vec4[3]
+        }
+        return ans
+
+    # endregion
+
+    # endregion
+
+    # endregion
+
+# region Comment - DataGeneratorMap
+    # This class is the one in charge of getting, generating and storing in a final dict the data that is found within the scene.
+    # The reason this class exists outside of the main exporter operator class is to prevent its generated data from staying around in memory after the export process has finished.
+    # This could also be avoided by passing all variables around through functions, but that was getting too messy for global-state-like stuff like shared resources and other information
+    # that should be cacheable, so I ended up just making this intermediate class to handle that.
+    # The main exporter operator makes an instance of this class and just calls the get(), generate() and make() methods when it has to.
+    # That way, after the export function goes out of scope, so does the class and all of the generated and cached information gets freed.
+    # It would be cool to be able to keep it in cache between exports, but what happens for example if a material / effect JSON file is modified and it is still in the cache?
+    # The new version would never be read unless we would add a system that would allow this python script to check if the file has been updated from the last time it was cached, and that would be slower
+    # than just reading the new file altogether, because sadly even small syscalls like getting a file's data are slooooooow in python.
+    # Also that would make things harder to handle caching materials, shared resources and implementing object instance caching as well, etc... because what happens when you modify a Blender scene?
+    # In short, that would add quite a bit of complexity, and it is not really worth it as of now.
+#endregion
+class DataGeneratorMap(DataGenerator):
+
+    # region Constructor
+
+    def __init__(self, export_path, export_animation):
+
+        super().__init__()
+
+        self.export_path = export_path
+        self.export_animation = export_animation
+
+        self.time_get = 0
+        self.time_generate = 0
+        self.time_make = 0
+
+        self.objects_get = None
+        self.objects_generate = None
+        self.objects_make = None
+
+        return
+    
     # endregion
 
     # region Bounding Box Related Operations
