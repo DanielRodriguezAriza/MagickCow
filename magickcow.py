@@ -3680,6 +3680,14 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
             self.report({"ERROR"}, f"Failed to export data: {e}")
             return {"CANCELLED"}
 
+    def export_data_func(self, context, name, generator):
+        self.report({"INFO"}, f"Exporting to MagickaPUP .json {name} file...")
+
+        xnb_dict = generator.process_scene_data()
+        json_str = self.json_dump_str(context, xnb_dict)
+
+        return self.write_to_file(json_str)
+
     # endregion
 
 # endregion
