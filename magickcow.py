@@ -3284,8 +3284,8 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         }
         return ans
 
-    def make_Resistances(self, resistances):
-        ans = [self.make_resistance(resistances) for resistance in resistances]
+    def make_resistances(self, resistances):
+        ans = [self.make_resistance(resistance) for resistance in resistances]
         return ans
     
     def make_resistance(self, resistance):
