@@ -1239,6 +1239,77 @@ class DataGenerator:
 
     # endregion
 
+    # region Make - meshes, vertex declarations and effects
+
+    def make_vertex_declaration_entry(self, entry):
+        stream, offset, element_format, element_method, element_usage, usage_index = entry
+        ans = {
+            "stream" : stream,
+            "offset" : offset,
+            "elementFormat" : element_format,
+            "elementMethod" : element_method,
+            "elementUsage" : element_usage,
+            "usageIndex" : usage_index
+        }
+        return ans
+
+    def make_vertex_declaration(self, entries):
+        entries_arr = []
+        for entry in entries:
+            declaration = self.make_vertex_declaration_entry(entry)
+            entries_arr.append(declaration)
+        ans = {
+            "numEntries" : len(entries_arr),
+            "entries" : entries_arr
+        }
+        return ans
+    
+    def make_vertex_declaration_default(self):
+        return self.make_vertex_declaration([(0, 0, 2, 0, 0, 0), (0, 12, 2, 0, 3, 0), (0, 24, 1, 0, 5, 0), (0, 32, 2, 0, 6, 0), (0, 24, 1, 0, 5, 1), (0, 32, 2, 0, 6, 1), (0, 44, 3, 0, 10, 0)])
+    
+    def make_vertex_stride_default(self):
+        # Old Stide was 44, the vertex color inclusion has changed that. No need to make special cases because it's actually quite slim, vertex color doesn't even bloat mesh memory usage that much despite the 2GB limit...
+        # return 44 # 44 = 11*4; only 11 because we do not account for those vertex declarations that use usage index 1, because they overlap with already existing values from the usage index 0.
+        return 60 # 60 because we include the vertex color now, which has its own vertex declaration.
+    
+    def make_vertex_buffer(self, vertices):
+        buf = []
+        for vertex in vertices:
+            global_idx, position, normal, tangent, uv, color = vertex
+            buffer_part = struct.pack("fffffffffffffff", position[0], position[1], position[2], normal[0], normal[1], normal[2], uv[0], uv[1], tangent[0], tangent[1], tangent[2], color[0], color[1], color[2], color[3])
+            byte_array = bytearray(buffer_part)
+            # int_array = array.array("i")
+            # int_array.frombytes(byte_array)
+            buf += byte_array
+        ans = {
+            "NumBytes" : len(buf),
+            "Buffer" : buf
+        }
+        return ans
+    
+    def make_index_buffer(self, indices):
+        # Always use 16 bit indices if we can fit the max value of the index within the u16 range [0, 65535]. If the max index is larger than that, then we start making use of 32 bit values
+        # I don't really like this because it feels like it can be pretty slow to find the max element like this, but whatever... we'll keep it like this for now, since 99% of maps are most
+        # likely not going to have such massive models within a single piece.
+        index_size = 0
+        num_bytes = len(indices) * 2
+        if max(indices) > 65535:
+            index_size = 1
+            num_bytes = len(indices) * 4
+        ans = {
+            "indexSize" : index_size,
+            "data" : indices,
+            "numBytes" : num_bytes
+        }
+        return ans
+
+    # This once used to be an useful function... now, it is quite an useless wrapper! :D
+    def make_effect(self, matname, fallback_type = "GEOMETRY"):
+        material_contents = self.get_material(matname, fallback_type)
+        return material_contents
+
+    # endregion
+
     # endregion
 
 # region Comment - DataGeneratorMap
@@ -2273,73 +2344,6 @@ class DataGeneratorMap(DataGenerator):
     # endregion
 
     # region Make - Meshes (Root Nodes, Effects / Materials, Vertex Buffers, Index Buffers, Vertex Declarations, etc...)
-
-    def make_vertex_declaration_entry(self, entry):
-        stream, offset, element_format, element_method, element_usage, usage_index = entry
-        ans = {
-            "stream" : stream,
-            "offset" : offset,
-            "elementFormat" : element_format,
-            "elementMethod" : element_method,
-            "elementUsage" : element_usage,
-            "usageIndex" : usage_index
-        }
-        return ans
-
-    def make_vertex_declaration(self, entries):
-        entries_arr = []
-        for entry in entries:
-            declaration = self.make_vertex_declaration_entry(entry)
-            entries_arr.append(declaration)
-        ans = {
-            "numEntries" : len(entries_arr),
-            "entries" : entries_arr
-        }
-        return ans
-    
-    def make_vertex_declaration_default(self):
-        return self.make_vertex_declaration([(0, 0, 2, 0, 0, 0), (0, 12, 2, 0, 3, 0), (0, 24, 1, 0, 5, 0), (0, 32, 2, 0, 6, 0), (0, 24, 1, 0, 5, 1), (0, 32, 2, 0, 6, 1), (0, 44, 3, 0, 10, 0)])
-    
-    def make_vertex_stride_default(self):
-        # Old Stide was 44, the vertex color inclusion has changed that. No need to make special cases because it's actually quite slim, vertex color doesn't even bloat mesh memory usage that much despite the 2GB limit...
-        # return 44 # 44 = 11*4; only 11 because we do not account for those vertex declarations that use usage index 1, because they overlap with already existing values from the usage index 0.
-        return 60 # 60 because we include the vertex color now, which has its own vertex declaration.
-    
-    def make_vertex_buffer(self, vertices):
-        buf = []
-        for vertex in vertices:
-            global_idx, position, normal, tangent, uv, color = vertex
-            buffer_part = struct.pack("fffffffffffffff", position[0], position[1], position[2], normal[0], normal[1], normal[2], uv[0], uv[1], tangent[0], tangent[1], tangent[2], color[0], color[1], color[2], color[3])
-            byte_array = bytearray(buffer_part)
-            # int_array = array.array("i")
-            # int_array.frombytes(byte_array)
-            buf += byte_array
-        ans = {
-            "NumBytes" : len(buf),
-            "Buffer" : buf
-        }
-        return ans
-    
-    def make_index_buffer(self, indices):
-        # Always use 16 bit indices if we can fit the max value of the index within the u16 range [0, 65535]. If the max index is larger than that, then we start making use of 32 bit values
-        # I don't really like this because it feels like it can be pretty slow to find the max element like this, but whatever... we'll keep it like this for now, since 99% of maps are most
-        # likely not going to have such massive models within a single piece.
-        index_size = 0
-        num_bytes = len(indices) * 2
-        if max(indices) > 65535:
-            index_size = 1
-            num_bytes = len(indices) * 4
-        ans = {
-            "indexSize" : index_size,
-            "data" : indices,
-            "numBytes" : num_bytes
-        }
-        return ans
-
-    # This once used to be an useful function... now, it is quite an useless wrapper! :D
-    def make_effect(self, matname, fallback_type = "GEOMETRY"):
-        material_contents = self.get_material(matname, fallback_type)
-        return material_contents
 
     def make_root_node(self, mesh):
         obj, transform, name, vertices, indices, matname, aabb = mesh
@@ -3468,6 +3472,8 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             "tag" : None, # Always null in Magicka...
             "numBones" : len(bones),
             "bones" : self.make_model_bones(bones),
+            "numVertexDeclarations" : 1,
+            "vertexDeclarations" : self.make_vertex_declaration_default()
         }
         return ans
     
