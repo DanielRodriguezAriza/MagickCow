@@ -6,6 +6,9 @@
 # NOTE : I hate coding in python, it looks like 90% of the code is fucking comments, seriously, just having a decent type system would prevent having to make so many comments to clear stuff up. No, type annotations are not good enough...
 # NOTE : Well, I don't really hate coding in python, it's pretty cool, but fuck me this code has to be one of the most wall of text filled pieces of code I have ever written. The comments are insane.
 
+# TODO : Re-enable the global try catch on the exporter code so that we can get proper error handling. This was simply disabled so that we could get on what line exceptions took place during debugging...
+# TODO : There's a bug when dealing with meshes that have 0 triangles. Discard those by seeing their triangle count on the get stage both on the map and physics entity handling code...
+
 # endregion
 
 # region BL Info
@@ -497,8 +500,8 @@ class DataGenerator:
             if obj.type == "EMPTY" and obj.magickcow_empty_type in ["LOCATOR", "PHYSICS_ENTITY"]:
                 objects_to_correct.append(obj)
 
-        self.rotate_objects_global(root_objects, angle_degrees, axis) # Rotate the entire scene
-        self.rotate_objects_local(objects_to_correct, -1.0 * angle_degrees, axis) # The correction rotation goes in the opposite direction to the input rotation
+        self.rotate_objects_global_old_2(root_objects, angle_degrees, axis) # Rotate the entire scene
+        self.rotate_objects_local_old_2(objects_to_correct, -1.0 * angle_degrees, axis) # The correction rotation goes in the opposite direction to the input rotation
 
         bpy.context.view_layer.update() # Force the scene to update so that the rotation is properly applied before we start evaluating the objects in the scene.
 
@@ -3331,16 +3334,16 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
         scene = context.scene
         export_mode = scene.mcow_scene_mode
         ans = {} # This is an empty object, but the type of answer object we expect from the export functions is a Blender message, something like {"FINISHED"} or {"CANCELLED"} or whatever.
-        try:
-            if export_mode == "MAP":
-                ans = self.export_data_map(context)
-            elif export_mode == "PHYSICS_ENTITY":
-                ans = self.export_data_physics_entity(context)
-            else:
-                ans = self.export_data_none(context)
-        except Exception as e:
-            self.report({"ERROR"}, f"Failed to export data: {e}")
-            return {"CANCELLED"}
+        # try:
+        if export_mode == "MAP":
+            ans = self.export_data_map(context)
+        elif export_mode == "PHYSICS_ENTITY":
+            ans = self.export_data_physics_entity(context)
+        else:
+            ans = self.export_data_none(context)
+        # except Exception as e:
+        #     self.report({"ERROR"}, f"Failed to export data: {e}")
+        #     return {"CANCELLED"}
         return ans
 
     def export_data_none(self, context):
