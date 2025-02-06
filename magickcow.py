@@ -3669,6 +3669,8 @@ class MagickCowScenePanel(bpy.types.Panel):
 # This region contains classes that describe custom property types for Blender.
 # Note that these properties can be used on any place in Blender, such as object properties or scene properties.
 
+# region Resistances
+
 class MagickCowProperty_Resistance(bpy.types.PropertyGroup):
     element : bpy.props.EnumProperty(
         name = "Element",
@@ -3717,17 +3719,71 @@ class MAGICKCOW_OT_Operator_Resistance_RemoveItem(bpy.types.Operator):
             obj.mcow_physics_entity_resistances.remove(self.index)
         return {"FINISHED"}
 
+# endregion
+
+# region Gibs
+
+class MagickCowProperty_Gib(bpy.types.PropertyGroup):
+    model : bpy.props.StringProperty(
+        name = "Model",
+        description = "Path to the file that contains the model used for this gib",
+        default = "..\\..\\Models\\AnimatedProps\\Dungeons\\gib_slime01_0"
+    )
+
+    mass : bpy.props.FloatProperty(
+        name = "Mass",
+        description = "The mass of this gib",
+        default = 20
+    )
+
+    scale : bpy.props.FloatProperty(
+        name = "Scale",
+        description = "The scale of this gib",
+        default = 1
+    )
+
+class MAGICKCOW_OT_Operator_Gib_AddItem(bpy.types.Operator):
+    bl_label = "Add"
+    bl_idname = "magickcow.resistance_add_item"
+    def execute(self, context):
+        obj = context.object
+        obj.mcow_physics_entity_gibs.add()
+        return {"FINISHED"}
+
+class MAGICKCOW_OT_Operator_Gib_RemoveItem(bpy.types.Operator):
+    bl_label = "Remove"
+    bl_idname = "magickcow.resistance_remove_item"
+    index : bpy.props.IntProperty() # NOTE : For this property to be accessible from the outside without errors, we need to use ":" rather than "=" on assignment, for some reason...
+    def execute(self, context):
+        obj = context.object
+        if self.index >= 0 and self.index < len(obj.mcow_physics_entity_gibs): # NOTE : This check is not really necessary considering how we're assured that the index should theoretically always be correct when iterating on the collection.
+            obj.mcow_physics_entity_gibs.remove(self.index)
+        return {"FINISHED"}
+
+
+# endregion
+
 def register_properties_classes():
-    # Resistance
+    # Resistances
     bpy.utils.register_class(MagickCowProperty_Resistance)
     bpy.utils.register_class(MAGICKCOW_OT_Operator_Resistance_AddItem)
     bpy.utils.register_class(MAGICKCOW_OT_Operator_Resistance_RemoveItem)
 
+    # Gibs
+    bpy.utils.register_class(MagickCowProperty_Gib)
+    bpy.utils.register_class(MAGICKCOW_OT_Operator_Gib_AddItem)
+    bpy.utils.register_class(MAGICKCOW_OT_Operator_Gib_RemoveItem)
+
 def unregister_properties_classes():
-    # Resistance
+    # Resistances
     bpy.utils.unregister_class(MagickCowProperty_Resistance)
     bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Resistance_AddItem)
     bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Resistance_RemoveItem)
+
+    # Gibs
+    bpy.utils.unregister_class(MagickCowProperty_Gib)
+    bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Gib_AddItem)
+    bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Gib_RemoveItem)
 
 # endregion
 
