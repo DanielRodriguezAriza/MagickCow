@@ -3756,7 +3756,7 @@ class MagickCowProperty_Gib(bpy.types.PropertyGroup):
 
 class MAGICKCOW_OT_Operator_Gib_AddItem(bpy.types.Operator):
     bl_label = "Add"
-    bl_idname = "magickcow.resistance_add_item"
+    bl_idname = "magickcow.gibs_add_item"
     def execute(self, context):
         obj = context.object
         obj.mcow_physics_entity_gibs.add()
@@ -3764,11 +3764,11 @@ class MAGICKCOW_OT_Operator_Gib_AddItem(bpy.types.Operator):
 
 class MAGICKCOW_OT_Operator_Gib_RemoveItem(bpy.types.Operator):
     bl_label = "Remove"
-    bl_idname = "magickcow.resistance_remove_item"
-    index : bpy.props.IntProperty() # NOTE : For this property to be accessible from the outside without errors, we need to use ":" rather than "=" on assignment, for some reason...
+    bl_idname = "magickcow.gibs_remove_item"
+    index : bpy.props.IntProperty()
     def execute(self, context):
         obj = context.object
-        if self.index >= 0 and self.index < len(obj.mcow_physics_entity_gibs): # NOTE : This check is not really necessary considering how we're assured that the index should theoretically always be correct when iterating on the collection.
+        if self.index >= 0 and self.index < len(obj.mcow_physics_entity_gibs):
             obj.mcow_physics_entity_gibs.remove(self.index)
         return {"FINISHED"}
 
