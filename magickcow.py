@@ -3765,6 +3765,7 @@ def register_properties_map_empty():
         description = "Determine the type of this object",
         items = [
             ("NONE", "None", "This object will be treated as a regular empty object and will be ignored by the exporter"),
+            ("ROOT", "Root", "This object will be exported as the root of the level scene"),
             ("LOCATOR", "Locator", "This object will be exported as a locator"),
             ("TRIGGER", "Trigger", "This object will be exported as a trigger"),
             ("PARTICLE", "Particle", "This object will be exported as a particle effect"),
