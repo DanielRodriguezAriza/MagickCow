@@ -454,7 +454,26 @@ class DataGenerator:
     # region Constructor
     
     def __init__(self):
-        return
+
+        # Start of DataGenerator Initalization
+
+        # Other data goes here...
+
+        # Dictionary for Shared Resources
+        self.dict_shared_resources = {}
+        
+        # Dictionary for Cached Effects (Materials)
+        self.dict_effects = {}
+
+        # Cached Effects Initialization
+        # Setup all default material data beforehand (not required as the process would still work even if this was not done, but whatever... basically this works as a sort of precaching, but since it is
+        # not compiletime because this is not C, there really is not much point ot it, altough maybe making the dict with self.dict_effects = {"base/whatever" : {blah blah blah...}, ...} could actually
+        # be faster in future versions of Python, idk)
+        for current_type in ["GEOMETRY", "WATER", "LAVA"]:
+            self.dict_effects[self.generate_default_effect_name(current_type)] = self.generate_default_effect_data(current_type)
+
+        # End of DataGenerator Initalization
+        return 
     
     # endregion
 
@@ -704,6 +723,9 @@ class DataGeneratorMap(DataGenerator):
     # region Constructor
 
     def __init__(self, export_path, export_animation):
+
+        super().__init__()
+
         self.export_path = export_path
         self.export_animation = export_animation
 
@@ -715,12 +737,7 @@ class DataGeneratorMap(DataGenerator):
         self.objects_generate = None
         self.objects_make = None
 
-        self.dict_shared_resources = {}
-        self.dict_effects = {}
-
-        # Setup all default material data beforehand (not required as the process would still work even if this was not done, but whatever... basically this works as a sort of precaching, but since it is not compiletime because this is not C, there really is not much point ot it, altough maybe making the dict with self.dict_effects = {"base/whatever" : {blah blah blah...}, ...} could actually be faster in future versions of Python, idk)
-        for current_type in ["GEOMETRY", "WATER", "LAVA"]:
-            self.dict_effects[self.generate_default_effect_name(current_type)] = self.generate_default_effect_data(current_type)
+        return
     
     # endregion
 
@@ -3086,6 +3103,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
     # region Constructor
 
     def __init__(self):
+        super().__init__()
         return
     
     # endregion
