@@ -3770,7 +3770,7 @@ def register_properties_map_empty():
             ("PARTICLE", "Particle", "This object will be exported as a particle effect"),
             ("BONE", "Bone", "This object will be exported as a model bone for animated level parts"),
             ("PHYSICS_ENTITY", "Physics Entity", "This object will be exported as a physics entity"),
-            ("HIERARCHY_NODE", "Hierarchy Node", "This object will be used to structure the hierarchy of the scene. Allows the exporter to organize the objects in the scene.")
+            # ("HIERARCHY_NODE", "Hierarchy Node", "This object will be used to structure the hierarchy of the scene. Allows the exporter to organize the objects in the scene.")
         ],
         default = "NONE", # By default, it will be marked as none, so you need to manually select whether you want the empty to be a locator or a trigger
         update = update_properties_map_empty
