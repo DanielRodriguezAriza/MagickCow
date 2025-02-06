@@ -3383,9 +3383,13 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         return ans
 
     def generate_model_bone(self, bone):
-        obj, transform, idx, children = bone
-        mat = self.generate_matrix(transform)
-        return (idx, obj.name, mat, parent, children)
+        ans = PE_Generate_Bone()
+        ans.index = bone.index
+        ans.name = bone.obj.name
+        ans.transform = self.generate_matrix_data(bone.transform)
+        ans.parent = bone.parent
+        ans.children = bone.children
+        return ans
 
     # endregion
 
