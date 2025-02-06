@@ -43,6 +43,20 @@ from collections import namedtuple
 
 # region Classes and Named Tuples
 
+# region Blender GSD Object classes
+
+# NOTE : GSD = Get Stage Data
+
+# This is the base class for a Get Stage Data Object.
+# It contains a pointer to the blender object and a transform matrix which contains the transform relative to the parent as it would be defined within the XNB file
+# Note that the transform matrix does not necessarily match with the obj.matrix_world or with the obj.matrix_local, as the obj.parent (blender parent) is not necessarily the "parent" that we'd use within the XNB file...
+class GSDObject:
+    def __init__(self, obj, transform):
+        self.obj = obj
+        self.transform = transform
+
+# endregion
+
 # region XNA classes
 
 # NOTE : This class' implementation looks to me like it's pretty inefficient and could be improved by a lot by using a single linear buffer rather than a list of lists, but whatever... we'll deal with this shit for now.
