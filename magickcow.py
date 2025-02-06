@@ -4290,6 +4290,12 @@ def register_properties_physics_entity_empty():
         description = "Determines the elemental resistances and weaknesses of this physics entity."
     )
 
+    empty.mcow_physics_entity_gibs = bpy.props.CollectionProperty(
+        type = MagickCowProperty_Gib,
+        name = "Gibs",
+        description = "List of the gibs spawned by this physics entity when destroyed."
+    )
+
     # endregion
     
     return
