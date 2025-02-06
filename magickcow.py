@@ -448,6 +448,7 @@ def get_action_keyframes(action):
     # A generic class for data generation.
     # This class contains methods to generate data that is generic to all types of assets.
     # Each specific Data generator class will implement data generation methods that are specific for each type of asset to be exported.
+    # NOTE : At some point in the future, it may make sense to move much of the logic here to some intermediate DataGenerator class (that inherits from the base one) that implements all of the 3D related operations and materials / effects / shared resources handling which some other forms of files that we could generate may not deal with... for example character creation...
 # endregion
 class DataGenerator:
     
