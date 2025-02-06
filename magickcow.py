@@ -3463,9 +3463,25 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         return ans
 
     def make_model(self, model):
+        meshes, bones = model
         ans = {
             "tag" : None, # Always null in Magicka...
-            # TODO : Finish implementing
+            "numBones" : len(bones),
+            "bones" : self.make_model_bones(bones),
+        }
+        return ans
+    
+    def make_model_bones(self, bones):
+        ans = [self.make_model_bone(bone) for bone in bones]
+        return ans
+    
+    def make_model_bone(self, bone):
+        ans = {
+            "index" : bone.index,
+            "name" : bone.name,
+            "transform" : self.make_matrix(bone.transform),
+            "parent" : bone.parent,
+            "children" : bone.children
         }
         return ans
 
