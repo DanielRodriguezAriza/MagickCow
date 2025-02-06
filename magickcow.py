@@ -188,6 +188,14 @@ class Storage_PhysicsEntity_Model:
         self.meshes = []
         self.bones = []
 
+class PE_Storage_Bone:
+    def __init__(self):
+        self.obj = None
+        self.transform = None
+        self.index = 0
+        self.parent = -1
+        self.children = []
+
 # endregion
 
 # region Generate Stage Classes
@@ -236,6 +244,15 @@ class PE_Generate_Gib:
         self.model = model
         self.mass = mass
         self.scale = scale
+
+class PE_Generate_Bone:
+    def __init__(self):
+        self.index = 0
+        self.name = "bone"
+        self.transform = None
+        self.parent = -1
+        self.children
+
 
 # endregion
 
