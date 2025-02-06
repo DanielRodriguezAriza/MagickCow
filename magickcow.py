@@ -3358,11 +3358,13 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         return (name, parent_bone_index, vertices, indices, shared_resource_index)
 
     def generate_model_bones(self, bones):
-        ans = [self.generate_model_bone(bone) for bone, child_bone_indices in bones]
+        ans = [self.generate_model_bone(bone) for bone in bones]
         return ans
 
-    def generate_model_bone(self, bone, child_bones_indices):
-        idx = 
+    def generate_model_bone(self, bone):
+        obj, transform, idx, children = bone
+        mat = self.generate_matrix(transform)
+        return (idx, obj.name, mat, parent, children)
 
     # endregion
 
