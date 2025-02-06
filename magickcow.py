@@ -3554,8 +3554,9 @@ class MagickCowPanelObjectPropertiesPhysicsEntity:
         layout.prop(obj, "mcow_physics_entity_can_have_status")
         layout.prop(obj, "mcow_physics_entity_hitpoints")
 
+        # NOTE : Using the layout.prop(obj, "mcow_physics_entity_resistances") method does not work for lists of properties ("collection properties"). You must use a box instead.
+
         # Resistances list
-        # layout.prop(obj, "mcow_physics_entity_resistances") # NOTE : This method does not work for lists of properties. You must use a box instead.
         layout.label(text="Resistances")
         layout.operator("magickcow.resistance_add_item")
         for index, item in enumerate(obj.mcow_physics_entity_resistances):
@@ -3564,6 +3565,17 @@ class MagickCowPanelObjectPropertiesPhysicsEntity:
             box.prop(item, "multiplier")
             box.prop(item, "modifier")
             remove_op = box.operator("magickcow.resistance_remove_item")
+            remove_op.index = index
+        
+        # Gibs list
+        layout.label(text="Gibs")
+        layout.operator("magickcow.gibs_add_item")
+        for index, item in enumerate(obj.mcow_physics_entity_gibs):
+            box = layout.box()
+            box.prop(item, "model")
+            box.prop(item, "mass")
+            box.prop(item, "scale")
+            remove_op = box.operator("magickcow.gibs_remove_item")
             remove_op.index = index
     
     def draw_empty_bone(self, layout, obj):
@@ -3763,6 +3775,8 @@ class MAGICKCOW_OT_Operator_Gib_RemoveItem(bpy.types.Operator):
 
 # endregion
 
+# region Register functions
+
 def register_properties_classes():
     # Resistances
     bpy.utils.register_class(MagickCowProperty_Resistance)
@@ -3784,6 +3798,8 @@ def unregister_properties_classes():
     bpy.utils.unregister_class(MagickCowProperty_Gib)
     bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Gib_AddItem)
     bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Gib_RemoveItem)
+
+# endregion
 
 # endregion
 
