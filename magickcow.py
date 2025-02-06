@@ -3884,7 +3884,6 @@ class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
     # like it would make things less cluttered. The right most panel, which is where the scene panel is located by default, is pretty large by default and it is a location that makes sense for the kind of configuration
     # that it will store, so I'd rather put it there, since I believe this is more intuitive for Blender users than coming up with my own conventions.
 # endregion
-
 class MagickCowScenePanel(bpy.types.Panel):
     bl_label = "MagickCow Scene Configuration"
     bl_idname = "SCENE_PT_MagickCow_Scene_Tools"
@@ -3903,7 +3902,10 @@ class MagickCowScenePanel(bpy.types.Panel):
         
         layout.label(text="JSON Export Settings")
         layout.prop(scene, "mcow_scene_json_pretty")
-        layout.prop(scene, "mcow_scene_json_indent")
+        if scene.mcow_scene_json_pretty:
+            layout.prop(scene, "mcow_scene_json_char")
+            if scene.mcow_scene_json_char == "SPACE":
+                layout.prop(scene, "mcow_scene_json_indent")
 
 # endregion
 
