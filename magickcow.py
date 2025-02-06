@@ -46,6 +46,7 @@ from collections import namedtuple
 # region Blender GSD Object classes
 
 # NOTE : GSD = Get Stage Data
+# TODO : Get rid of this unused class or update all of the code to use this rather than passing (obj, transform) pairs around...
 
 # This is the base class for a Get Stage Data Object.
 # It contains a pointer to the blender object and a transform matrix which contains the transform relative to the parent as it would be defined within the XNB file
@@ -3313,7 +3314,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         ans.sound_banks = ""
         # This is where the "unknown" properties end.
 
-        ans.model = self.generate_models(data.model)
+        ans.model = self.generate_model(data.model)
 
 
         # TODO : Finish adding all of the remaining values for the ans object
@@ -3340,10 +3341,17 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
         return ans
 
-    def generate_models(self, model_data):
+    def generate_model(self, model_data):
         meshes = model_data.meshes
         bones = model_data.bones
         # TODO : Implement
+        
+    def generate_model_mesh(self, obj, transform, matid, parent_bone_index):
+        name = obj.name
+        vertices, indices, matname = self.generate_mesh_data(obj, transform, True, matid)
+        shared_resource_index = self.add_shared_resource(matname, get_material(matname))
+        return (name, parent_bone_index, vertices, indices, shared_resource_index)
+
 
     # endregion
 
