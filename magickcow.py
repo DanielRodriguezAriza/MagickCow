@@ -251,7 +251,7 @@ class PE_Generate_Bone:
         self.name = "bone"
         self.transform = None
         self.parent = -1
-        self.children
+        self.children = []
 
 
 # endregion
