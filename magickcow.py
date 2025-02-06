@@ -874,6 +874,151 @@ class DataGenerator:
 
     # endregion
 
+    # region Generate - Mesh
+
+    def generate_mesh_data(self, obj, transform, uses_material = True, material_index = 0):
+        
+        # Matrix to convert from Z up to Y up
+        # M_conv = mathutils.Matrix((
+        #     (1,  0,  0,  0),
+        #     (0,  0,  1,  0),
+        #     (0, -1,  0,  0),
+        #     (0,  0,  0,  1)
+        # ))
+
+        # Get the inverse-tranpose matrix of the object's transform matrix to use it on directional vectors (normals and tangents)
+        # NOTE : The reason we do this is because vectors that represent points in space need to be translated, but vectors that represent directions don't, so we use the input transform matrix for point operations and the inverse-transpose matrix for direction vector operations, since that allows transforming vectors without displacing them (no translation) but properly preserves the other transformations (scale, rotation, shearing, whatever...)
+        # NOTE : This operation is the equivalent of displacing 2 points using the input transform matrix, one P0(0,0,0) and another P1(n1,n2,n3), and then calculating the vector that goes from P0' to P1', but using the invtrans is faster because it only requires one single matrix calculation, which also has a faster underlying implementation in Python.
+        invtrans = transform.inverted().transposed()
+
+        # Get triangulated mesh
+        mesh, bm = self.get_mesh_data(obj)
+        
+        # Get material name
+        matname = self.get_material_name(obj, material_index)
+
+        # If the mesh uses a material, generate the material data and store it
+        if uses_material:
+            self.create_material(matname, mesh.magickcow_mesh_type)
+        
+        # Define vertex buffer and index buffer
+        vertices = []
+        indices = []
+
+        # Define vertex map (used to duplicate vertices to translate Blender's face based data such as UVs to vertex based data)
+        vertices_map = {}
+        
+        # TODO : In future implementations, maybe allow configurable color layer name?
+        # Get the Vertex color layer if it exists
+        if len(mesh.color_attributes) > 0: # There exists at least 1 color attribute layer for this mesh
+            color_layer = mesh.color_attributes[0] # Get the first layer for now
+        else:
+            color_layer = None
+            color_default = (0.0, 0.0, 0.0, 0.0) if mesh.magickcow_mesh_type in ["WATER", "LAVA"] else (1.0, 1.0, 1.0, 0.0)
+            # NOTE : It seems like vector <0,0,0,0> works universally and does not actually mean paint black the surface, not sure why...
+            # it would make sense to use that vector in the future, but for now, we're rolling with this as it seems to work pretty nicely.
+            # I'll get this polished even further in the future when I figure out more aobut how the Magicka shaders are coded internally...
+
+        # Extract vertex data (vertex buffer and index buffer)
+        # Generate the vertex map for vertex duplication
+        # The map is used to generate duplicate vertices each time we find a vertex with non matching UVs so as to allow Blender styled UVs (per face) to work in Magicka (where UVs are per vertex, meaning we have to duplicate vertices in some cases). The map prevents having to make a duplicate vertex for every single face, making it so that we only have to duplicate the vertices where the UV data does not match between faces.
+        # The algorithm is surprisingly fast, and I am quite happy with this result for now.
+        global_vertex_index = 0
+        for poly in mesh.polygons:
+            
+            # Ignore all polygons that don't have the same material index as the input material index.
+            # NOTE : The default material index returned by surfaces that don't have an assigned material is 0, so the default input material index parameter for this function is also 0
+            # so as to allow easy support for exporting meshes that have no material assigned.
+            if poly.material_index != material_index:
+                continue
+
+            temp_indices = []
+            for loop_idx in poly.loop_indices:
+                loop = mesh.loops[loop_idx]
+                vertex_idx = loop.vertex_index
+                
+                position = transform @ mesh.vertices[vertex_idx].co.to_4d()
+                # position = M_conv @ position
+                position = (position[0], position[1], position[2])
+                
+                normal = invtrans @ loop.normal
+                # normal = M_conv @ normal
+                normal = (normal[0], normal[1], normal[2])
+                
+                tangent = invtrans @ loop.tangent
+                # tangent = M_conv @ tangent
+                tangent = (tangent[0], tangent[1], tangent[2])
+                
+                uv = mesh.uv_layers.active.data[loop_idx].uv
+                uv = (uv[0], -uv[1]) # Invert the "Y axis" (V axis, controlled by Y property in Blender) of the UVs because Magicka has it inverted for some reason...
+                
+                # Check if the color layer is not null and then extract the color data. Otherwise, create a default color value.
+                # btw, to make things faster in the future, we could actually not use an if on every single loop and just create a dummy list with 3 elements as color_layer.data or whatever...
+                if color_layer is not None:
+                    color = color_layer.data[loop_idx].color
+                    color = (color[0], color[1], color[2], color[3])
+                else:
+                    # Default color value : vector < 1, 1, 1, 0 >
+                    # region Comment
+                        # The default color value should either be <1,1,1,1>, <0,0,0,1> or <1,1,1,0> or some other vector to that effect...
+                        # The reason for picking the vector <1,1,1,0> is that the default vertex color will paint the surface with a color multiplication on top of the used textures, so the RGB section is
+                        # ideal to have as <1,1,1> by default.
+                        # The alpha channel is used to lerp between 2 texture sets on deferred effects, and the value 0 corresponds to the first texture set, so it is ideal to have the alpha value to 0 by default.
+                        # The default value does not matter at all in the case of using an effect JSON file where the use vertex color attribute is set to false tho. But in case it is set to true, this is the best
+                        # default vector in my opinion.
+                    # endregion
+                    color = color_default
+
+                vertex = (global_vertex_index, position, normal, tangent, uv, color)
+                
+                # If the map entry does not exist (we have not added this vertex yet) or the vertex in the map has different UVs (we have found one of Blender's UVs seams caused by its face based UVs), then we create a new vertex entry or modify the entry that already exists.
+                # Allows to reduce the number of duplicated vertices.
+                # The duplicated vertices exist to allow the far more complex UVs that we can make when using the face based UV system that Blender has. The problem is that graphics APIs work with vertex based UVs, so we need to duplicate these vertices and generate new faces to get the correct results.
+                if vertex_idx not in vertices_map: # if entry is not in map (new vertex, first time we see it)
+                    vertices_map[vertex_idx] = []
+                    vertices_map[vertex_idx].append(vertex)
+                    temp_indices.append(global_vertex_index)
+                    global_vertex_index += 1
+                else: # if entry is in map...
+                    matching_list_entry_found = False
+                    matching_list_entry = (0, 0)
+                    for list_entry in vertices_map[vertex_idx]:
+                        if (list_entry[4][0] == uv[0] and list_entry[4][1] == uv[1]) and (list_entry[2][0] == normal[0] and list_entry[2][1] == normal[1] and list_entry[2][2] == normal[2]):
+                            matching_list_entry_found = True
+                            matching_list_entry = list_entry
+                            break
+                    if matching_list_entry_found: # if we found a matching entry in the list, then the vertex already exists, so we reuse it.
+                        temp_indices.append(matching_list_entry[0])
+                    else: # else, we didn't find any matching entries, so we create a new copy of the vertex with its new UV data.
+                        vertices_map[vertex_idx].append(vertex)
+                        temp_indices.append(global_vertex_index)
+                        global_vertex_index += 1
+            
+            # Swap the points order so that they follow the same winding as Magicka.
+            temp = temp_indices[0]
+            temp_indices[0] = temp_indices[2]
+            temp_indices[2] = temp
+            
+            indices += temp_indices
+        
+        # Generate the vertex buffer from the vertex map:
+        # NOTE : We care about sorting the extracted data of the map based on the global vert idx, because, even tho part of the data is ordered by ascending order, the maps are still ordered by insertion order, and we insert lists of vertices for each key, so the global indices within those lists, while ordered, just looking over them and appending them will not give us the correct global index ordering, so we still need to sort the list...
+        # Maybe some day I'll come up with a faster way to do this.
+        # Also, we just append the vert directly rather than extracting it to remove the global index because that's the key we use for sorting, and because I don't really want to make yet another tuple copy... Python sure is slow for some of this stuff...
+        for key, vertex_list in vertices_map.items():
+            for vert in vertex_list:
+                vertices.append(vert)
+        vertices.sort() # Sorts the vertices based on the global vertex index, which is what the sort() method uses as sorting key by default for tuples.
+
+        # Free the bm (for consistency, this is done at the end of the gen process for all different mesh types, but in truth, for this gen function it could be freed as soon as we get it)
+        bm.free()
+
+        # vertices : List<Vertex>; vertices is the vertex buffer, which is a list containing tuples of type Vertex one after another.
+        # indices : List<int>; indices is the index buffer, which is a list of all of the indices ordered to generate the triangles. They are NOT grouped in any form of triangle struct, the indices are laid out just as they would be in memory.
+        return (vertices, indices, matname)
+
+    # endregion
+
     # endregion
 
     # region Make
@@ -1353,147 +1498,6 @@ class DataGeneratorMap(DataGenerator):
         
         return (obj, transform, obj.name, matrix, vertices, indices, idx)
 
-    def generate_mesh_data(self, obj, transform, uses_material = True, material_index = 0):
-        
-        # Matrix to convert from Z up to Y up
-        # M_conv = mathutils.Matrix((
-        #     (1,  0,  0,  0),
-        #     (0,  0,  1,  0),
-        #     (0, -1,  0,  0),
-        #     (0,  0,  0,  1)
-        # ))
-
-        # Get the inverse-tranpose matrix of the object's transform matrix to use it on directional vectors (normals and tangents)
-        # NOTE : The reason we do this is because vectors that represent points in space need to be translated, but vectors that represent directions don't, so we use the input transform matrix for point operations and the inverse-transpose matrix for direction vector operations, since that allows transforming vectors without displacing them (no translation) but properly preserves the other transformations (scale, rotation, shearing, whatever...)
-        # NOTE : This operation is the equivalent of displacing 2 points using the input transform matrix, one P0(0,0,0) and another P1(n1,n2,n3), and then calculating the vector that goes from P0' to P1', but using the invtrans is faster because it only requires one single matrix calculation, which also has a faster underlying implementation in Python.
-        invtrans = transform.inverted().transposed()
-
-        # Get triangulated mesh
-        mesh, bm = self.get_mesh_data(obj)
-        
-        # Get material name
-        matname = self.get_material_name(obj, material_index)
-
-        # If the mesh uses a material, generate the material data and store it
-        if uses_material:
-            self.create_material(matname, mesh.magickcow_mesh_type)
-        
-        # Define vertex buffer and index buffer
-        vertices = []
-        indices = []
-
-        # Define vertex map (used to duplicate vertices to translate Blender's face based data such as UVs to vertex based data)
-        vertices_map = {}
-        
-        # TODO : In future implementations, maybe allow configurable color layer name?
-        # Get the Vertex color layer if it exists
-        if len(mesh.color_attributes) > 0: # There exists at least 1 color attribute layer for this mesh
-            color_layer = mesh.color_attributes[0] # Get the first layer for now
-        else:
-            color_layer = None
-            color_default = (0.0, 0.0, 0.0, 0.0) if mesh.magickcow_mesh_type in ["WATER", "LAVA"] else (1.0, 1.0, 1.0, 0.0)
-            # NOTE : It seems like vector <0,0,0,0> works universally and does not actually mean paint black the surface, not sure why...
-            # it would make sense to use that vector in the future, but for now, we're rolling with this as it seems to work pretty nicely.
-            # I'll get this polished even further in the future when I figure out more aobut how the Magicka shaders are coded internally...
-
-        # Extract vertex data (vertex buffer and index buffer)
-        # Generate the vertex map for vertex duplication
-        # The map is used to generate duplicate vertices each time we find a vertex with non matching UVs so as to allow Blender styled UVs (per face) to work in Magicka (where UVs are per vertex, meaning we have to duplicate vertices in some cases). The map prevents having to make a duplicate vertex for every single face, making it so that we only have to duplicate the vertices where the UV data does not match between faces.
-        # The algorithm is surprisingly fast, and I am quite happy with this result for now.
-        global_vertex_index = 0
-        for poly in mesh.polygons:
-            
-            # Ignore all polygons that don't have the same material index as the input material index.
-            # NOTE : The default material index returned by surfaces that don't have an assigned material is 0, so the default input material index parameter for this function is also 0
-            # so as to allow easy support for exporting meshes that have no material assigned.
-            if poly.material_index != material_index:
-                continue
-
-            temp_indices = []
-            for loop_idx in poly.loop_indices:
-                loop = mesh.loops[loop_idx]
-                vertex_idx = loop.vertex_index
-                
-                position = transform @ mesh.vertices[vertex_idx].co.to_4d()
-                # position = M_conv @ position
-                position = (position[0], position[1], position[2])
-                
-                normal = invtrans @ loop.normal
-                # normal = M_conv @ normal
-                normal = (normal[0], normal[1], normal[2])
-                
-                tangent = invtrans @ loop.tangent
-                # tangent = M_conv @ tangent
-                tangent = (tangent[0], tangent[1], tangent[2])
-                
-                uv = mesh.uv_layers.active.data[loop_idx].uv
-                uv = (uv[0], -uv[1]) # Invert the "Y axis" (V axis, controlled by Y property in Blender) of the UVs because Magicka has it inverted for some reason...
-                
-                # Check if the color layer is not null and then extract the color data. Otherwise, create a default color value.
-                # btw, to make things faster in the future, we could actually not use an if on every single loop and just create a dummy list with 3 elements as color_layer.data or whatever...
-                if color_layer is not None:
-                    color = color_layer.data[loop_idx].color
-                    color = (color[0], color[1], color[2], color[3])
-                else:
-                    # Default color value : vector < 1, 1, 1, 0 >
-                    # region Comment
-                        # The default color value should either be <1,1,1,1>, <0,0,0,1> or <1,1,1,0> or some other vector to that effect...
-                        # The reason for picking the vector <1,1,1,0> is that the default vertex color will paint the surface with a color multiplication on top of the used textures, so the RGB section is
-                        # ideal to have as <1,1,1> by default.
-                        # The alpha channel is used to lerp between 2 texture sets on deferred effects, and the value 0 corresponds to the first texture set, so it is ideal to have the alpha value to 0 by default.
-                        # The default value does not matter at all in the case of using an effect JSON file where the use vertex color attribute is set to false tho. But in case it is set to true, this is the best
-                        # default vector in my opinion.
-                    # endregion
-                    color = color_default
-
-                vertex = (global_vertex_index, position, normal, tangent, uv, color)
-                
-                # If the map entry does not exist (we have not added this vertex yet) or the vertex in the map has different UVs (we have found one of Blender's UVs seams caused by its face based UVs), then we create a new vertex entry or modify the entry that already exists.
-                # Allows to reduce the number of duplicated vertices.
-                # The duplicated vertices exist to allow the far more complex UVs that we can make when using the face based UV system that Blender has. The problem is that graphics APIs work with vertex based UVs, so we need to duplicate these vertices and generate new faces to get the correct results.
-                if vertex_idx not in vertices_map: # if entry is not in map (new vertex, first time we see it)
-                    vertices_map[vertex_idx] = []
-                    vertices_map[vertex_idx].append(vertex)
-                    temp_indices.append(global_vertex_index)
-                    global_vertex_index += 1
-                else: # if entry is in map...
-                    matching_list_entry_found = False
-                    matching_list_entry = (0, 0)
-                    for list_entry in vertices_map[vertex_idx]:
-                        if (list_entry[4][0] == uv[0] and list_entry[4][1] == uv[1]) and (list_entry[2][0] == normal[0] and list_entry[2][1] == normal[1] and list_entry[2][2] == normal[2]):
-                            matching_list_entry_found = True
-                            matching_list_entry = list_entry
-                            break
-                    if matching_list_entry_found: # if we found a matching entry in the list, then the vertex already exists, so we reuse it.
-                        temp_indices.append(matching_list_entry[0])
-                    else: # else, we didn't find any matching entries, so we create a new copy of the vertex with its new UV data.
-                        vertices_map[vertex_idx].append(vertex)
-                        temp_indices.append(global_vertex_index)
-                        global_vertex_index += 1
-            
-            # Swap the points order so that they follow the same winding as Magicka.
-            temp = temp_indices[0]
-            temp_indices[0] = temp_indices[2]
-            temp_indices[2] = temp
-            
-            indices += temp_indices
-        
-        # Generate the vertex buffer from the vertex map:
-        # NOTE : We care about sorting the extracted data of the map based on the global vert idx, because, even tho part of the data is ordered by ascending order, the maps are still ordered by insertion order, and we insert lists of vertices for each key, so the global indices within those lists, while ordered, just looking over them and appending them will not give us the correct global index ordering, so we still need to sort the list...
-        # Maybe some day I'll come up with a faster way to do this.
-        # Also, we just append the vert directly rather than extracting it to remove the global index because that's the key we use for sorting, and because I don't really want to make yet another tuple copy... Python sure is slow for some of this stuff...
-        for key, vertex_list in vertices_map.items():
-            for vert in vertex_list:
-                vertices.append(vert)
-        vertices.sort() # Sorts the vertices based on the global vertex index, which is what the sort() method uses as sorting key by default for tuples.
-
-        # Free the bm (for consistency, this is done at the end of the gen process for all different mesh types, but in truth, for this gen function it could be freed as soon as we get it)
-        bm.free()
-
-        # vertices : List<Vertex>; vertices is the vertex buffer, which is a list containing tuples of type Vertex one after another.
-        # indices : List<int>; indices is the index buffer, which is a list of all of the indices ordered to generate the triangles. They are NOT grouped in any form of triangle struct, the indices are laid out just as they would be in memory.
-        return (vertices, indices, matname)
-    
     # NOTE : For now, both water and lava generation are identical, so they rely on the same generate_liquid_data() function.
     # In the past, they used to have their own identical functions just in case, but I haven't really found any requirements for that yet so yeah...
     # Maybe it could be useful to add some kind of exception throwing or error checking or whatever to prevent players from exporting maps where waters have materials that
