@@ -216,6 +216,12 @@ class PE_Generate_Resistance:
         self.multiplier = multiplier
         self.modifier = modifier
 
+class PE_Generate_Gib:
+    def __init__(self, model = "", mass = 1, scale = 1):
+        self.model = model
+        self.mass = mass
+        self.scale = scale
+
 # endregion
 
 # endregion
