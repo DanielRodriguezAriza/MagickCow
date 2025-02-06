@@ -510,6 +510,7 @@ class DataGenerator:
     # TODO : To be able to use this simpler root based rotation for map scenes, we need to find a way to translate rotations. We don't have to have the 90 degree rotation fix for empties anymore, sure, but
     # previously we did not apply any rotation fix to lights either... why? because lights with a rotation apply over a direction vector. What this means is that without the rotation fix, all of my final rotations
     # are Z up based, even tho my final points will be Y up based... or maybe I'm confused and this is actually wrong?
+    # NOTE : Actually, now that I think about it, wouldn't we still have to undo rotations locally for point data whose location, rotation and scalre are exported with a matrix? If you think about it, lights are not affected despite being point data because their direction is exported as a director vector. I need to think about this shit tbh...
     def rotate_scene(self, angle_degrees, axis = "X"):
         roots = self.get_scene_roots()
         rotation_matrix = mathutils.Matrix.Rotation(math.radians(angle_degrees), 4, axis)
