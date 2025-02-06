@@ -3120,7 +3120,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         generate_stage_physics_entity = self.generate(get_stage_physics_entity)
 
         # Make
-        make_stage_physics_entity = self.make(generate_stage_physics_entity, []) # TODO : Implement actual shared resources list here
+        make_stage_physics_entity = self.make(generate_stage_physics_entity, self.dict_shared_resources)
 
         return make_stage_physics_entity
 
@@ -3277,8 +3277,8 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
     # region Make Stage
 
-    def make(self, generated_scene_data, shared_resources_list):
-        return self.make_xnb_file(self.make_physics_entity(generated_scene_data), shared_resources_list)
+    def make(self, generated_scene_data, shared_resources_data):
+        return self.make_xnb_file(self.make_physics_entity(generated_scene_data), self.make_shared_resources_list(shared_resources_data))
 
     def make_physics_entity(self, generated_data): # TODO : Add parameters
         # TODO : Implement literally everything
