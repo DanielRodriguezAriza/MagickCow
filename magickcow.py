@@ -3256,12 +3256,12 @@ class DataGeneratorPhysicsEntity(DataGenerator):
                     # Add the current bone to the list of found bones
                     bone_obj = obj
                     bone_idx = len(found_objects.model.bones) # NOTE : We don't subtract 1 because the current bone has not been added to the list yet!!!
-                    found_objects.model.bones.append((bone_obj, [])) # (bone_obj, list_of_child_bones)
+                    found_objects.model.bones.append((bone_obj, transform, bone_idx, [])) # (bone_obj, list_of_child_bones)
                     
                     # Update the list of child bone indices for the parent bone
-                    parent_bone_obj, parent_bones_indices_list = found_objects.model.bones[parent_bone_index]
-                    parent_bones_indices_list.append(bone_idx)
-                    found_objects.model.bones[parent_bone_index] = (parent_bone_obj, parent_bones_indices_list)
+                    parent_obj, parent_transform, parent_index, parent_indices = found_objects.model.bones[parent_bone_index]
+                    parent_indices.append(bone_idx)
+                    found_objects.model.bones[parent_bone_index] = (parent_obj, parent_transform, parent_index, parent_indices)
 
                     # Make recursive call to get all of the data of the child objects of this bone.
                     self.get_scene_data_rec(found_objects, obj.children, bone_idx) # NOTE : The index we pass is literally the index of the bone we just added to the found objects' bones list.
@@ -3362,7 +3362,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         return ans
 
     def generate_model_bone(self, bone, child_bones_indices):
-        return # TODO : Implement
+        idx = 
 
     # endregion
 
