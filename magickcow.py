@@ -3255,7 +3255,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             "MaxHitPoints" : generated_data.max_hit_points,
             "CanHaveStatus" : generated_data.can_have_status,
             "Resistances" : self.make_resistances(generated_data.resistances),
-            "Gibs" : generated_data.gibs,
+            "Gibs" : self.make_gibs(generated_data.gibs),
             "GibTrailEffect" : generated_data.gib_trail_effect,
             "HitEffect" : generated_data.hit_effect,
             "VisualEffects" : generated_data.visual_effects,
@@ -3293,6 +3293,18 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             "Elements" : resistance.element,
             "Multiplier" : resistance.multiplier,
             "Modifier" : resistance.modifier
+        }
+        return ans
+
+    def make_gibs(self, gibs):
+        ans = [self.make_gib(gib) for gib in gibs]
+        return ans
+    
+    def make_gib(self, gib):
+        ans = {
+            "Model" : gib.model,
+            "Mass" : gib.mass,
+            "Scale" : gib.scale
         }
         return ans
 
