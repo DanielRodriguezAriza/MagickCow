@@ -22,8 +22,16 @@ def mcow_file_generate(out_filename, in_filenames):
 def main():
     ofilename = "./magickcow.py"
     ifilenames = [
-        "./comments.py",
-        "./main.py",
+        "./main/comments.py",
+        "./main/blender_info.py",
+        "./main/imports.py",
+        
+        "./panels/exporter.py",
+        
+        "./properties/object/map_properties.py",
+        "./properties/scene/scene_properties.py",
+        
+        "./main/main.py",
     ]
     mcow_file_generate(ofilename, ifilenames)
 
