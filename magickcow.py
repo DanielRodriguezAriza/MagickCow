@@ -3683,24 +3683,27 @@ class MagickCowScenePanel(bpy.types.Panel):
 
 # region Resistances
 
+
+# TODO : Maybe make the elements enum into some kind of function that returns the result of the bpy.props.EnumProperty() call so that we can make element enums anywhere we want?
+# Also, think about adding support for all of the possible values for elements, including stuff like "Beams" and whatnot...
 class MagickCowProperty_Resistance(bpy.types.PropertyGroup):
     element : bpy.props.EnumProperty(
         name = "Element",
         description = "Magical element described by this entry",
         items = [
-            ("Q", "Water", "Water Element"),
-            ("W", "Heal", "Heal Element"),
-            ("E", "Shield", "Shield Element"),
-            ("R", "Cold", "Cold Element"),
-            ("A", "Electricity", "Electricity Element"),
-            ("S", "Arcane", "Arcane Element"),
-            ("D", "Earth", "Earth Element"),
-            ("F", "Fire", "Fire Element"),
-            ("QF", "Steam", "Steam Element"),
-            ("QR", "Ice", "Ice Element"),
-            ("QS", "Poison", "Poison Element")
+            ("Water", "Water", "Water Element"),
+            ("Life", "Life", "Life Element"),
+            ("Shield", "Shield", "Shield Element"),
+            ("Cold", "Cold", "Cold Element"),
+            ("Lighting", "Lighting", "Electricity Element"),
+            ("Arcane", "Arcane", "Arcane Element"),
+            ("Earth", "Earth", "Earth Element"),
+            ("Fire", "Fire", "Fire Element"),
+            ("Steam", "Steam", "Steam Element"),
+            ("Ice", "Ice", "Ice Element"),
+            ("Poison", "Poison", "Poison Element")
         ],
-        default = "D"
+        default = "Earth"
     )
     multiplier : bpy.props.FloatProperty(
         name = "Multiplier",
