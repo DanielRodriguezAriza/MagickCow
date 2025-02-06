@@ -3206,6 +3206,12 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             if not obj.magickcow_allow_export:
                 continue
             
+            # Calculate the transform for this object, relative to what is considered its parent in the Magicka tree structure
+            if parent_bone_index < 0:
+                transform = get_object_transform(obj, None)
+            else:
+                transform = get_object_transform(obj, found_objects.bones[parent_bone_index][0])
+
             # Process objects of type mesh, which should be visual geometry meshes and collision meshes
             elif obj.type == "MESH":
                 mesh = obj.data
@@ -3213,7 +3219,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
                 # Process meshes for visual geometry
                 if mesh_type == "GEOMETRY":
-                    self.get_scene_data_add_mesh(found_objects, obj, None, parent_bone_index) # TODO : Implement relative transform calculations
+                    self.get_scene_data_add_mesh(found_objects, obj, transform, parent_bone_index) # TODO : Implement relative transform calculations
                 
                 # Process meshes for collision geometry
                 elif mesh_type == "COLLISION":
