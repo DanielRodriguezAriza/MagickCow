@@ -1329,12 +1329,9 @@ class DataGeneratorMap(DataGenerator):
 
     # region Constructor
 
-    def __init__(self, export_path, export_animation):
+    def __init__(self):
 
         super().__init__()
-
-        self.export_path = export_path
-        self.export_animation = export_animation
 
         self.time_get = 0
         self.time_generate = 0
