@@ -3271,17 +3271,21 @@ class DataGeneratorPhysicsEntity(DataGenerator):
                             raise Exception(f"The bone name \"{name}\" is reserved!")
 
                     # Add the current bone to the list of found bones
-                    bone_obj = obj
-                    bone_idx = len(found_objects.model.bones) # NOTE : We don't subtract 1 because the current bone has not been added to the list yet!!!
-                    found_objects.model.bones.append((bone_obj, transform, bone_idx, [])) # (bone_obj, list_of_child_bones)
+
+                    current_bone = PE_Storage_Bone()
+                    current_bone.obj = obj
+                    current_bone.transform = transform
+                    current_bone.index = len(found_objects.model.bones) # NOTE : We don't subtract 1 because the current bone has not been added to the list yet!!!
+                    current_bone.parent = parent_bone_index
+                    current_bone.children = []
+
+                    found_objects.model.bones.append(current_bone)
                     
                     # Update the list of child bone indices for the parent bone
-                    parent_obj, parent_transform, parent_index, parent_indices = found_objects.model.bones[parent_bone_index]
-                    parent_indices.append(bone_idx)
-                    found_objects.model.bones[parent_bone_index] = (parent_obj, parent_transform, parent_index, parent_indices)
+                    found_objects.model.bones[current_bone.parent].children.append(current_bone.index)
 
                     # Make recursive call to get all of the data of the child objects of this bone.
-                    self.get_scene_data_rec(found_objects, obj.children, bone_idx) # NOTE : The index we pass is literally the index of the bone we just added to the found objects' bones list.
+                    self.get_scene_data_rec(found_objects, obj.children, current_bone.index) # NOTE : The index we pass is literally the index of the bone we just added to the found objects' bones list.
 
                 # Process empties for bounding boxes
                 elif obj.mcow_physics_entity_empty_type == "BOUNDING_BOX":
