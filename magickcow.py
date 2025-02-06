@@ -3555,6 +3555,8 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
 
     filter_glob : bpy.props.StringProperty(default = "*.json", options = {'HIDDEN'})
     
+    # region Deprecated
+
     # Discarded code where the properties used to depend on the export operator itself. Now they are global to the scene config / data instead.
     # region Deprecated Code
     # mcow_setting_export_path : bpy.props.StringProperty(
@@ -3582,6 +3584,9 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
     #     min = 1,
     #     max = 256 # Who the fuck is going to need this tho??? Anyone who is dicking around and wants to find out the limit, I guess.
     # )
+
+    # endregion
+
     # endregion
 
     # endregion
@@ -3591,8 +3596,12 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
     # NOTE : We use json.dumps to make a string rather than json.dump to dump directly into a file because json.dump is absurdly slow, but json.dumps and then writing the generated string into a file is way faster...
     # Maybe some weird python buffering shenanigans? Oh how I miss fprintf...
     def json_dump_str(self, context, obj_dict):
-        if context.scene.mcow_scene_json_pretty:
-            return json.dumps(obj_dict, indent = context.scene.mcow_scene_json_indent, separators = (",", ":"), check_circular = False)
+
+        is_pretty = context.scene.mcow_scene_json_pretty
+        selected_indent = context.scene.mcow_scene_json_indent if context.scene.mcow_scene_json_char == "SPACE" else "\t"
+
+        if is_pretty:
+            return json.dumps(obj_dict, indent = selected_indent, separators = (",", ":"), check_circular = False)
         return json.dumps(obj_dict, indent = None, separators = (",", ":"), check_circular = False)
 
     # endregion
