@@ -3377,7 +3377,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
     def generate_model(self, model_data):
         meshes = self.generate_model_meshes(model_data.meshes)
         bones = self.generate_model_bones(model_data.bones)
-        return (bones, meshes)
+        return (meshes, bones)
 
     def generate_model_meshes(self, meshes):
         ans = [self.generate_model_mesh(obj, transform, matid, parent_bone_index) for obj, transform, matid, parent_bone_index in meshes]
