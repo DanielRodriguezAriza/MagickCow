@@ -3213,7 +3213,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
                 # Process meshes for visual geometry
                 if mesh_type == "GEOMETRY":
-                    found_objects.model.meshes.append((obj, parent_bone_index)) # (mesh_object, parent_bone_index)
+                    self.get_scene_data_add_mesh(found_objects, obj, None, parent_bone_index) # TODO : Implement relative transform calculations
                 
                 # Process meshes for collision geometry
                 elif mesh_type == "COLLISION":
@@ -3254,10 +3254,10 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             # NOTE : We ignore objects of any type other than empties and meshes when getting objects to be processed for physics entity generation.
             # No need for an else case because we do nothing else within the loop.
 
-    def get_scene_data_add_mesh(self, found_objects, obj, transform):
+    def get_scene_data_add_mesh(self, found_objects, obj, transform, parent_bone_index):
         segments = self.get_mesh_segments(obj)
-        ans = [(segment_obj, transform, material_index) for segment_obj, material_index in segments]
-        return ans
+        ans = [(segment_obj, transform, material_index, parent_bone_index) for segment_obj, material_index in segments]
+        found_objects.meshes.extend(ans)
 
     # endregion
 
