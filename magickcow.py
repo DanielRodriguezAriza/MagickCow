@@ -3229,7 +3229,15 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         # Get the objects in the scene and form a tree-like structure for exporting.
         found_objects = Storage_PhysicsEntity()
         found_objects.root = root_objects[0]
-        found_objects.model.bones.append((root_objects[0], [-1])) # The root object will act as a bone for us when exporting the mesh. We add a list with element -1 because that is how we signal that there are no parent bones for the root bone.
+        
+        scene_root_bone = PE_Storage_Bone()
+        scene_root_bone.obj = found_objects.root
+        scene_root_bone.transform = found_objects.root.matrix_world
+        scene_root_bone.index = 0
+        scene_root_bone.parent = -1
+        scene_root_bone.children = []
+
+        found_objects.model.bones.append(scene_root_bone) # The root object will act as a bone for us when exporting the mesh. We add a list with element -1 because that is how we signal that there are no parent bones for the root bone.
         self.get_scene_data_rec(found_objects, root_objects[0].children, 0)
         
         return found_objects
@@ -3246,7 +3254,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             if parent_bone_index < 0:
                 transform = get_object_transform(obj, None)
             else:
-                transform = get_object_transform(obj, found_objects.model.bones[parent_bone_index][0])
+                transform = get_object_transform(obj, found_objects.model.bones[parent_bone_index].obj)
 
             # Process objects of type mesh, which should be visual geometry meshes and collision meshes
             if obj.type == "MESH":
