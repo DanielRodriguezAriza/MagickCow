@@ -1084,6 +1084,8 @@ class DataGenerator:
 
     # region Make - XNA
 
+    # NOTE : This is obviously NOT the structure of a binary XNB file... this is just the JSON text based way of organizing the data for an XNB file that MagickaPUP uses.
+    # This comment is pretty absurd as it states the obvious for myself... I just made it for future readers so that they don't tear the balls out trying to figure out wtf is going on, even tho I think it should be pretty obvious.
     def make_xnb_file(self, primary_object, shared_resources):
         ans = {
             "primaryObject" : primary_object,
