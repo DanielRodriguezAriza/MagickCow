@@ -561,6 +561,36 @@ class DataGenerator:
 
     # endregion
 
+    # region Generate
+
+    # region Generate - Math
+
+    def generate_matrix_data(self, transform):
+        matrix = transform
+        matrix = matrix.transposed() # XNA's matrices are row major, while Blender (and literally 90% of software in the planet) is column major... so we need to transpose the transform matrix.
+        m11 = matrix[0][0]
+        m12 = matrix[0][1]
+        m13 = matrix[0][2]
+        m14 = matrix[0][3]
+        m21 = matrix[1][0]
+        m22 = matrix[1][1]
+        m23 = matrix[1][2]
+        m24 = matrix[1][3]
+        m31 = matrix[2][0]
+        m32 = matrix[2][1]
+        m33 = matrix[2][2]
+        m34 = matrix[2][3]
+        m41 = matrix[3][0]
+        m42 = matrix[3][1]
+        m43 = matrix[3][2]
+        m44 = matrix[3][3]
+        ans = (m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44)
+        return ans
+
+    # endregion
+
+    # endregion
+
     # region Make
 
     # region Make - XNA
@@ -1522,28 +1552,6 @@ class DataGeneratorMap(DataGenerator):
         color_ambient = color_ambient * ambient_intensity
         
         return (name, position, rotation, light_type, variation_type, reach, attenuation, cutoffangle, sharpness, color_diffuse, color_ambient, specular_amount, variation_speed, variation_amount, shadow_map_size, casts_shadows)
-    
-    def generate_matrix_data(self, transform):
-        matrix = transform
-        matrix = matrix.transposed() # XNA's matrices are row major, while Blender (and literally 90% of software in the planet) is column major... so we need to transpose the transform matrix.
-        m11 = matrix[0][0]
-        m12 = matrix[0][1]
-        m13 = matrix[0][2]
-        m14 = matrix[0][3]
-        m21 = matrix[1][0]
-        m22 = matrix[1][1]
-        m23 = matrix[1][2]
-        m24 = matrix[1][3]
-        m31 = matrix[2][0]
-        m32 = matrix[2][1]
-        m33 = matrix[2][2]
-        m34 = matrix[2][3]
-        m41 = matrix[3][0]
-        m42 = matrix[3][1]
-        m43 = matrix[3][2]
-        m44 = matrix[3][3]
-        ans = (m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44)
-        return ans
     
     def generate_locator_data(self, obj, transform):
         name = obj.name
@@ -3219,7 +3227,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         ans.sound_banks = ""
         # This is where the "unknown" properties end.
 
-        
+
 
 
         # TODO : Finish adding all of the remaining values for the ans object
