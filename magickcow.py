@@ -3210,10 +3210,10 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             if parent_bone_index < 0:
                 transform = get_object_transform(obj, None)
             else:
-                transform = get_object_transform(obj, found_objects.bones[parent_bone_index][0])
+                transform = get_object_transform(obj, found_objects.model.bones[parent_bone_index][0])
 
             # Process objects of type mesh, which should be visual geometry meshes and collision meshes
-            elif obj.type == "MESH":
+            if obj.type == "MESH":
                 mesh = obj.data
                 mesh_type = mesh.mcow_physics_entity_mesh_type
 
@@ -3226,7 +3226,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
                     found_objects.collisions.append(obj)
             
             # Process objects of type empty, which should be roots and bones
-            if obj.type == "EMPTY":
+            elif obj.type == "EMPTY":
                 
                 # Process empties for bones
                 if obj.mcow_physics_entity_empty_type == "BONE":
@@ -3263,7 +3263,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
     def get_scene_data_add_mesh(self, found_objects, obj, transform, parent_bone_index):
         segments = self.get_mesh_segments(obj)
         ans = [(segment_obj, transform, material_index, parent_bone_index) for segment_obj, material_index in segments]
-        found_objects.meshes.extend(ans)
+        found_objects.model.meshes.extend(ans)
 
     # endregion
 
