@@ -211,8 +211,8 @@ class PE_Generate_BoundingBox:
         self.rotation = None # quaternion / vec4
 
 class PE_Generate_Resistance:
-    def __init__(self, elements = [], multiplier = 1, modifier = 0):
-        self.elements = elements
+    def __init__(self, element = "Earth", multiplier = 1, modifier = 0):
+        self.element = element
         self.multiplier = multiplier
         self.modifier = modifier
 
@@ -3202,7 +3202,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         ans.max_hit_points = obj.mcow_physics_entity_hitpoints
         ans.can_have_status = obj.mcow_physics_entity_can_have_status
 
-        ans.resistances = [(resistance.element, resistance.multiplier, resistance.modifier) for resistance in obj.mcow_physics_entity_resistances]
+        ans.resistances = [PE_Generate_Resistance(resistance.element, resistance.multiplier, resistance.modifier) for resistance in obj.mcow_physics_entity_resistances]
         
         # TODO : Finish adding all of the remaining values for the ans object
 
