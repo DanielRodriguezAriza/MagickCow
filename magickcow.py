@@ -3625,7 +3625,7 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
     def export_data_physics_entity(self, context):
         self.report({"INFO"}, "Exporting to MagickaPUP .json Physics Entity file...")
 
-        generator = DataGeneratorPhysicsEntity() # TODO : Implement this class
+        generator = DataGeneratorPhysicsEntity()
         xnb_dict = generator.process_scene_data()
         
         json_str = self.json_dump_str(context, xnb_dict)
@@ -3640,7 +3640,6 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
             return {"CANCELLED"}
 
     def export_data_map(self, context):
-        # Start export process...
         self.report({"INFO"}, "Exporting to MagickaPUP .json Map file...")
         
         # Create a generator instance and generate all of the data
@@ -3648,11 +3647,7 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
         xnb_json_dict = generator.process_scene_data()
         
         # Generate the string
-        write_string_time_start = time.time()
-        
         json_string = self.json_dump_str(context, xnb_json_dict)
-        
-        write_string_time_end = time.time()
         
         # TODO : Abstract this process into a simpler generic function that can be used to write the generated JSON data to the resulting file by all of the implemented export types.
         # Write the data into the file
@@ -3675,6 +3670,16 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
         
         return {'FINISHED'}
     
+    def write_to_file(self, contents):
+        try:
+            with open(self.filepath, 'w') as outfile:
+                outfile.write(contents)
+            self.report({"INFO"}, f"Successfully exported data to file \"{self.filepath}\"")
+            return {"FINISHED"}
+        except Exception as e:
+            self.report({"ERROR"}, f"Failed to export data: {e}")
+            return {"CANCELLED"}
+
     # endregion
 
 # endregion
