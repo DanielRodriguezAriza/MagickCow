@@ -876,6 +876,63 @@ class DataGenerator:
 
     # region Generate - Mesh
 
+    # region Generate - Mesh - Internal
+
+    # This function returns both mesh and bm so that the caller can use the bm in case they need it.
+    # NOTE : The user must free the bm manually.
+    # TODO : Maybe add support in the future for an input bool param that will allow the bm to be freed automatically if the user does not need it? and maybe also change the return tuple to only contain mesh in that case.
+    def mesh_triangulate(self, obj):
+        # Obtain the mesh data from the input object.
+        mesh = obj.data
+
+        # Triangulate the mesh
+        bm = bmesh.new()
+        bm.from_mesh(mesh)
+        bmesh.ops.triangulate(bm, faces=bm.faces)
+        bm.to_mesh(mesh)
+        
+        return mesh, bm
+
+    def mesh_apply_modifiers(self, obj):
+        # Obtain mesh data
+        mesh = obj.data
+
+        # Apply modifiers
+        for mod in obj.modifiers:
+            bpy.ops.object.modifier_apply(modifier=mod.name)
+
+    # Gets the data of a mesh object after applying modifiers and triangulating the mesh
+    def get_mesh_data(self, obj):
+        # Make a copy of the obj and its data
+        temp_obj = obj.copy()
+        temp_obj.data = obj.data.copy()
+
+        # Link the temp object to the scene
+        bpy.context.collection.objects.link(temp_obj)
+
+        # Select the copied object
+        temp_obj.select_set(state=True)
+        bpy.context.view_layer.objects.active = temp_obj
+
+        # Apply modifiers
+        self.mesh_apply_modifiers(temp_obj)
+
+        # Triangulate mesh
+        mesh, bm = self.mesh_triangulate(temp_obj)
+
+        # Make a copy of the mesh data yet again before deleting the object (we do this because Blender is allowed to garbage collect the mesh at any point, if we did not do this, it may sometimes work, and sometimes fail)
+        mesh = mesh.copy()
+
+        # Delete the temporary object
+        bpy.data.objects.remove(temp_obj, do_unlink=True)
+
+        # Return the mesh and bmesh
+        return mesh, bm # NOTE : mesh is freed automatically, bm needs to be freed manually by the caller.
+
+    # endregion
+
+    # region Generate - Mesh - Main
+
     def generate_mesh_data(self, obj, transform, uses_material = True, material_index = 0):
         
         # Matrix to convert from Z up to Y up
@@ -1016,6 +1073,8 @@ class DataGenerator:
         # vertices : List<Vertex>; vertices is the vertex buffer, which is a list containing tuples of type Vertex one after another.
         # indices : List<int>; indices is the index buffer, which is a list of all of the indices ordered to generate the triangles. They are NOT grouped in any form of triangle struct, the indices are laid out just as they would be in memory.
         return (vertices, indices, matname)
+
+    # endregion
 
     # endregion
 
@@ -3040,61 +3099,6 @@ class DataGeneratorMap(DataGenerator):
     def make_scene_data(self, generated_scene_data, shared_resources_list):
         ans = self.make_xnb_file(self.make_level_model(generated_scene_data), shared_resources_list)
         return ans
-
-    # endregion
-    
-    # region Other Functions
-
-    # This function returns both mesh and bm so that the caller can use the bm in case they need it.
-    # NOTE : The user must free the bm manually.
-    # TODO : Maybe add support in the future for an input bool param that will allow the bm to be freed automatically if the user does not need it? and maybe also change the return tuple to only contain mesh in that case.
-    def mesh_triangulate(self, obj):
-        # Obtain the mesh data from the input object.
-        mesh = obj.data
-
-        # Triangulate the mesh
-        bm = bmesh.new()
-        bm.from_mesh(mesh)
-        bmesh.ops.triangulate(bm, faces=bm.faces)
-        bm.to_mesh(mesh)
-        
-        return mesh, bm
-
-    def mesh_apply_modifiers(self, obj):
-        # Obtain mesh data
-        mesh = obj.data
-
-        # Apply modifiers
-        for mod in obj.modifiers:
-            bpy.ops.object.modifier_apply(modifier=mod.name)
-
-    # Gets the data of a mesh object after applying modifiers and triangulating the mesh
-    def get_mesh_data(self, obj):
-        # Make a copy of the obj and its data
-        temp_obj = obj.copy()
-        temp_obj.data = obj.data.copy()
-
-        # Link the temp object to the scene
-        bpy.context.collection.objects.link(temp_obj)
-
-        # Select the copied object
-        temp_obj.select_set(state=True)
-        bpy.context.view_layer.objects.active = temp_obj
-
-        # Apply modifiers
-        self.mesh_apply_modifiers(temp_obj)
-
-        # Triangulate mesh
-        mesh, bm = self.mesh_triangulate(temp_obj)
-
-        # Make a copy of the mesh data yet again before deleting the object (we do this because Blender is allowed to garbage collect the mesh at any point, if we did not do this, it may sometimes work, and sometimes fail)
-        mesh = mesh.copy()
-
-        # Delete the temporary object
-        bpy.data.objects.remove(temp_obj, do_unlink=True)
-
-        # Return the mesh and bmesh
-        return mesh, bm # NOTE : mesh is freed automatically, bm needs to be freed manually by the caller.
 
     # endregion
 
