@@ -645,7 +645,7 @@ class DataGenerator:
     # Automatically appends the ".json" extension if the material name does not end in ".json" to ensure that the correct file name is generated.
     # All validity checkign is performed later, when the actual contents of the file are retrieved, where the system checks for whether this file exists or not.
     def get_material_path(self, matname):
-        ans = path_append(self.export_path, matname)
+        ans = path_append(bpy.context.scene.mcow_scene_base_path, matname)
         if ans.endswith(".json"):
             return ans
         return ans + ".json"
@@ -1632,7 +1632,7 @@ class DataGeneratorMap(DataGenerator):
             if obj.type == "EMPTY" and obj.magickcow_empty_type == "BONE":
             
                 # Ignore exporting animated level parts if animation export is disabled.
-                if not self.export_animation:
+                if not bpy.context.scene.mcow_scene_animation:
                     continue
                 
                 found_objects_new = SceneObjectsFound()
