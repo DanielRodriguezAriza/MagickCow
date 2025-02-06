@@ -557,7 +557,7 @@ class DataGenerator:
 
     # region Make - Math
 
-    # region Matrices
+    # region Make - Math - Matrices
     
     def make_matrix(self, transform_matrix):
         m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44 = transform_matrix
@@ -604,7 +604,7 @@ class DataGenerator:
 
     # endregion
 
-    # region Vectors
+    # region Make - Math - Vectors
 
     def make_vector_2(self, vec2):
         ans = {
