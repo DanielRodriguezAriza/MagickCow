@@ -446,6 +446,63 @@ class DataGenerator:
 
     # region Scene Rotation
 
+
+    # Iterates over all of the root objects of the scene and rotates them by the input angle in degrees around the specified axis.
+    # The rotation takes place around the world origin (0,0,0), so it would be equivalent to attaching all objects to a parent located in the world origin and then rotating said parent.
+    # This way, there is no hierarchical requirements for scene export, since all root objects will be translated properly, and thus the child objects will also be automatically translated to the coorect coordinates.
+    def rotate_scene_old(self, angle_degrees = 90, axis = "X"):
+        root_objects = get_scene_root_objects()
+        for obj in root_objects:
+            obj.rotation_euler.rotate_axis(axis, math.radians(angle_degrees))
+        bpy.context.view_layer.update() # Force the scene to update so that the rotation is properly applied before we start evaluating the objects in the scene.
+    
+    def rotate_objects_global(self, objects, angle_degrees, axis):
+        rotation_matrix = mathutils.Matrix.Rotation(math.radians(angle_degrees), 4, axis)
+        for obj in objects:
+            # obj.rotation_euler.rotate_axis(axis, math.radians(angle_degrees)) # idk why this doesn't work for all objects, I guess I'd know if only Blender's documentation had any information related to it. Oh well!
+            obj.matrix_world = rotation_matrix @ obj.matrix_world
+
+    
+    def rotate_objects_local(self, objects, angle_degrees, axis):
+        axis_num = find_element_index(["X", "Y", "Z"], axis, 0)
+        for obj in objects:
+            obj.rotation_euler[axis_num] += math.radians(angle_degrees)
+
+    # NOTE : It also iterates over the locator objects and rotates them in the opposite direction.
+    # This is because the rotation of the transform obtained after rotating the scene is only useful for objects where we need to translate other data, such as points and vectors (meshes, etc...)
+    # In the case of locators, we directly use the transform matrix of the object itself, which means that the extra 90 degree rotation is going to change the orientation of the locators by 90 degrees.
+    # This can be fixed by manually rotating the locators... or by having the rotate_scene() function do it for us, so the users will never know that it even happened! 
+    # NOTE : Another fix would be to have a single world root object of sorts, and having to attach all objects to that root. That way, we would only have to rotate that one single root by 90 degrees and nothing else, no corrections required...
+    # TODO : Basically make it so that we also have a root object in map scenes, just like we do in physics entity scenes...
+    def rotate_scene(self, angle_degrees = 90, axis = "X"):
+        # Objects that are "roots" of the Blender scene
+        root_objects = []
+
+        # Point data objects that need to have their transform matrix corrected
+        # region Comment
+            # Objects that use their raw transform matrix as a way to represent their transform in game, such as locators.
+            # They need to be corrected, since the transform matrix in Blender will contain the correct translation and scale, but will have a skewed rotation, because of the 90 degree rotation we use as
+            # a hack to align the scene with the Y up coordinate system, so we need to correct it by undoing the 90 degree rotation locally around their origin point for every object of this type after
+            # having performed the global 90 degree rotation around <0,0,0>
+        # endregion
+        objects_to_correct = []
+        
+        # All of the objects in the scene
+        all_objects = get_all_objects()
+
+        for obj in all_objects:
+            if obj.parent is None:
+                root_objects.append(obj)
+            if obj.type == "EMPTY" and obj.magickcow_empty_type in ["LOCATOR", "PHYSICS_ENTITY"]:
+                objects_to_correct.append(obj)
+
+        self.rotate_objects_global(root_objects, angle_degrees, axis) # Rotate the entire scene
+        self.rotate_objects_local(objects_to_correct, -1.0 * angle_degrees, axis) # The correction rotation goes in the opposite direction to the input rotation
+
+        bpy.context.view_layer.update() # Force the scene to update so that the rotation is properly applied before we start evaluating the objects in the scene.
+
+
+
     # NOTE : First we rotate by -90º, then to unrotate we rotate by +90º, this way we can pass from Z up to to Y up coords
     # TODO : Once you implement the new scene root system for the map exporting side of the code, you will be capable of getting rid of the _aux suffix for this method's name.
     # Also, get rid of the rotate_scene() method within the map data generator class...
@@ -2925,60 +2982,6 @@ class DataGeneratorMap(DataGenerator):
     # endregion
     
     # region Other Functions
-
-    # Iterates over all of the root objects of the scene and rotates them by the input angle in degrees around the specified axis.
-    # The rotation takes place around the world origin (0,0,0), so it would be equivalent to attaching all objects to a parent located in the world origin and then rotating said parent.
-    # This way, there is no hierarchical requirements for scene export, since all root objects will be translated properly, and thus the child objects will also be automatically translated to the coorect coordinates.
-    def rotate_scene_old(self, angle_degrees = 90, axis = "X"):
-        root_objects = get_scene_root_objects()
-        for obj in root_objects:
-            obj.rotation_euler.rotate_axis(axis, math.radians(angle_degrees))
-        bpy.context.view_layer.update() # Force the scene to update so that the rotation is properly applied before we start evaluating the objects in the scene.
-    
-    def rotate_objects_global(self, objects, angle_degrees, axis):
-        rotation_matrix = mathutils.Matrix.Rotation(math.radians(angle_degrees), 4, axis)
-        for obj in objects:
-            # obj.rotation_euler.rotate_axis(axis, math.radians(angle_degrees)) # idk why this doesn't work for all objects, I guess I'd know if only Blender's documentation had any information related to it. Oh well!
-            obj.matrix_world = rotation_matrix @ obj.matrix_world
-
-    
-    def rotate_objects_local(self, objects, angle_degrees, axis):
-        axis_num = find_element_index(["X", "Y", "Z"], axis, 0)
-        for obj in objects:
-            obj.rotation_euler[axis_num] += math.radians(angle_degrees)
-
-    # NOTE : It also iterates over the locator objects and rotates them in the opposite direction.
-    # This is because the rotation of the transform obtained after rotating the scene is only useful for objects where we need to translate other data, such as points and vectors (meshes, etc...)
-    # In the case of locators, we directly use the transform matrix of the object itself, which means that the extra 90 degree rotation is going to change the orientation of the locators by 90 degrees.
-    # This can be fixed by manually rotating the locators... or by having the rotate_scene() function do it for us, so the users will never know that it even happened! 
-    # NOTE : Another fix would be to have a single world root object of sorts, and having to attach all objects to that root. That way, we would only have to rotate that one single root by 90 degrees and nothing else, no corrections required...
-    # TODO : Basically make it so that we also have a root object in map scenes, just like we do in physics entity scenes...
-    def rotate_scene(self, angle_degrees = 90, axis = "X"):
-        # Objects that are "roots" of the Blender scene
-        root_objects = []
-
-        # Point data objects that need to have their transform matrix corrected
-        # region Comment
-            # Objects that use their raw transform matrix as a way to represent their transform in game, such as locators.
-            # They need to be corrected, since the transform matrix in Blender will contain the correct translation and scale, but will have a skewed rotation, because of the 90 degree rotation we use as
-            # a hack to align the scene with the Y up coordinate system, so we need to correct it by undoing the 90 degree rotation locally around their origin point for every object of this type after
-            # having performed the global 90 degree rotation around <0,0,0>
-        # endregion
-        objects_to_correct = []
-        
-        # All of the objects in the scene
-        all_objects = get_all_objects()
-
-        for obj in all_objects:
-            if obj.parent is None:
-                root_objects.append(obj)
-            if obj.type == "EMPTY" and obj.magickcow_empty_type in ["LOCATOR", "PHYSICS_ENTITY"]:
-                objects_to_correct.append(obj)
-
-        self.rotate_objects_global(root_objects, angle_degrees, axis) # Rotate the entire scene
-        self.rotate_objects_local(objects_to_correct, -1.0 * angle_degrees, axis) # The correction rotation goes in the opposite direction to the input rotation
-
-        bpy.context.view_layer.update() # Force the scene to update so that the rotation is properly applied before we start evaluating the objects in the scene.
 
     # This function returns both mesh and bm so that the caller can use the bm in case they need it.
     # NOTE : The user must free the bm manually.
