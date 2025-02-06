@@ -4717,6 +4717,16 @@ def register_properties_scene():
         max = 256 # Again, who in the name of fuck will ever use this? I don't know, but fuck you if you do! lmao...
     )
 
+    bpy.types.Scene.mcow_scene_json_char = bpy.props.EnumProperty(
+        name = "Indent Character",
+        description = "The character to be used to indent in the generated JSON files.",
+        items = [
+            ("SPACE", "Space", "Space character (' ')"),
+            ("TAB", "Tab", "Tab character ('\\t')")
+        ],
+        default = "SPACE"
+    )
+
     # NOTE : A list of benefits of storing all of the export config within the scene panel rather than the export menu:
     # - The settings are saved across sessions (extremely useful for the base folder path, it used to be extremely fucking annoying for it to disappear all the time when reopening a Blender project...)
     # - The settings are tied to a specific blend file within a single session rather than being carried over across scenes (if you have multiple scenes, and some are maps and others are assets, it can become a fucking pain in the ass to constantly have to change the export settings and fine tune them, when you could just do it once and be done with it...)
@@ -4737,7 +4747,6 @@ def register_properties_scene():
 
     # Register the scene panel itself
     bpy.utils.register_class(MagickCowScenePanel)
-    
 
 def unregister_properties_scene():
     
