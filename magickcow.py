@@ -3240,7 +3240,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             "Mass" : generated_data.mass,
             "MaxHitPoints" : generated_data.max_hit_points,
             "CanHaveStatus" : generated_data.can_have_status,
-            "Resistances" : generated_data.resistances,
+            "Resistances" : self.make_resistances(generated_data.resistances),
             "Gibs" : generated_data.gibs,
             "GibTrailEffect" : generated_data.gib_trail_effect,
             "HitEffect" : generated_data.hit_effect,
@@ -3267,6 +3267,18 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             "Position" : self.make_vector_3(box.position),
             "Scale" : self.make_vector_3(box.scale),
             "Rotation" : self.make_vector_4(box.rotation)
+        }
+        return ans
+
+    def make_Resistances(self, resistances):
+        ans = [self.make_resistance(resistances) for resistance in resistances]
+        return ans
+    
+    def make_resistance(self, resistance):
+        ans = {
+            "Elements" : resistance.element,
+            "Multiplier" : resistance.multiplier,
+            "Modifier" : resistance.modifier
         }
         return ans
 
