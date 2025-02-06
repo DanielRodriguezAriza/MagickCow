@@ -3208,8 +3208,10 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         ans.max_hit_points = obj.mcow_physics_entity_hitpoints
         ans.can_have_status = obj.mcow_physics_entity_can_have_status
 
+        # NOTE : The reason this has been implemented like this rather than passing the obj.whatever collection property itself is that in the future, we have no idea how Blender may decide to implement bpy props serialization, so better to be safe than sorry... even tho it might make things a little bit slower... fucking pythong I swear to God...
         ans.resistances = [PE_Generate_Resistance(resistance.element, resistance.multiplier, resistance.modifier) for resistance in obj.mcow_physics_entity_resistances]
-        
+        ans.gibs = [PE_Generate_Gib(gib.model, gib.mass, gib.scale) for gib in obj.mcow_physics_entity_gibs]
+
         # TODO : Finish adding all of the remaining values for the ans object
 
         ans.bounding_boxes = self.generate_bounding_boxes_data(data.boxes)
