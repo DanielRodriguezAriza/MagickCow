@@ -211,10 +211,10 @@ class PE_Generate_BoundingBox:
         self.rotation = None # quaternion / vec4
 
 class PE_Generate_Resistance:
-    def __init__(self):
-        self.elements = []
-        self.multiplier = 1
-        self.modifier = 0
+    def __init__(self, elements = [], multiplier = 1, modifier = 0):
+        self.elements = elements
+        self.multiplier = multiplier
+        self.modifier = modifier
 
 # endregion
 
