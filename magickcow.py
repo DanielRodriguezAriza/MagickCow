@@ -4269,11 +4269,11 @@ def unregister_properties_physics_entity():
 
 # endregion
 
-# region Global Register and Unregister functions
+# region Object Properties - Generic
 
-def register_properties_object():
+# Generic properties are properties that all objects share no matter their type.
 
-    # Register the properties that all objects should have
+def register_properties_generic():
     obj = bpy.types.Object
 
     # Allow export option for all objects:
@@ -4282,6 +4282,20 @@ def register_properties_object():
         description = "Determines whether this object will be exported or not. If set to false, the object will be ignored by the exporter, as well as all of its children objects.",
         default = True
     )
+
+def unregister_properties_generic():
+    obj = bpy.types.Object
+    
+    del obj.magickcow_allow_export
+
+# endregion
+
+# region Global Register and Unregister functions for objects
+
+def register_properties_object():
+
+    # Register the properties that all objects should have
+    register_properties_generic()
 
     # Register the properties for each object type and for each scene mode type
     register_properties_map()
@@ -4293,9 +4307,7 @@ def register_properties_object():
 def unregister_properties_object():
 
     # Unregister the properties that all objects should have
-    obj = bpy.types.Object
-    
-    del obj.magickcow_allow_export
+    unregister_properties_generic()
 
     # Unregister the properties for each object type and for each scene mode type
     unregister_properties_map()
