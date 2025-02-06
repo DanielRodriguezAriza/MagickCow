@@ -3493,6 +3493,38 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         }
         return ans
 
+    def make_model_meshes(self, meshes):
+        ans = [self.make_model_mesh(mesh) for mesh in meshes]
+        return ans
+    
+    def make_model_mesh(self, mesh):
+        name, parent_bone_index, vertices, indices, shared_resource_index = mesh
+        ans = {
+            "name" : name,
+            "parentBone" : parent_bone_index,
+            "boundingSphere" : { # TODO : Implement customizable bounding sphere for each mesh
+                "Center" : {
+                    "x" : 0,
+                    "y" : 0,
+                    "z" : 0
+                },
+                "Radius" : 1.5
+            },
+            "vertexBuffer" : self.make_vertex_buffer(vertices),
+            "indexBuffer" : self.make_index_buffer(indices),
+            "meshParts" : {
+                "streamOffset" : 0,
+                "baseVertex" : 0,
+                "numVertices" : len(vertices),
+                "startIndex" : 0,
+                "primitiveCount" : len(vertices) / 3,
+                "vertexDeclarationIndex" : 0,
+                "tag" : None, # Always null in Magicka...,
+                "sharedResourceIndex" : shared_resource_index
+            }
+        }
+        return ans
+
     # endregion
     
 
