@@ -3212,6 +3212,16 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         ans.resistances = [PE_Generate_Resistance(resistance.element, resistance.multiplier, resistance.modifier) for resistance in obj.mcow_physics_entity_resistances]
         ans.gibs = [PE_Generate_Gib(gib.model, gib.mass, gib.scale) for gib in obj.mcow_physics_entity_gibs]
 
+        # TODO : Figure out what these properties really do. In all objects I have decompiled, these are ALWAYS empty, so it seems like they are simply unused.
+        ans.gib_trail_effect = ""
+        ans.hit_effect = ""
+        ans.visual_effects = []
+        ans.sound_banks = ""
+        # This is where the "unknown" properties end.
+
+        
+
+
         # TODO : Finish adding all of the remaining values for the ans object
 
         ans.bounding_boxes = self.generate_bounding_boxes_data(data.boxes)
