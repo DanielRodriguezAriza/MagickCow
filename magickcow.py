@@ -3386,7 +3386,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
     def generate_model_mesh(self, obj, transform, matid, parent_bone_index):
         name = obj.name
         vertices, indices, matname = self.generate_mesh_data(obj, transform, True, matid)
-        shared_resource_index = self.add_shared_resource(matname, get_material(matname))
+        shared_resource_index = self.add_shared_resource(matname, self.get_material(matname))
         return (name, parent_bone_index, vertices, indices, shared_resource_index)
 
     def generate_model_bones(self, bones):
