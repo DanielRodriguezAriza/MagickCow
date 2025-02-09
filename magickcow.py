@@ -1152,9 +1152,8 @@ class DataGenerator:
     # This comment is pretty absurd as it states the obvious for myself... I just made it for future readers so that they don't tear the balls out trying to figure out wtf is going on, even tho I think it should be pretty obvious.
     def make_xnb_file(self, primary_object, shared_resources):
         ans = {
-            "primaryObject" : primary_object,
-            "numSharedResources" : len(shared_resources),
-            "sharedResources" : shared_resources
+            "PrimaryObject" : primary_object,
+            "SharedResources" : shared_resources
         }
         return ans
     
