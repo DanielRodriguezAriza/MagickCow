@@ -936,6 +936,17 @@ class DataGenerator:
         ans = (m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44)
         return ans
 
+    # TODO : Implement code to change from Z up to Y up in place within ALL of the math generate functions
+    
+    def generate_vector_point(self, point):
+        return
+    
+    def generate_vector_direction(self, direction):
+        return
+    
+    def generate_rotation(self, quaternion):
+        return
+
     # endregion
 
     # region Generate - Mesh
