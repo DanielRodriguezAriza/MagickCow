@@ -964,6 +964,10 @@ class DataGenerator:
         ans = (scale[0], scale[2], scale[1])
         return ans
 
+    def generate_vector_uv(self, uv):
+        ans = (uv[0], -uv[1]) # Invert the "Y axis" (V axis, controlled by Y property in Blender) of the UVs because Magicka has it inverted for some reason...
+        return ans
+
     def generate_rotation(self, quat):
         ans = (quat[3], quat[0], -quat[2], quat[1])
         return ans
@@ -1095,7 +1099,7 @@ class DataGenerator:
                 tangent = generate_vector_direction(tangent)
                 
                 uv = mesh.uv_layers.active.data[loop_idx].uv
-                uv = (uv[0], -uv[1]) # Invert the "Y axis" (V axis, controlled by Y property in Blender) of the UVs because Magicka has it inverted for some reason...
+                uv = generate_vector_uv(uv)
                 
                 # Check if the color layer is not null and then extract the color data. Otherwise, create a default color value.
                 # btw, to make things faster in the future, we could actually not use an if on every single loop and just create a dummy list with 3 elements as color_layer.data or whatever...
