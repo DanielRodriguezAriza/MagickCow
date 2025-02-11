@@ -969,7 +969,8 @@ class DataGenerator:
         return ans
 
     def generate_rotation(self, quat):
-        ans = (quat[3], quat[0], -quat[2], quat[1])
+        ans = (quat[3], quat[0], -quat[2], quat[1]) # Pass to Y up coordinate system
+        ans = (ans[1], ans[2], ans[3], ans[0]) # Reorganize the quaternion from Blender's (w, x, y, z) ordering to Magicka's (x, y, z, w) ordering
         return ans
 
     # endregion
@@ -1764,8 +1765,8 @@ class DataGeneratorMap(DataGenerator):
         loc, rotquat, scale, orientation = get_transform_data(transform)
 
         # Get location and orientation / directional vector of the light
-        position = (loc[0], loc[1], loc[2])
-        rotation = (orientation[0], orientation[1], orientation[2])
+        position = generate_vector_point(position)
+        rotation = generate_vector_direction(orientation)
 
         # Get Light Type (0 = point, 1 = directional, 2 = spot)
         # Returns 0 as default value. Malformed lights will have the resulting index 0, which corresponds to point lights.
@@ -1832,10 +1833,13 @@ class DataGeneratorMap(DataGenerator):
         position = position - (x_vec * scale[0])
         position = position - (y_vec * scale[1])
         position = position - (z_vec * scale[2])
+
+        # Increase the scale by multiplying it times 2 since our triggers have their middle point as their center while in Magicka that is not the origin
+        scale = (scale[0] * 2.0, scale[1] * 2.0, scale[2] * 2.0) # NOTE : Scale is the equivalent of "side lengths" in Magicka's code.
         
-        position = (position[0], position[1], position[2])
-        rotation = (rotation_quat[1], rotation_quat[2], rotation_quat[3], rotation_quat[0])
-        scale = (scale[0] * 2.0, scale[1] * 2.0, scale[2] * 2.0) # Scale is the equivalent of "side lengths" in Magicka's code.
+        position = generate_vector_point(position)
+        rotation = generate_rotation(rotation_quat)
+        scale = generate_vector_scale(scale)
         
         return (name, position, rotation, scale)
     
@@ -1845,8 +1849,8 @@ class DataGeneratorMap(DataGenerator):
 
         loc, rotquat, scale, ori = get_transform_data(transform, (0.0, -1.0, 0.0)) # The default forward vector for particles is <0,-1,0>
 
-        pos = (loc[0], loc[1], loc[2])
-        rot = (ori[0], ori[1], ori[2])
+        pos = generate_vector_point(loc)
+        rot = generate_vector_direction(ori)
 
         particle_range = obj.magickcow_particle_range
         particle_name_type = obj.magickcow_particle_name
@@ -1870,7 +1874,7 @@ class DataGeneratorMap(DataGenerator):
         # Get List of Vertices
         for vert in mesh.vertices:
             position = transform @ vert.co
-            position = (position[0], position[1], position[2])
+            position = generate_vector_point(position)
             vertices.append(position)
         
         # Extract vertex data
@@ -1942,7 +1946,7 @@ class DataGeneratorMap(DataGenerator):
         
         for vert in mesh.vertices:
             position = transform @ vert.co
-            position = (position[0], position[1], position[2])
+            position = generate_vector_point(position)
             vertices.append(position)
         
         # This is quite the pain in the ass regarding Blender's python API...
@@ -2193,9 +2197,9 @@ class DataGeneratorMap(DataGenerator):
             loc, rot, scale, ori = get_transform_data(obj.matrix_local)
 
             # Translate the values to tuples
-            loc = (loc[0], loc[1], loc[2])
-            rot = (rot[1], rot[2], rot[3], rot[0]) # The rotation is a quaternion, so we represent it as a vec4 / tuple with 4 elements.
-            scale = (scale[2], scale[0], scale[1])
+            loc = generate_vector_point(loc)
+            rot = generate_rotation(rot) # The rotation is a quaternion, so we represent it as a vec4 / tuple with 4 elements.
+            scale = generate_vector_scale(scale)
 
             # Get the time at which the frame takes place
             time = time_per_frame * int(blender_frame)
