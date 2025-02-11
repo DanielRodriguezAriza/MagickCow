@@ -955,12 +955,14 @@ class DataGenerator:
     # TODO : Implement code to change from Z up to Y up in place within ALL of the math generate functions
 
     def generate_vector_point(self, point):
-        return
+        ans = (point[0], -point[2], point[1])
+        return ans
     
     def generate_vector_direction(self, direction):
-        return
-    
-    def generate_rotation(self, quaternion):
+        ans = (point[0], -point[2], point[1])
+        return ans
+
+    def generate_rotation(self, rot_quaternion):
         return
 
     # endregion
