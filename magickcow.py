@@ -963,7 +963,8 @@ class DataGenerator:
         return ans
 
     def generate_rotation(self, rot_quaternion):
-        return
+        ans = (q[3], q[0], -q[2], q[1])
+        return ans
 
     # endregion
 
