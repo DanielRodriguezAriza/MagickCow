@@ -915,8 +915,24 @@ class DataGenerator:
     # region Generate - Math
 
     def generate_matrix_data(self, transform):
+        # The input matrix
         matrix = transform
+
+        # The conversion matrix to go from Z up to Y up
+        matrix_convert = mathutils.Matrix((
+            (1,  0,  0,  0),
+            (0,  0,  1,  0),
+            (0, -1,  0,  0),
+            (0,  0,  0,  1)
+        ))
+
+        # Calculate the Y up matrix
+        matrix = matrix_convert @ matrix
+
+        # Pass the matrix from column major to row major
         matrix = matrix.transposed() # XNA's matrices are row major, while Blender (and literally 90% of software in the planet) is column major... so we need to transpose the transform matrix.
+        
+        # Store as tuple
         m11 = matrix[0][0]
         m12 = matrix[0][1]
         m13 = matrix[0][2]
@@ -937,7 +953,7 @@ class DataGenerator:
         return ans
 
     # TODO : Implement code to change from Z up to Y up in place within ALL of the math generate functions
-    
+
     def generate_vector_point(self, point):
         return
     
