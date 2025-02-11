@@ -41,6 +41,16 @@ from collections import namedtuple
 
 # endregion
 
+# region Custom Exception Classes
+
+# Dummy exception class that is literally the same as the base Exception class.
+# Only exists to make it possible for the main export exception try-catch blocks to still print the line on which the error took place when a different type of exception or error takes place.
+# This way we prevent catching all of them and retain debugability to a certain degree... 
+class MagickCowExportException(Exception):
+    pass
+
+# endregion
+
 # region Classes and Named Tuples
 
 # region Blender GSD Object classes
@@ -3293,12 +3303,12 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         # Get all of the objects in the scene that are of type "ROOT"
         all_objects_of_type_root = [obj for obj in bpy.data.objects if (obj.type == "EMPTY" and obj.mcow_physics_entity_empty_type == "ROOT")]
         if len(all_objects_of_type_root) != 1:
-            raise Exception("Physics Entity Scene must contain exactly 1 Root!")
+            raise MagickCowExportException("Physics Entity Scene must contain exactly 1 Root!")
 
         # Get all of the objects in the scene that are roots (have no parent) and are of type "ROOT"
         root_objects = [obj for obj in bpy.data.objects if (obj.parent is None and obj.type == "EMPTY" and obj.mcow_physics_entity_empty_type == "ROOT")]
         if len(root_objects) != 1:
-            raise Exception("Physics Entity Scene Root object must be at the root of the scene!")
+            raise MagickCowExportException("Physics Entity Scene Root object must be at the root of the scene!")
 
         # Get the objects in the scene and form a tree-like structure for exporting.
         found_objects = Storage_PhysicsEntity()
@@ -3354,7 +3364,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
                     bone_name_lower = obj.name.lower()
                     for name in reserved_bone_names: # NOTE : We could have used "if bone_name_lower in reserved_bone_names:" instead, but I would prefer to keep the reserved strings just as they are stored within the XNB file rather than hardcoding them in full lowercase. This is because I don't exactly remember as of now whether XNA checks for exact bone names or if it is not case sensitive. I'd need to check again, but whatever. Also, these reserved bone names are not because of XNA, they are just present in ALL physics entity files within Magicka's base game data, so it's a Magicka animation system requirement instead.
                         if bone_name_lower == name.lower():
-                            raise Exception(f"The bone name \"{name}\" is reserved!")
+                            raise MagickCowExportException(f"The bone name \"{name}\" is reserved!")
 
                     # Add the current bone to the list of found bones
 
