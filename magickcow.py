@@ -957,7 +957,7 @@ class DataGenerator:
         return ans
     
     def generate_vector_direction(self, direction):
-        ans = (point[0], -point[2], point[1])
+        ans = (direction[0], -direction[2], direction[1])
         return ans
 
     def generate_vector_scale(self, scale):
@@ -1765,7 +1765,7 @@ class DataGeneratorMap(DataGenerator):
         loc, rotquat, scale, orientation = get_transform_data(transform)
 
         # Get location and orientation / directional vector of the light
-        position = self.generate_vector_point(position)
+        position = self.generate_vector_point(loc)
         rotation = self.generate_vector_direction(orientation)
 
         # Get Light Type (0 = point, 1 = directional, 2 = spot)
