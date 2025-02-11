@@ -1083,7 +1083,9 @@ class DataGenerator:
 
     # region Generate - Mesh - Main
 
-    def generate_mesh_data(self, obj, transform, uses_material = True, material_index = 0):
+    # region Deprecated
+
+    def generate_mesh_data_old_1(self, obj, transform, uses_material = True, material_index = 0):
         
         # Get the inverse-tranpose matrix of the object's transform matrix to use it on directional vectors (normals and tangents)
         # NOTE : The reason we do this is because vectors that represent points in space need to be translated, but vectors that represent directions don't, so we use the input transform matrix for point operations and the inverse-transpose matrix for direction vector operations, since that allows transforming vectors without displacing them (no translation) but properly preserves the other transformations (scale, rotation, shearing, whatever...)
@@ -1215,6 +1217,12 @@ class DataGenerator:
         # vertices : List<Vertex>; vertices is the vertex buffer, which is a list containing tuples of type Vertex one after another.
         # indices : List<int>; indices is the index buffer, which is a list of all of the indices ordered to generate the triangles. They are NOT grouped in any form of triangle struct, the indices are laid out just as they would be in memory.
         return (vertices, indices, matname)
+
+    # endregion
+
+    def generate_mesh_data(self, obj, transform, material_index = 0):
+        
+        invtrans = transform.inverted().transposed()
 
     # endregion
 
