@@ -1260,8 +1260,84 @@ class DataGenerator:
     # endregion
 
     def generate_mesh_data(self, obj, transform, material_index = 0):
-        invtrans = transform.inverted().transposed()
+        # Generate mesh data
+        mcow_mesh = MagickCowMesh(obj, transform)
+        
+        # Generate material data
+        matname = self.get_material_name(obj, material_index)
+        self.create_material(matname, mcow_mesh.mesh.magickcow_mesh_type)
 
+        # Cache vertex color layer
+        if len(mcow_mesh.mesh.color_attributes) > 0:
+            color_layer = mcow_mesh.mesh.color_attributes[0]
+        else:
+            color_default = (0.0, 0.0, 0.0, 0.0) if mcow_mesh.mesh.magickcow_mesh_type in ["WATER", "LAVA"] else (1.0, 1.0, 1.0, 0.0)
+            color_layer = None
+
+        vertices = []
+        indices = []
+
+        vertices_map = {}
+
+        polys = [poly for poly in mcow_mesh.mesh.polygons if poly.material_index == material_index] # Get all polygons where the material index matches that of the mesh we're currently generating.
+        
+        global_vertex_index = 0
+        for poly in polys:
+            temp_indices = []
+            temp_vertices = []
+            for loop_idx in poly.loop_indices:
+                loop = mcow_mesh.mesh.loops[loop_idx]
+                vertex_idx = loop.vertex_index
+
+                position = mcow_mesh.transform @ mesh.vertices[vertex_idx].co.to_4d()
+                position = self.generate_vector(position)
+
+                normal = mcow_mesh.invtrans @ loop.normal
+                normal = self.generate_vector(normal)
+
+                tangent = mcow_mesh.invtrans @ loop.tangent
+                tangent = self.generate_tangent(tangent)
+
+                uv = mesh.uv_layers.active.data[loop_idx].uv
+                uv = self.generate_uv(uv)
+
+                if color_layer is None:
+                    color = color_default
+                else:
+                    color = color_layer.data[loop_idx].color
+                    color = (color[0], color[1], color[2], color[3])
+
+                vertex = (global_Vertex_index, position, normal, tangent, uv, color)
+
+                if vertex_idx not in vertices_map:
+                    vertices_map[vertex_idx] = [vertex]
+                    temp_indices.append(global_vertex_index)
+                    temp_vertices.append(vertex)
+                    global_vertex_index += 1
+                else:
+                    matching_list_entry_found = False
+                    matching_list_entry = None
+                    for list_entry in vertices_map[vertex_idx]:
+                        if (list_entry[4][0] == uv[0] and list_entry[4][1] == uv[1]) and (list_entry[2][0] == normal[0] and list_entry[2][1] == normal[1] and list_entry[2][2] == normal[2]):
+                            matching_list_entry_found = True
+                            matching_list_entry = list_entry
+                            break
+                    if matching_list_entry_found:
+                        temp_indices.append(matching_list_entry[0])
+                        temp_vertices.append(matching_list_entry)
+                    else:
+                        vertices_map[vertex_idx].append(vertex)
+                        temp_indices.append(global_vertex_index)
+                        temp_vertices.append(vertex)
+                        global_vertex_index += 1
+            
+            # Swap points order to follow the same vertex winding as in Magicka
+            temp_indices = [temp_indices[2], temp_indices[1], temp_indices[0]]
+            
+            # Insert the data of these 3 new vertices into the vertex and index buffers
+            indices.extend(temp_indices)
+            for vert in temp_vertices:
+                vertices[vert[0]] = vert
 
 
     # endregion
