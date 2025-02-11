@@ -1684,6 +1684,17 @@ class DataGeneratorMap(DataGenerator):
     
     # region "Generate Data" / "Transform Data" Functions
 
+    def generate_aabb_data(self, vertices):
+        # Define a list of points used to calculate the bounding box of the mesh.
+        # The list is calculated by extracting the position property from the vertices.
+        # NOTE : This is because the input vertices are expected in the format that the mesh data generation functions builds them, as a GPU-like vertex buffer.
+        aabb_points = [vert[1] for vert in vertices]
+
+        # Calculate the AABB. The computation is performed using the list of points previously calculated.
+        # NOTE : We do not need to perform any Y up conversions here since the points from the vertices list are already in Y up.
+        aabb = self.get_bounding_box(aabb_points)
+        return aabb
+
     def generate_physics_entity_data(self, obj, transform):
         template = obj.magickcow_physics_entity_name
         matrix = self.generate_matrix_data(transform)
@@ -1693,12 +1704,8 @@ class DataGeneratorMap(DataGenerator):
         # Generate basic mesh data
         vertices, indices, matname = self.generate_mesh_data(obj, transform, True, matid)
 
-        # Define a list of points used to calculate the bounding box of the mesh.
-        # The list is calculated by extracting the position property from the vertices.
-        aabb_points = [vert[1] for vert in vertices]
-
-        # Calculate the AABB. The computation is performed using the list of points previously calculated.
-        aabb = self.get_bounding_box(aabb_points)
+        # Generate AABB data
+        aabb = self.generate_aabb_data(vertices)
 
         return (obj, transform, obj.name, vertices, indices, matname, aabb)
 
