@@ -962,8 +962,12 @@ class DataGenerator:
         ans = (point[0], -point[2], point[1])
         return ans
 
-    def generate_rotation(self, rot_quaternion):
-        ans = (q[3], q[0], -q[2], q[1])
+    def generate_vector_scale(self, scale):
+        ans = (scale[0], scale[2], scale[1])
+        return ans
+
+    def generate_rotation(self, quat):
+        ans = (quat[3], quat[0], -quat[2], quat[1])
         return ans
 
     # endregion
