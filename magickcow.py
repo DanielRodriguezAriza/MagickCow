@@ -912,9 +912,9 @@ class DataGenerator:
 
     # region Generate
 
-    # region Generate - Math
+    # region Generate - Deprecated Math
 
-    def generate_matrix_data(self, transform):
+    def DEPRCATED_generate_matrix_data(self, transform):
         # The input matrix
         matrix = transform
 
@@ -952,28 +952,67 @@ class DataGenerator:
         ans = (m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44)
         return ans
 
-    def generate_vector_point(self, point):
-        ans = (point[0], -point[2], point[1])
+    def DEPRCATED_generate_vector_point(self, point):
+        ans = (point[0], -point[2], -point[1])
         return ans
     
-    def generate_vector_direction(self, direction):
-        ans = (direction[0], -direction[2], direction[1])
+    def DEPRCATED_generate_vector_direction(self, direction):
+        ans = (direction[0], -direction[2], -direction[1])
         return ans
 
-    def generate_vector_scale(self, scale):
+    def DEPRCATED_generate_vector_scale(self, scale):
         ans = (scale[0], scale[2], scale[1])
         return ans
 
-    def generate_vector_uv(self, uv):
+    def DEPRCATED_generate_vector_uv(self, uv):
         ans = (uv[0], -uv[1]) # Invert the "Y axis" (V axis, controlled by Y property in Blender) of the UVs because Magicka has it inverted for some reason...
         return ans
 
-    def generate_rotation(self, quat):
+    def DEPRCATED_generate_rotation(self, quat):
         ans = (quat[3], quat[0], -quat[2], quat[1]) # Pass to Y up coordinate system
         ans = (ans[1], ans[2], ans[3], ans[0]) # Reorganize the quaternion from Blender's (w, x, y, z) ordering to Magicka's (x, y, z, w) ordering
         return ans
 
     # endregion
+
+    # region Generate - Math
+
+    def generate_matrix_data(self, transform):
+        matrix = transform
+        matrix = matrix.transposed() # XNA's matrices are row major, while Blender (and literally 90% of software in the planet) is column major... so we need to transpose the transform matrix.
+        m11 = matrix[0][0]
+        m12 = matrix[0][1]
+        m13 = matrix[0][2]
+        m14 = matrix[0][3]
+        m21 = matrix[1][0]
+        m22 = matrix[1][1]
+        m23 = matrix[1][2]
+        m24 = matrix[1][3]
+        m31 = matrix[2][0]
+        m32 = matrix[2][1]
+        m33 = matrix[2][2]
+        m34 = matrix[2][3]
+        m41 = matrix[3][0]
+        m42 = matrix[3][1]
+        m43 = matrix[3][2]
+        m44 = matrix[3][3]
+        ans = (m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44)
+        return ans
+    
+    def generate_vector(self, vec):
+        ans = (vec[0], vec[1], vec[2])
+        return ans
+
+    def generate_uv(self, uv):
+        ans = (uv[0], -uv[1]) # Invert the "Y axis" (V axis, controlled by Y property in Blender) of the UVs because Magicka has it inverted for some reason...
+        return ans
+
+    def generate_quaternion(self, quat):
+        ans = (quat[1], quat[2], quat[3], quat[0])
+        return ans
+
+    # endregion
+
 
     # region Generate - Mesh
 
@@ -1089,18 +1128,18 @@ class DataGenerator:
                 
                 position = transform @ mesh.vertices[vertex_idx].co.to_4d()
                 # position = M_conv @ position
-                position = self.generate_vector_point(position)
+                position = self.generate_vector(position)
                 
                 normal = invtrans @ loop.normal
                 # normal = M_conv @ normal
-                normal = self.generate_vector_direction(normal)
+                normal = self.generate_vector(normal)
                 
                 tangent = invtrans @ loop.tangent
                 # tangent = M_conv @ tangent
-                tangent = self.generate_vector_direction(tangent)
+                tangent = self.generate_vector(tangent)
                 
                 uv = mesh.uv_layers.active.data[loop_idx].uv
-                uv = self.generate_vector_uv(uv)
+                uv = self.generate_uv(uv)
                 
                 # Check if the color layer is not null and then extract the color data. Otherwise, create a default color value.
                 # btw, to make things faster in the future, we could actually not use an if on every single loop and just create a dummy list with 3 elements as color_layer.data or whatever...
@@ -1765,8 +1804,8 @@ class DataGeneratorMap(DataGenerator):
         loc, rotquat, scale, orientation = get_transform_data(transform)
 
         # Get location and orientation / directional vector of the light
-        position = self.generate_vector_point(loc)
-        rotation = self.generate_vector_direction(orientation)
+        position = self.generate_vector(loc)
+        rotation = self.generate_vector(orientation)
 
         # Get Light Type (0 = point, 1 = directional, 2 = spot)
         # Returns 0 as default value. Malformed lights will have the resulting index 0, which corresponds to point lights.
@@ -1837,9 +1876,9 @@ class DataGeneratorMap(DataGenerator):
         # Increase the scale by multiplying it times 2 since our triggers have their middle point as their center while in Magicka that is not the origin
         scale = (scale[0] * 2.0, scale[1] * 2.0, scale[2] * 2.0) # NOTE : Scale is the equivalent of "side lengths" in Magicka's code.
         
-        position = self.generate_vector_point(position)
-        rotation = self.generate_rotation(rotation_quat)
-        scale = self.generate_vector_scale(scale)
+        position = self.generate_vector(position)
+        rotation = self.generate_quaternion(rotation_quat)
+        scale = self.generate_vector(scale)
         
         return (name, position, rotation, scale)
     
@@ -1849,8 +1888,8 @@ class DataGeneratorMap(DataGenerator):
 
         loc, rotquat, scale, ori = get_transform_data(transform, (0.0, -1.0, 0.0)) # The default forward vector for particles is <0,-1,0>
 
-        pos = self.generate_vector_point(loc)
-        rot = self.generate_vector_direction(ori)
+        pos = self.generate_vector(loc)
+        rot = self.generate_vector(ori)
 
         particle_range = obj.magickcow_particle_range
         particle_name_type = obj.magickcow_particle_name
@@ -1874,7 +1913,7 @@ class DataGeneratorMap(DataGenerator):
         # Get List of Vertices
         for vert in mesh.vertices:
             position = transform @ vert.co
-            position = self.generate_vector_point(position)
+            position = self.generate_vector(position)
             vertices.append(position)
         
         # Extract vertex data
@@ -1946,7 +1985,7 @@ class DataGeneratorMap(DataGenerator):
         
         for vert in mesh.vertices:
             position = transform @ vert.co
-            position = self.generate_vector_point(position)
+            position = self.generate_vector(position)
             vertices.append(position)
         
         # This is quite the pain in the ass regarding Blender's python API...
@@ -2197,9 +2236,9 @@ class DataGeneratorMap(DataGenerator):
             loc, rot, scale, ori = get_transform_data(obj.matrix_local)
 
             # Translate the values to tuples
-            loc = self.generate_vector_point(loc)
-            rot = self.generate_rotation(rot) # The rotation is a quaternion, so we represent it as a vec4 / tuple with 4 elements.
-            scale = self.generate_vector_scale(scale)
+            loc = self.generate_vector(loc)
+            rot = self.generate_quaternion(rot) # The rotation is a quaternion, so we represent it as a vec4 / tuple with 4 elements.
+            scale = self.generate_vector(scale)
 
             # Get the time at which the frame takes place
             time = time_per_frame * int(blender_frame)
