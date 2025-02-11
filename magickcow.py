@@ -952,8 +952,6 @@ class DataGenerator:
         ans = (m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44)
         return ans
 
-    # TODO : Implement code to change from Z up to Y up in place within ALL of the math generate functions
-
     def generate_vector_point(self, point):
         ans = (point[0], -point[2], point[1])
         return ans
@@ -1033,14 +1031,6 @@ class DataGenerator:
 
     def generate_mesh_data(self, obj, transform, uses_material = True, material_index = 0):
         
-        # Matrix to convert from Z up to Y up
-        # M_conv = mathutils.Matrix((
-        #     (1,  0,  0,  0),
-        #     (0,  0,  1,  0),
-        #     (0, -1,  0,  0),
-        #     (0,  0,  0,  1)
-        # ))
-
         # Get the inverse-tranpose matrix of the object's transform matrix to use it on directional vectors (normals and tangents)
         # NOTE : The reason we do this is because vectors that represent points in space need to be translated, but vectors that represent directions don't, so we use the input transform matrix for point operations and the inverse-transpose matrix for direction vector operations, since that allows transforming vectors without displacing them (no translation) but properly preserves the other transformations (scale, rotation, shearing, whatever...)
         # NOTE : This operation is the equivalent of displacing 2 points using the input transform matrix, one P0(0,0,0) and another P1(n1,n2,n3), and then calculating the vector that goes from P0' to P1', but using the invtrans is faster because it only requires one single matrix calculation, which also has a faster underlying implementation in Python.
@@ -1094,15 +1084,15 @@ class DataGenerator:
                 
                 position = transform @ mesh.vertices[vertex_idx].co.to_4d()
                 # position = M_conv @ position
-                position = (position[0], position[1], position[2])
+                position = generate_vector_point(position)
                 
                 normal = invtrans @ loop.normal
                 # normal = M_conv @ normal
-                normal = (normal[0], normal[1], normal[2])
+                normal = generate_vector_direction(normal)
                 
                 tangent = invtrans @ loop.tangent
                 # tangent = M_conv @ tangent
-                tangent = (tangent[0], tangent[1], tangent[2])
+                tangent = generate_vector_direction(tangent)
                 
                 uv = mesh.uv_layers.active.data[loop_idx].uv
                 uv = (uv[0], -uv[1]) # Invert the "Y axis" (V axis, controlled by Y property in Blender) of the UVs because Magicka has it inverted for some reason...
