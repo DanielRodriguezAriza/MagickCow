@@ -3712,21 +3712,21 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
             return {"CANCELLED"}
         
         # Perform export process
-        # try:
-        if export_mode == "MAP":
-            ans = self.export_data_map(context)
-        elif export_mode == "PHYSICS_ENTITY":
-            ans = self.export_data_physics_entity(context)
-        else:
-            ans = self.export_data_none(context)
-        # except Exception as e:
-        #     self.report({"ERROR"}, f"Failed to export data: {e}")
-        #     return {"CANCELLED"}
-
-        # NOTE : In the future, this should go into a finally clause after the try catch...
-        # Load (restore) the scene state as it was before exporting the scene
-        # This undoes the scene rotations, modifier applications, etc... basically performs and undo that undoes all destructive changes that were performed when exporting the scene
-        bpy.ops.wm.open_mainfile(filepath = bpy.data.filepath)
+        try:
+            if export_mode == "MAP":
+                ans = self.export_data_map(context)
+            elif export_mode == "PHYSICS_ENTITY":
+                ans = self.export_data_physics_entity(context)
+            else:
+                ans = self.export_data_none(context)
+        except MagickCowExportException as e:
+            self.report({"ERROR"}, f"Failed to export data: {e}")
+            return {"CANCELLED"}
+        finally:
+            # Load (restore) the scene state as it was before exporting the scene
+            # This undoes the scene rotations, modifier applications, etc... basically performs and undo that undoes all destructive changes that were performed when exporting the scene
+            # This happens within the finally block so that it always takes place even if an error were to happen during export, which prevents the mcow exporter from breaking the scene during export.
+            bpy.ops.wm.open_mainfile(filepath = bpy.data.filepath)
 
         return ans
 
