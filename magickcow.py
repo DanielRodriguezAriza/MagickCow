@@ -1517,7 +1517,7 @@ class DataGeneratorMap(DataGenerator):
         # underlying implementation, which is way faster and speeds up the export process by a ton (python is so slow!!! shocker!!! who would have thought???)
         # Note that this rotation will affect the actual objects of the scene, so we must undo it later.
         # Also, if the process ahead fails, the rotation won't get undone, so it would be wise to add a try-catch-finally block, but for now this is good enough.
-        # self.rotate_scene_old_2(-90)
+        self.rotate_scene_old_2(-90)
 
         # Get Scene Objects (Get Stage)
         # Obtains the references to all of the blender objects in the scene
@@ -1535,7 +1535,7 @@ class DataGeneratorMap(DataGenerator):
 
         # Undo the rotation, as the data has already been generated and stored with the correct Y up coordinates.
         # NOTE : this could have some precission errors with certain rotations, so it would be wiser to save the old rotation and restore it rather than undoing the rotation, but it's ok for now.
-        # self.rotate_scene_old_2(90)
+        self.rotate_scene_old_2(90)
         
         # Make Scene Data (Make Stage)
         # Make the dictionary objects that will be stored within the final exported JSON file.
