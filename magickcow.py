@@ -1535,7 +1535,7 @@ class DataGeneratorMap(DataGenerator):
 
         # Undo the rotation, as the data has already been generated and stored with the correct Y up coordinates.
         # NOTE : this could have some precission errors with certain rotations, so it would be wiser to save the old rotation and restore it rather than undoing the rotation, but it's ok for now.
-        self.rotate_scene_old_2(90)
+        # self.rotate_scene_old_2(90)
         
         # Make Scene Data (Make Stage)
         # Make the dictionary objects that will be stored within the final exported JSON file.
@@ -3692,6 +3692,16 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
         scene = context.scene
         export_mode = scene.mcow_scene_mode
         ans = {} # This is an empty object, but the type of answer object we expect from the export functions is a Blender message, something like {"FINISHED"} or {"CANCELLED"} or whatever.
+        
+        # Save (backup) the scene state as it was before exporting the scene
+        # NOTE : The bpy.data properties used to check if the file is saved are the following: 
+        # - is_saved : checks if the scene is saved into a file
+        # - is_dirty : checks if the latest state in memory has been saved to the file on disk
+        if (not bpy.data.is_saved) or bpy.data.is_dirty:
+            self.report({"ERROR"}, "Cannot export the scene if it has not been saved!")
+            return {"CANCELLED"}
+        
+        # Perform export process
         # try:
         if export_mode == "MAP":
             ans = self.export_data_map(context)
@@ -3702,6 +3712,12 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
         # except Exception as e:
         #     self.report({"ERROR"}, f"Failed to export data: {e}")
         #     return {"CANCELLED"}
+
+        # NOTE : In the future, this should go into a finally clause after the try catch...
+        # Load (restore) the scene state as it was before exporting the scene
+        # This undoes the scene rotations, modifier applications, etc... basically performs and undo that undoes all destructive changes that were performed when exporting the scene
+        bpy.ops.wm.open_mainfile(filepath = bpy.data.filepath)
+
         return ans
 
     def export_data_none(self, context):
