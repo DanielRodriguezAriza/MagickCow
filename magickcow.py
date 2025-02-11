@@ -1089,18 +1089,18 @@ class DataGenerator:
                 
                 position = transform @ mesh.vertices[vertex_idx].co.to_4d()
                 # position = M_conv @ position
-                position = generate_vector_point(position)
+                position = self.generate_vector_point(position)
                 
                 normal = invtrans @ loop.normal
                 # normal = M_conv @ normal
-                normal = generate_vector_direction(normal)
+                normal = self.generate_vector_direction(normal)
                 
                 tangent = invtrans @ loop.tangent
                 # tangent = M_conv @ tangent
-                tangent = generate_vector_direction(tangent)
+                tangent = self.generate_vector_direction(tangent)
                 
                 uv = mesh.uv_layers.active.data[loop_idx].uv
-                uv = generate_vector_uv(uv)
+                uv = self.generate_vector_uv(uv)
                 
                 # Check if the color layer is not null and then extract the color data. Otherwise, create a default color value.
                 # btw, to make things faster in the future, we could actually not use an if on every single loop and just create a dummy list with 3 elements as color_layer.data or whatever...
@@ -1765,8 +1765,8 @@ class DataGeneratorMap(DataGenerator):
         loc, rotquat, scale, orientation = get_transform_data(transform)
 
         # Get location and orientation / directional vector of the light
-        position = generate_vector_point(position)
-        rotation = generate_vector_direction(orientation)
+        position = self.generate_vector_point(position)
+        rotation = self.generate_vector_direction(orientation)
 
         # Get Light Type (0 = point, 1 = directional, 2 = spot)
         # Returns 0 as default value. Malformed lights will have the resulting index 0, which corresponds to point lights.
@@ -1837,9 +1837,9 @@ class DataGeneratorMap(DataGenerator):
         # Increase the scale by multiplying it times 2 since our triggers have their middle point as their center while in Magicka that is not the origin
         scale = (scale[0] * 2.0, scale[1] * 2.0, scale[2] * 2.0) # NOTE : Scale is the equivalent of "side lengths" in Magicka's code.
         
-        position = generate_vector_point(position)
-        rotation = generate_rotation(rotation_quat)
-        scale = generate_vector_scale(scale)
+        position = self.generate_vector_point(position)
+        rotation = self.generate_rotation(rotation_quat)
+        scale = self.generate_vector_scale(scale)
         
         return (name, position, rotation, scale)
     
@@ -1849,8 +1849,8 @@ class DataGeneratorMap(DataGenerator):
 
         loc, rotquat, scale, ori = get_transform_data(transform, (0.0, -1.0, 0.0)) # The default forward vector for particles is <0,-1,0>
 
-        pos = generate_vector_point(loc)
-        rot = generate_vector_direction(ori)
+        pos = self.generate_vector_point(loc)
+        rot = self.generate_vector_direction(ori)
 
         particle_range = obj.magickcow_particle_range
         particle_name_type = obj.magickcow_particle_name
@@ -1874,7 +1874,7 @@ class DataGeneratorMap(DataGenerator):
         # Get List of Vertices
         for vert in mesh.vertices:
             position = transform @ vert.co
-            position = generate_vector_point(position)
+            position = self.generate_vector_point(position)
             vertices.append(position)
         
         # Extract vertex data
@@ -1946,7 +1946,7 @@ class DataGeneratorMap(DataGenerator):
         
         for vert in mesh.vertices:
             position = transform @ vert.co
-            position = generate_vector_point(position)
+            position = self.generate_vector_point(position)
             vertices.append(position)
         
         # This is quite the pain in the ass regarding Blender's python API...
@@ -2197,9 +2197,9 @@ class DataGeneratorMap(DataGenerator):
             loc, rot, scale, ori = get_transform_data(obj.matrix_local)
 
             # Translate the values to tuples
-            loc = generate_vector_point(loc)
-            rot = generate_rotation(rot) # The rotation is a quaternion, so we represent it as a vec4 / tuple with 4 elements.
-            scale = generate_vector_scale(scale)
+            loc = self.generate_vector_point(loc)
+            rot = self.generate_rotation(rot) # The rotation is a quaternion, so we represent it as a vec4 / tuple with 4 elements.
+            scale = self.generate_vector_scale(scale)
 
             # Get the time at which the frame takes place
             time = time_per_frame * int(blender_frame)
