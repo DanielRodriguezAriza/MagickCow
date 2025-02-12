@@ -5,7 +5,6 @@
 
 # region Resistances
 
-
 # TODO : Maybe make the elements enum into some kind of function that returns the result of the bpy.props.EnumProperty() call so that we can make element enums anywhere we want?
 # Also, think about adding support for all of the possible values for elements, including stuff like "Beams" and whatnot...
 class MagickCowProperty_Resistance(bpy.types.PropertyGroup):
@@ -56,6 +55,16 @@ class MAGICKCOW_OT_Operator_Resistance_RemoveItem(bpy.types.Operator):
             obj.mcow_physics_entity_resistances.remove(self.index)
         return {"FINISHED"}
 
+def register_property_class_resistance():
+    bpy.utils.register_class(MagickCowProperty_Resistance)
+    bpy.utils.register_class(MAGICKCOW_OT_Operator_Resistance_AddItem)
+    bpy.utils.register_class(MAGICKCOW_OT_Operator_Resistance_RemoveItem)
+
+def unregister_property_class_resistance():
+    bpy.utils.unregister_class(MagickCowProperty_Resistance)
+    bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Resistance_AddItem)
+    bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Resistance_RemoveItem)
+
 # endregion
 
 # region Gibs
@@ -97,32 +106,28 @@ class MAGICKCOW_OT_Operator_Gib_RemoveItem(bpy.types.Operator):
             obj.mcow_physics_entity_gibs.remove(self.index)
         return {"FINISHED"}
 
-
-# endregion
-
-# region Register functions
-
-def register_properties_classes():
-    # Resistances
-    bpy.utils.register_class(MagickCowProperty_Resistance)
-    bpy.utils.register_class(MAGICKCOW_OT_Operator_Resistance_AddItem)
-    bpy.utils.register_class(MAGICKCOW_OT_Operator_Resistance_RemoveItem)
-
-    # Gibs
+def register_property_class_gib():
     bpy.utils.register_class(MagickCowProperty_Gib)
     bpy.utils.register_class(MAGICKCOW_OT_Operator_Gib_AddItem)
     bpy.utils.register_class(MAGICKCOW_OT_Operator_Gib_RemoveItem)
 
-def unregister_properties_classes():
-    # Resistances
-    bpy.utils.unregister_class(MagickCowProperty_Resistance)
-    bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Resistance_AddItem)
-    bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Resistance_RemoveItem)
-
-    # Gibs
+def unregister_property_class_gib():
     bpy.utils.unregister_class(MagickCowProperty_Gib)
     bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Gib_AddItem)
     bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Gib_RemoveItem)
+
+# endregion
+
+# region Global Property Register and Unregister functions
+
+def register_properties_classes():
+    register_property_class_resistance() # Resistances
+    register_property_class_gib() # Gibs
+    
+
+def unregister_properties_classes():
+    unregister_property_class_resistance() # Resistances
+    unregister_property_class_gib() # Gibs
 
 # endregion
 
