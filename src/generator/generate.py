@@ -32,6 +32,11 @@ def main():
         "../mcow/BlenderInfo.py",
         "../mcow/Imports.py",
 
+
+        # Classes - XNA
+        "../mcow/classes/XNA/Matrix.py",
+        "../mcow/classes/XNA/Model.py",
+
         # Utility functions
         "../mcow/functions/utility/Utility.py", # TODO : Further subdivide this code maybe?
 
