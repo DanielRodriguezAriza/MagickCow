@@ -1259,7 +1259,7 @@ class DataGenerator:
 
     # endregion
 
-    def generate_mesh_data(self, obj, transform, uses_material = True, material_index = 0):
+    def generate_mesh_data_old_2(self, obj, transform, uses_material = True, material_index = 0):
         # Generate mesh data
         mcow_mesh = MagickCowMesh(obj, transform)
         
@@ -1287,7 +1287,7 @@ class DataGenerator:
             for loop_idx in poly.loop_indices:
                 loop = mcow_mesh.mesh.loops[loop_idx]
                 vertex_idx = loop.vertex_index
-
+                """
                 position = mcow_mesh.transform @ mcow_mesh.mesh.vertices[vertex_idx].co.to_4d()
                 position = self.generate_vector(position)
 
@@ -1299,12 +1299,19 @@ class DataGenerator:
 
                 uv = mcow_mesh.mesh.uv_layers.active.data[loop_idx].uv
                 uv = self.generate_uv(uv)
-
+                """
                 if color_layer is None:
                     color = color_default
                 else:
                     color = color_layer.data[loop_idx].color
                     color = (color[0], color[1], color[2], color[3])
+                
+                position = (0,0,0)
+                normal = (1,0,0)
+                tangent = (1,0,0)
+                uv = (0, 1)
+
+                # NOTE : Perhaps we could do the processing AFTER we isolate what unique vertices exist?
 
                 vertex = (global_vertex_index, position, normal, tangent, uv, color)
 
@@ -1337,6 +1344,65 @@ class DataGenerator:
             indices.extend(temp_indices)
 
         return (vertices, indices, matname)
+
+
+    def generate_mesh_data(self, obj, transform, uses_material = True, material_index = 0):
+        # Generate mesh data
+        mcow_mesh = MagickCowMesh(obj, transform)
+        
+        # Generate material data
+        matname = self.get_material_name(obj, material_index)
+        self.create_material(matname, mcow_mesh.mesh.magickcow_mesh_type)
+
+        # Cache vertex color layer
+        if len(mcow_mesh.mesh.color_attributes) > 0:
+            color_layer = mcow_mesh.mesh.color_attributes[0]
+        else:
+            color_default = (0.0, 0.0, 0.0, 0.0) if mcow_mesh.mesh.magickcow_mesh_type in ["WATER", "LAVA"] else (1.0, 1.0, 1.0, 0.0)
+            color_layer = None
+
+        vertices = []
+        indices = []
+
+        vertices_map = {}
+
+        polys = [poly for poly in mcow_mesh.mesh.polygons if poly.material_index == material_index] # Get all polygons where the material index matches that of the mesh we're currently generating.
+        
+        # all_vertices_raw = [vertex for vertex in [poly.loop_indices for poly in polys]]
+        """
+        global_vertex_index = 0
+        for poly in polys:
+            temp_indices = []
+            for loop_idx in poly.loop_indices:
+                loop = mcow_mesh.mesh.loops[loop_idx]
+                vertex_idx = loop.vertex_index
+
+                position = mcow_mesh.transform @ mcow_mesh.mesh.vertices[vertex_idx].co.to_4d()
+                position = self.generate_vector(position)
+
+                normal = mcow_mesh.invtrans @ loop.normal
+                normal = self.generate_vector(normal)
+
+                tangent = mcow_mesh.invtrans @ loop.tangent
+                tangent = self.generate_vector(tangent)
+
+                uv = mcow_mesh.mesh.uv_layers.active.data[loop_idx].uv
+                uv = self.generate_uv(uv)
+
+                if color_layer is None:
+                    color = color_default
+                else:
+                    color = color_layer.data[loop_idx].color
+                    color = (color[0], color[1], color[2], color[3])
+                
+                vertex = (global_vertex_index, position, normal, tangent, uv, color)
+
+                vertices.append(vertex)
+                indices.append(global_vertex_index)
+        """
+
+        return (vertices, indices, matname)
+
 
     # endregion
 
