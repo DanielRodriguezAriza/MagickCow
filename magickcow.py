@@ -1259,7 +1259,7 @@ class DataGenerator:
 
     # endregion
 
-    def generate_mesh_data(self, obj, transform, material_index = 0):
+    def generate_mesh_data(self, obj, transform, uses_material = True, material_index = 0):
         # Generate mesh data
         mcow_mesh = MagickCowMesh(obj, transform)
         
@@ -1288,16 +1288,16 @@ class DataGenerator:
                 loop = mcow_mesh.mesh.loops[loop_idx]
                 vertex_idx = loop.vertex_index
 
-                position = mcow_mesh.transform @ mesh.vertices[vertex_idx].co.to_4d()
+                position = mcow_mesh.transform @ mcow_mesh.mesh.vertices[vertex_idx].co.to_4d()
                 position = self.generate_vector(position)
 
                 normal = mcow_mesh.invtrans @ loop.normal
                 normal = self.generate_vector(normal)
 
                 tangent = mcow_mesh.invtrans @ loop.tangent
-                tangent = self.generate_tangent(tangent)
+                tangent = self.generate_vector(tangent)
 
-                uv = mesh.uv_layers.active.data[loop_idx].uv
+                uv = mcow_mesh.mesh.uv_layers.active.data[loop_idx].uv
                 uv = self.generate_uv(uv)
 
                 if color_layer is None:
