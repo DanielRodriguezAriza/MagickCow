@@ -1,1 +1,2 @@
 python generate.py
+pause
