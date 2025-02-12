@@ -1,4 +1,4 @@
-# region Generator classes
+# region Generate Stage
 
 # region Comment - DataGenerator
     # A generic class for data generation.
