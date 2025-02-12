@@ -1616,9 +1616,10 @@ class DataGeneratorMap(DataGenerator):
     # Each point is a tuple of 3 numeric values.
     # The resulting AABB is represented as the min and max points of the bounding box.
     def get_bounding_box_internal(self, points):
-        # NOTE : Discarded check because empty meshes are ignored on the get stage instead.
-        # if len(points) <= 0: # Safety check in case there's an empty mesh in the scene
-        #     return ((0, 0, 0), (0, 0, 0)) # Just return an empty AABB with the min and max points set to <0,0,0>
+        # If the found mesh doesn't have enough geometry to generate a bounding box, then return a predefined one with points set to <0,0,0>
+        if len(points) <= 1: # Safety check in case there's an empty mesh in the scene or a mesh with less than a single poly
+            return ((0, 0, 0), (0, 0, 0)) # Just return an empty AABB with the min and max points set to <0,0,0>
+        
         # Otherwise, create a proper AABB iterating over all of the points and finding the min and max points of the mesh
         minx, miny, minz = points[0]
         maxx, maxy, maxz = points[0]
