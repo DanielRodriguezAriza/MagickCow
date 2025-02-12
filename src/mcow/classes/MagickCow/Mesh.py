@@ -1,4 +1,4 @@
-# region Meshes
+# region Mesh Class
 
 class MCow_Mesh:
     def __init__(self, obj, transform):

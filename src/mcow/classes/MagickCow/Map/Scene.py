@@ -1,3 +1,5 @@
+# region Map Classes
+
 class MCow_Map_SceneObjectsFound:
     def __init__(self):
         self.meshes = []
@@ -44,3 +46,5 @@ class MCow_Map_SceneObjectsGeneratedAnimated:
         self.nav_mesh = None
         self.animation = None
         self.animated_parts = []
+
+# endregion

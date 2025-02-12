@@ -1,3 +1,5 @@
+# region XNA Math Class
+
 # NOTE : This class' implementation looks to me like it's pretty inefficient and could be improved by a lot by using a single linear buffer rather than a list of lists, but whatever... we'll deal with this shit for now.
 # NOTE : Matrices in XNA are always 4x4
 class XNA_Matrix:
@@ -26,3 +28,5 @@ class XNA_Matrix:
         self.matrix[3][3] = M44
     
     # TODO : Maybe add some "consturctor" static methods that return matrices constructed from specific input types? stuff like XNA_Matrix.FromBlenderMatrix(mat), XNA_Matrix.FromWhatever(...), etc...
+
+# endregion
