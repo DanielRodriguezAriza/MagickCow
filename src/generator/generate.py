@@ -28,6 +28,10 @@ def main():
     ifilenames = [
         "../mcow/License.py",
         "../mcow/Comments.py",
+        "../mcow/BlenderInfo.py",
+        "../mcow/Imports.py",
+
+        "../mcow/Main.py",
     ]
     mcow_file_generate(ofilename, ifilenames)
 
