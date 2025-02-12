@@ -1336,6 +1336,7 @@ class DataGenerator:
             # Insert the data of these 3 new vertices into the index buffer
             indices.extend(temp_indices)
 
+        return (vertices, indices, matname)
 
     # endregion
 
