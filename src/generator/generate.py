@@ -26,11 +26,19 @@ def mcow_file_generate(out_filename, in_filenames):
 def main():
     ofilename = "../magickcow.py"
     ifilenames = [
+        # Top
         "../mcow/License.py",
         "../mcow/Comments.py",
         "../mcow/BlenderInfo.py",
         "../mcow/Imports.py",
 
+        # Utility functions
+        "../mcow/functions/utility/Utility.py", # TODO : Further subdivide this code maybe?
+
+
+        # Data generation
+
+        # Main entry point
         "../mcow/Main.py",
     ]
     mcow_file_generate(ofilename, ifilenames)
