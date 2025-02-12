@@ -35,8 +35,10 @@ def main():
         # Utility functions
         "../mcow/functions/utility/Utility.py", # TODO : Further subdivide this code maybe?
 
-
-        # Data generation
+        # Data generation (The 3 stages of data transformation pipeline in MagickCow: Blender Data -> Get Stage -> Generate Stage -> Make Stage -> Final JSON file)
+        "../mcow/functions/generation/Get.py",
+        "../mcow/functions/generation/Generate.py",
+        "../mcow/functions/generation/Make.py",
 
         # Main entry point
         "../mcow/Main.py",
