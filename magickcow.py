@@ -4820,7 +4820,7 @@ def register_properties_physics_entity_empty():
         default = 200
     )
 
-    empty.mcow_physics_entity_hitpoints = bpy.props.FloatProperty(
+    empty.mcow_physics_entity_hitpoints = bpy.props.IntProperty(
         name = "Health",
         description = "Determines the number of hit points for this physics object.",
         default = 300
