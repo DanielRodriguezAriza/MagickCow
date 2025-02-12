@@ -33,10 +33,10 @@ def main():
         "../mcow/Imports.py",
 
         # Classes - MagickCow
-        "../mcow/classes/Exception.py",
-        "../mcow/classes/Mesh.py",
-        "../mcow/classes/Map/Scene.py",
-        "../mcow/classes/PhysicsEntity/PhysicsEntity.py",
+        "../mcow/classes/MagickCow/Exception.py",
+        "../mcow/classes/MagickCow/Mesh.py",
+        "../mcow/classes/MagickCow/Map/Scene.py",
+        "../mcow/classes/MagickCow/PhysicsEntity/PhysicsEntity.py",
 
         # Classes - XNA
         "../mcow/classes/XNA/Matrix.py",
