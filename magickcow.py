@@ -3749,7 +3749,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
             "numBones" : len(bones),
             "bones" : self.make_model_bones(bones),
             "numVertexDeclarations" : 1,
-            "vertexDeclarations" : self.make_vertex_declaration_default(),
+            "vertexDeclarations" : [self.make_vertex_declaration_default()],
             "numModelMeshes" : len(meshes),
             "modelMeshes" : self.make_model_meshes(meshes)
         }
