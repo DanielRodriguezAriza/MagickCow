@@ -1284,7 +1284,6 @@ class DataGenerator:
         global_vertex_index = 0
         for poly in polys:
             temp_indices = []
-            temp_vertices = []
             for loop_idx in poly.loop_indices:
                 loop = mcow_mesh.mesh.loops[loop_idx]
                 vertex_idx = loop.vertex_index
@@ -1312,7 +1311,7 @@ class DataGenerator:
                 if vertex_idx not in vertices_map:
                     vertices_map[vertex_idx] = [vertex]
                     temp_indices.append(global_vertex_index)
-                    temp_vertices.append(vertex)
+                    vertices.append(vertex)
                     global_vertex_index += 1
                 else:
                     matching_list_entry_found = False
@@ -1324,20 +1323,18 @@ class DataGenerator:
                             break
                     if matching_list_entry_found:
                         temp_indices.append(matching_list_entry[0])
-                        temp_vertices.append(matching_list_entry)
+                        vertices[matching_list_entry[0]] = vertex
                     else:
                         vertices_map[vertex_idx].append(vertex)
                         temp_indices.append(global_vertex_index)
-                        temp_vertices.append(vertex)
+                        vertices.append(vertex)
                         global_vertex_index += 1
             
             # Swap points order to follow the same vertex winding as in Magicka
             temp_indices = [temp_indices[2], temp_indices[1], temp_indices[0]]
             
-            # Insert the data of these 3 new vertices into the vertex and index buffers
+            # Insert the data of these 3 new vertices into the index buffer
             indices.extend(temp_indices)
-            for vert in temp_vertices:
-                vertices[vert[0]] = vert
 
 
     # endregion
