@@ -1307,7 +1307,7 @@ class DataGenerator:
                     color = color_layer.data[loop_idx].color
                     color = (color[0], color[1], color[2], color[3])
 
-                vertex = (global_Vertex_index, position, normal, tangent, uv, color)
+                vertex = (global_vertex_index, position, normal, tangent, uv, color)
 
                 if vertex_idx not in vertices_map:
                     vertices_map[vertex_idx] = [vertex]
