@@ -3794,7 +3794,7 @@ class DataGeneratorPhysicsEntity(DataGenerator):
                     "baseVertex" : 0,
                     "numVertices" : len(vertices),
                     "startIndex" : 0,
-                    "primitiveCount" : len(vertices) / 3,
+                    "primitiveCount" : int(len(vertices) / 3),
                     "vertexDeclarationIndex" : 0,
                     "tag" : None, # Always null in Magicka...,
                     "sharedResourceIndex" : shared_resource_index
