@@ -55,6 +55,7 @@ def main():
         "../mcow/functions/generation/Get.py",
         "../mcow/functions/generation/Generate.py",
         "../mcow/functions/generation/Make.py",
+        "../mcow/functions/generation/Pipeline.py",
 
         # Main entry point
         "../mcow/Main.py",
