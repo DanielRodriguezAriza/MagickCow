@@ -1,3 +1,29 @@
+# region License
+
+# MIT License
+# 
+# Copyright (c) 2024 Daniel Rodríguez Ariza
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# endregion
+
 # region Comments
 
 # TODO : Possibly change a lot of this stuff by encapsulating all of the "make_" methods into actual classes? with their own "generate()", "get_object()"/"make()", etc methods... idk...
@@ -45,7 +71,7 @@ from collections import namedtuple # TODO : Get rid of this fucker, namedtuples 
 
 # endregion
 
-# region Custom Exception Classes
+# region Exception Classes
 
 # Dummy exception class that is literally the same as the base Exception class.
 # Only exists to make it possible for the main export exception try-catch blocks to still print the line on which the error took place when a different type of exception or error takes place.
@@ -55,26 +81,9 @@ class MagickCowExportException(Exception):
 
 # endregion
 
-# region Classes and Named Tuples
+# region Mesh Class
 
-# region Blender GSD Object classes
-
-# NOTE : GSD = Get Stage Data
-# TODO : Get rid of this unused class or update all of the code to use this rather than passing (obj, transform) pairs around...
-
-# This is the base class for a Get Stage Data Object.
-# It contains a pointer to the blender object and a transform matrix which contains the transform relative to the parent as it would be defined within the XNB file
-# Note that the transform matrix does not necessarily match with the obj.matrix_world or with the obj.matrix_local, as the obj.parent (blender parent) is not necessarily the "parent" that we'd use within the XNB file...
-class GSDObject:
-    def __init__(self, obj, transform):
-        self.obj = obj
-        self.transform = transform
-
-# endregion
-
-# region Meshes
-
-class MagickCowMesh:
+class MCow_Mesh:
     def __init__(self, obj, transform):
         self.obj = obj
         self.transform = transform
@@ -111,67 +120,9 @@ class MagickCowMesh:
 
 # endregion
 
-# region XNA classes
+# region Map Classes
 
-# NOTE : This class' implementation looks to me like it's pretty inefficient and could be improved by a lot by using a single linear buffer rather than a list of lists, but whatever... we'll deal with this shit for now.
-# NOTE : Matrices in XNA are always 4x4
-class XNA_Matrix:
-    # NOTE : The constructor returns the identity matrix by default
-    def __init__(self, M11 = 1, M12 = 0, M13 = 0, M14 = 0, M21 = 0, M22 = 1, M23 = 0, M24 = 0, M31 = 0, M32 = 0, M33 = 1, M34 = 0, M41 = 0, M42 = 0, M43 = 0, M44 = 1):
-        self.matrix = [[0 for j in range(0, 4)] for i in range(0, 4)]
-        
-        self.matrix[0][0] = M11
-        self.matrix[0][1] = M12
-        self.matrix[0][2] = M13
-        self.matrix[0][3] = M14
-
-        self.matrix[1][0] = M21
-        self.matrix[1][1] = M22
-        self.matrix[1][2] = M23
-        self.matrix[1][3] = M24
-
-        self.matrix[2][0] = M31
-        self.matrix[2][1] = M32
-        self.matrix[2][2] = M33
-        self.matrix[2][3] = M34
-
-        self.matrix[3][0] = M41
-        self.matrix[3][1] = M42
-        self.matrix[3][2] = M43
-        self.matrix[3][3] = M44
-    
-    # TODO : Maybe add some "consturctor" static methods that return matrices constructed from specific input types? stuff like XNA_Matrix.FromBlenderMatrix(mat), XNA_Matrix.FromWhatever(...), etc...
-
-# TODO : Maybe rename this class when you make the code across level data generation and physics entity data generation more generic, since this is a class that both types of scene use internally...
-class XNA_Model:
-    def __init__(self):
-        self.tag = None # Always null in Magicka, so we should not care about this tbh...
-        self.bones = []
-        self.vertex_declarations = [] # NOTE : These I had chosen to always generate to be the same on the make stage for map generation, so maybe we can just discard this property and never use it for anything?
-        self.model_meshes = []
-
-class XNA_Model_Bone:
-    def __init__(self):
-        self.index = 0
-        self.name = "none"
-        self.transform = None # NOTE : This is a transform matrix, and we could either use a tuple for it or structure it with a blender matrix class or use our own class for this.
-        self.parent = -1
-        self.children = []
-
-class XNA_Model_Mesh:
-    def __init__(self):
-        self.name = "none"
-        self.parent_bone = 0
-        self.bounding_sphere = None
-        self.vertex_buffer = []
-        self.index_buffer = []
-        self.mesh_parts = None # NOTE : Rather than implementing mesh parts, what my exporter does is simply adding a new model mesh to the exported data, so this should always be pretty much almost the exact same for all types of models, so we could ignore implementing this here and always write the same data in the make stage (except for the number of vertices, primitive count, vertex declaration index and shared resource index. Other than that, the rest of the data is always the same.)
-
-# endregion
-
-# region Map
-
-class SceneObjectsFound:
+class MCow_Map_SceneObjectsFound:
     def __init__(self):
         self.meshes = []
         self.waters = []
@@ -188,7 +139,7 @@ class SceneObjectsFound:
         self.physics_entities = []
         self.force_fields = []
 
-class SceneObjectsGeneratedStatic:
+class MCow_Map_SceneObjectsGeneratedStatic:
     def __init__(self):
         self.meshes = []
         self.waters = []
@@ -203,7 +154,7 @@ class SceneObjectsGeneratedStatic:
         self.physics_entities = []
         self.force_fields = []
 
-class SceneObjectsGeneratedAnimated:
+class MCow_Map_SceneObjectsGeneratedAnimated:
     def __init__(self):
         self.bone = None # The root bone of this animated level part.
         self.meshes = []
@@ -220,7 +171,7 @@ class SceneObjectsGeneratedAnimated:
 
 # endregion
 
-# region Physics Entity
+# region Physics Entity Classes
 
 # region Get Stage Classes
 
@@ -311,47 +262,1324 @@ class PE_Generate_Bone:
 
 # endregion
 
+# region XNA Math Class
+
+# NOTE : This class' implementation looks to me like it's pretty inefficient and could be improved by a lot by using a single linear buffer rather than a list of lists, but whatever... we'll deal with this shit for now.
+# NOTE : Matrices in XNA are always 4x4
+class XNA_Matrix:
+    # NOTE : The constructor returns the identity matrix by default
+    def __init__(self, M11 = 1, M12 = 0, M13 = 0, M14 = 0, M21 = 0, M22 = 1, M23 = 0, M24 = 0, M31 = 0, M32 = 0, M33 = 1, M34 = 0, M41 = 0, M42 = 0, M43 = 0, M44 = 1):
+        self.matrix = [[0 for j in range(0, 4)] for i in range(0, 4)]
+        
+        self.matrix[0][0] = M11
+        self.matrix[0][1] = M12
+        self.matrix[0][2] = M13
+        self.matrix[0][3] = M14
+
+        self.matrix[1][0] = M21
+        self.matrix[1][1] = M22
+        self.matrix[1][2] = M23
+        self.matrix[1][3] = M24
+
+        self.matrix[2][0] = M31
+        self.matrix[2][1] = M32
+        self.matrix[2][2] = M33
+        self.matrix[2][3] = M34
+
+        self.matrix[3][0] = M41
+        self.matrix[3][1] = M42
+        self.matrix[3][2] = M43
+        self.matrix[3][3] = M44
+    
+    # TODO : Maybe add some "consturctor" static methods that return matrices constructed from specific input types? stuff like XNA_Matrix.FromBlenderMatrix(mat), XNA_Matrix.FromWhatever(...), etc...
+
 # endregion
 
-# region Utility Class
+# region XNA Model Classes
 
-class MagickCowUtility:
+# TODO : Maybe rename this class when you make the code across level data generation and physics entity data generation more generic, since this is a class that both types of scene use internally...
+class XNA_Model:
+    def __init__(self):
+        self.tag = None # Always null in Magicka, so we should not care about this tbh...
+        self.bones = []
+        self.vertex_declarations = [] # NOTE : These I had chosen to always generate to be the same on the make stage for map generation, so maybe we can just discard this property and never use it for anything?
+        self.model_meshes = []
+
+class XNA_Model_Bone:
+    def __init__(self):
+        self.index = 0
+        self.name = "none"
+        self.transform = None # NOTE : This is a transform matrix, and we could either use a tuple for it or structure it with a blender matrix class or use our own class for this.
+        self.parent = -1
+        self.children = []
+
+class XNA_Model_Mesh:
+    def __init__(self):
+        self.name = "none"
+        self.parent_bone = 0
+        self.bounding_sphere = None
+        self.vertex_buffer = []
+        self.index_buffer = []
+        self.mesh_parts = None # NOTE : Rather than implementing mesh parts, what my exporter does is simply adding a new model mesh to the exported data, so this should always be pretty much almost the exact same for all types of models, so we could ignore implementing this here and always write the same data in the make stage (except for the number of vertices, primitive count, vertex declaration index and shared resource index. Other than that, the rest of the data is always the same.)
+
+# endregion
+
+# region Custom Blender Property types and related Blender Operator classes
+
+# This region contains classes that describe custom property types for Blender.
+# Note that these properties can be used on any place in Blender, such as object properties or scene properties.
+
+# region Resistances
+
+# TODO : Maybe make the elements enum into some kind of function that returns the result of the bpy.props.EnumProperty() call so that we can make element enums anywhere we want?
+# Also, think about adding support for all of the possible values for elements, including stuff like "Beams" and whatnot...
+class MagickCowProperty_Resistance(bpy.types.PropertyGroup):
+    element : bpy.props.EnumProperty(
+        name = "Element",
+        description = "Magical element described by this entry",
+        items = [
+            ("Water", "Water", "Water Element"),
+            ("Life", "Life", "Life Element"),
+            ("Shield", "Shield", "Shield Element"),
+            ("Cold", "Cold", "Cold Element"),
+            ("Lighting", "Lighting", "Electricity Element"),
+            ("Arcane", "Arcane", "Arcane Element"),
+            ("Earth", "Earth", "Earth Element"),
+            ("Fire", "Fire", "Fire Element"),
+            ("Steam", "Steam", "Steam Element"),
+            ("Ice", "Ice", "Ice Element"),
+            ("Poison", "Poison", "Poison Element")
+        ],
+        default = "Earth"
+    )
+    multiplier : bpy.props.FloatProperty(
+        name = "Multiplier",
+        description = "Multiplies the effects applied by the selected element. If set to 1, the value will be unchanged and the default damage will be applied. If set to a negative value, the effects of the spell will be inverted. If set to 0, the spell will have no effect unless specified on the modifier property.",
+        default = 1
+    )
+    modifier : bpy.props.FloatProperty(
+        name = "Modifier",
+        description = "Modifies the effects applied by the selected element. If set to 0, the value will be unchaged.",
+        default = 0
+    )
+
+class MAGICKCOW_OT_Operator_Resistance_AddItem(bpy.types.Operator):
+    bl_label = "Add"
+    bl_idname = "magickcow.resistance_add_item"
+    def execute(self, context):
+        obj = context.object
+        obj.mcow_physics_entity_resistances.add()
+        return {"FINISHED"}
+
+class MAGICKCOW_OT_Operator_Resistance_RemoveItem(bpy.types.Operator):
+    bl_label = "Remove"
+    bl_idname = "magickcow.resistance_remove_item"
+    index : bpy.props.IntProperty() # NOTE : For this property to be accessible from the outside without errors, we need to use ":" rather than "=" on assignment, for some reason...
+    def execute(self, context):
+        obj = context.object
+        if self.index >= 0 and self.index < len(obj.mcow_physics_entity_resistances): # NOTE : This check is not really necessary considering how we're assured that the index should theoretically always be correct when iterating on the collection.
+            obj.mcow_physics_entity_resistances.remove(self.index)
+        return {"FINISHED"}
+
+def register_property_class_resistance():
+    bpy.utils.register_class(MagickCowProperty_Resistance)
+    bpy.utils.register_class(MAGICKCOW_OT_Operator_Resistance_AddItem)
+    bpy.utils.register_class(MAGICKCOW_OT_Operator_Resistance_RemoveItem)
+
+def unregister_property_class_resistance():
+    bpy.utils.unregister_class(MagickCowProperty_Resistance)
+    bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Resistance_AddItem)
+    bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Resistance_RemoveItem)
+
+# endregion
+
+# region Gibs
+
+class MagickCowProperty_Gib(bpy.types.PropertyGroup):
+    model : bpy.props.StringProperty(
+        name = "Model",
+        description = "Path to the file that contains the model used for this gib",
+        default = "..\\..\\Models\\AnimatedProps\\Dungeons\\gib_slime01_0"
+    )
+
+    mass : bpy.props.FloatProperty(
+        name = "Mass",
+        description = "The mass of this gib",
+        default = 20
+    )
+
+    scale : bpy.props.FloatProperty(
+        name = "Scale",
+        description = "The scale of this gib",
+        default = 1
+    )
+
+class MAGICKCOW_OT_Operator_Gib_AddItem(bpy.types.Operator):
+    bl_label = "Add"
+    bl_idname = "magickcow.gibs_add_item"
+    def execute(self, context):
+        obj = context.object
+        obj.mcow_physics_entity_gibs.add()
+        return {"FINISHED"}
+
+class MAGICKCOW_OT_Operator_Gib_RemoveItem(bpy.types.Operator):
+    bl_label = "Remove"
+    bl_idname = "magickcow.gibs_remove_item"
+    index : bpy.props.IntProperty()
+    def execute(self, context):
+        obj = context.object
+        if self.index >= 0 and self.index < len(obj.mcow_physics_entity_gibs):
+            obj.mcow_physics_entity_gibs.remove(self.index)
+        return {"FINISHED"}
+
+def register_property_class_gib():
+    bpy.utils.register_class(MagickCowProperty_Gib)
+    bpy.utils.register_class(MAGICKCOW_OT_Operator_Gib_AddItem)
+    bpy.utils.register_class(MAGICKCOW_OT_Operator_Gib_RemoveItem)
+
+def unregister_property_class_gib():
+    bpy.utils.unregister_class(MagickCowProperty_Gib)
+    bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Gib_AddItem)
+    bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Gib_RemoveItem)
+
+# endregion
+
+# region Global Property Register and Unregister functions
+
+def register_properties_classes():
+    register_property_class_resistance() # Resistances
+    register_property_class_gib() # Gibs
     
-    class Scene:
-        def GetObjectsAll():
-            objects = bpy.data.objects
-            return objects
-        
-        def GetObjectsRoot():
-            bpyobjects = bpy.data.objects
-            objects = [obj for obj in bpyobjects if obj.parent is None]
-            return objects
-        
-        def GetObjectsChildrenAll(obj):
-            objects = []
-            MagickCowUtility.Scene.GetObjectsChildrenAllRec(obj, objects)
-            return objects
-        
-        def GetObjectsChildrenAllRec(obj, children_list):
-            # NOTE : Alternatively we could use children_list.extend(obj.children) and then iterate over the list making the recursive calls.
-            for child in obj.children:
-                children_list.append(child)
-                MagickCowUtility.Scene.GetObjectsChildrenAllRec(child, children_list)
 
-        def GetObjectsChildrenImmediate(obj):
-            objects = obj.children
-            return objects
+def unregister_properties_classes():
+    unregister_property_class_resistance() # Resistances
+    unregister_property_class_gib() # Gibs
+
+# endregion
+
+# endregion
+
+# region Blender Operator classes for JSON Exporter.
+
+# This class is the exporter operator for all types of files that can be generated by MagickCow.
+# NOTE : In the past, we used to have a different export operator for each type of object. Now, they all contain their code within this operator, since the export type is selected on the scene panel.
+# We still separate the logic in different methods tho, that way things are easier to deal with, but we only have 1 single exporter operator class rather than multiple classes.
+class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
     
-    # TODO : Either implement this or get rid of it, depends on how you decide to handle Y up conversion in the end...
-    class Math:
-        
-        # NOTE : As of now, it seems like Blender does not support non-trivial transform matrices, stuff such as shearing and whatnot... Magicka doesn't seem to support those either, and most of the objects that
-        # use transform matrices seem to be point data such as locators and whatnot, so it's not like it would be worth it to do any of that...
-        # The point I'm trying to bring across is the fact that basically for this reason we're doing the cheap, quick and dirty Z up to Y up conversion by switching axes and flipping a sign rather than using
-        # a transform matrix, because matrix operations are just far less optimal IN PYTHON... sad, I know, but whatever, good enough for now...
+    # region Blender specific configuration:
+    
+    bl_idname = "object.magickcow_map"
+    bl_label = "MagickCow Export Map"
+    bl_description = "MagickCow Export Map to JSON file"
+    filename_ext = ".json"
 
-        def transform_to_y_up(transform_matrix):
-            reutnr
+    # endregion
+    
+    # region Exporter Panel Config
+
+    filter_glob : bpy.props.StringProperty(default = "*.json", options = {'HIDDEN'})
+    
+    # region Deprecated
+
+    # Discarded code where the properties used to depend on the export operator itself. Now they are global to the scene config / data instead.
+    # region Deprecated Code
+    # mcow_setting_export_path : bpy.props.StringProperty(
+    #     name = "Config Path",
+    #     description = "Select the path in which the exporter will look for the base folder. This folder contains JSON files which correspond to effects (materials) that will be applied to the surfaces that have a material with the name of the corresponding effect file to be used.",
+    #     default = "C:\\"
+    # )
+    # 
+    # mcow_setting_export_animation_data : bpy.props.BoolProperty(
+    #     name = "Export Animation Data",
+    #     description = "Determines whether the animation side of the scene will be exported or not.\n - If True : The animated level parts will be exported, including all of the child objects and animation data.\n - If False : The animated level parts will be completely ignored and not exported. All children components, including geometry, lights, and any other type of object, that is attached to animated level parts, will also be ignored.\n - Note : The animated level parts root still needs to be present for the exporter to properly generate the level data.",
+    #     default = False
+    # )
+    # 
+    # mcow_setting_export_pretty : bpy.props.BoolProperty(
+    #     name = "Pretty JSON Format",
+    #     description = "The JSON file will be exported with indentation and newlines for easier reading. Slows down export times due to the extra processing required. It also increases the resulting file size due to the extra characters required for newlines and indentation. Recommended to only enable this setting if debugging the output of the generated JSON file is absolutely necessary, specially when working with large maps with high level of detail.",
+    #     default = False
+    # )
+    # 
+    # mcow_setting_export_indent : bpy.props.IntProperty(
+    #     name = "Indent Depth",
+    #     description = "Number of space characters to use in the output JSON file for indentation. This setting is ignored if pretty JSON formatting is disabled.",
+    #     default = 2,
+    #     min = 1,
+    #     max = 256 # Who the fuck is going to need this tho??? Anyone who is dicking around and wants to find out the limit, I guess.
+    # )
+
+    # endregion
+
+    # endregion
+
+    # endregion
+
+    # region JSON aux methods
+
+    # NOTE : We use json.dumps to make a string rather than json.dump to dump directly into a file because json.dump is absurdly slow, but json.dumps and then writing the generated string into a file is way faster...
+    # Maybe some weird python buffering shenanigans? Oh how I miss fprintf...
+    def json_dump_str(self, context, obj_dict):
+
+        is_pretty = context.scene.mcow_scene_json_pretty
+        selected_indent = context.scene.mcow_scene_json_indent if context.scene.mcow_scene_json_char == "SPACE" else "\t"
+
+        if is_pretty:
+            return json.dumps(obj_dict, indent = selected_indent, separators = (",", ":"), check_circular = False)
+        return json.dumps(obj_dict, indent = None, separators = (",", ":"), check_circular = False)
+
+    # endregion
+
+    # region Main Exporter Code
+
+    def execute(self, context):
+        return self.export_data(context)
+    
+    def export_data(self, context):
+        scene = context.scene
+        export_mode = scene.mcow_scene_mode
+        ans = {} # This is an empty object, but the type of answer object we expect from the export functions is a Blender message, something like {"FINISHED"} or {"CANCELLED"} or whatever.
+        
+        # Save (backup) the scene state as it was before exporting the scene
+        # NOTE : The bpy.data properties used to check if the file is saved are the following: 
+        # - is_saved : checks if the scene is saved into a file
+        # - is_dirty : checks if the latest state in memory has been saved to the file on disk
+        if (not bpy.data.is_saved) or bpy.data.is_dirty:
+            self.report({"ERROR"}, "Cannot export the scene if it has not been saved!")
+            return {"CANCELLED"}
+        
+        # Perform export process
+        try:
+            if export_mode == "MAP":
+                ans = self.export_data_map(context)
+            elif export_mode == "PHYSICS_ENTITY":
+                ans = self.export_data_physics_entity(context)
+            else:
+                ans = self.export_data_none(context)
+        except MagickCowExportException as e:
+            self.report({"ERROR"}, f"Failed to export data: {e}")
+            return {"CANCELLED"}
+        finally:
+            # Load (restore) the scene state as it was before exporting the scene
+            # This undoes the scene rotations, modifier applications, etc... basically performs and undo that undoes all destructive changes that were performed when exporting the scene
+            # This happens within the finally block so that it always takes place even if an error were to happen during export, which prevents the mcow exporter from breaking the scene during export.
+            bpy.ops.wm.open_mainfile(filepath = bpy.data.filepath)
+
+        return ans
+
+    def export_data_none(self, context):
+        self.report({"ERROR"}, "Cannot export scene data unless a scene export mode is selected!")
+        return {"CANCELLED"}
+
+    def export_data_physics_entity(self, context):
+        return self.export_data_func(context, "Physics Entity", DataGeneratorPhysicsEntity())
+
+    def export_data_map(self, context):
+        return self.export_data_func(context, "Map", DataGeneratorMap())
+    
+    def write_to_file(self, contents):
+        try:
+            with open(self.filepath, 'w') as outfile:
+                outfile.write(contents)
+            self.report({"INFO"}, f"Successfully exported data to file \"{self.filepath}\"")
+            return {"FINISHED"}
+        except Exception as e:
+            self.report({"ERROR"}, f"Failed to export data: {e}")
+            return {"CANCELLED"}
+
+    def export_data_func(self, context, name, generator):
+        self.report({"INFO"}, f"Exporting to MagickaPUP .json {name} file...")
+
+        xnb_dict = generator.process_scene_data()
+        json_str = self.json_dump_str(context, xnb_dict)
+
+        return self.write_to_file(json_str)
+
+    # endregion
+
+# endregion
+
+# region Blender Export Panel functions, Register and Unregister functions
+
+def menu_func(self, context):
+    self.layout.operator(MagickCowExporterOperator.bl_idname, text = "Export Scene to MagickaPUP JSON file (.json)")
+
+def register_exporters():
+    bpy.utils.register_class(MagickCowExporterOperator)
+    bpy.types.TOPBAR_MT_file_export.append(menu_func)
+
+def unregister_exporters():
+    bpy.utils.unregister_class(MagickCowExporterOperator)
+    bpy.types.TOPBAR_MT_file_export.remove(menu_func)
+
+# endregion
+
+# region Blender Operator classes for N-Key Panel
+
+# region Internal logic classes
+
+# NOTE : This is a dummy class that exists to draw empty panels
+class MagickCowPanelObjectPropertiesNone:
+    def draw(self, layout, obj):
+        layout.label(text = "No available properties:")
+        layout.label(text = " - Export mode is \"None\"!")
+
+class MagickCowPanelObjectPropertiesGeneric:
+    # Properties that must be displayed for all objects no matter their type
+    def draw(self, layout, obj):
+        # NOTE : For information stored within an Ojbect, we use obj directly. For information stored within a specific type, we must access obj.data
+        layout.prop(obj, "magickcow_allow_export")
+        return
+
+
+class MagickCowPanelObjectPropertiesMap:
+    
+    # Base draw function. Calls the specific drawing functions based on the type of the selected object.
+    def draw(self, layout, obj):
+        
+        # If the object exists (the user is currently selecting an object), draw the properties in the panel
+        # The displayed properties are changed depending on the type of the selected object
+        # This "if obj" thing could be an early return with "if not obj" or whatever, but all examples I've seen do it like this, so there must be a pythonic reason to do this...
+        if obj:
+            if obj.type == "LIGHT":
+                self.draw_light(layout, obj)
+            elif obj.type == "MESH":
+                self.draw_mesh(layout, obj)
+            elif obj.type == "EMPTY":
+                self.draw_empty(layout, obj)
+    
+    # Properties that must be displayed for empties
+    def draw_empty(self, layout, obj):
+        layout.prop(obj, "magickcow_empty_type")
+        
+        if obj.magickcow_empty_type == "LOCATOR":
+            layout.prop(obj, "magickcow_locator_radius")
+        elif obj.magickcow_empty_type == "PARTICLE":
+            layout.prop(obj, "magickcow_particle_name")
+            layout.prop(obj, "magickcow_particle_range")
+        elif obj.magickcow_empty_type == "PHYSICS_ENTITY":
+            layout.prop(obj, "magickcow_physics_entity_name")
+        elif obj.magickcow_empty_type == "BONE":
+            layout.prop(obj, "magickcow_locator_radius")
+            layout.prop(obj, "magickcow_bone_affects_shields")
+            layout.prop(obj, "magickcow_collision_enabled")
+            if obj.magickcow_collision_enabled:
+                layout.prop(obj, "magickcow_collision_material")
+    
+    
+    # Properties that must be displayed for lights
+    def draw_light(self, layout, obj):
+        layout.prop(obj.data, "magickcow_light_color_diffuse")
+        layout.prop(obj.data, "magickcow_light_color_ambient")
+        layout.prop(obj.data, "magickcow_light_variation_type")
+        layout.prop(obj.data, "magickcow_light_variation_speed")
+        layout.prop(obj.data, "magickcow_light_variation_amount")
+        layout.prop(obj.data, "magickcow_light_reach")
+        layout.prop(obj.data, "magickcow_light_use_attenuation")
+        layout.prop(obj.data, "magickcow_light_sharpness")
+        layout.prop(obj.data, "magickcow_light_cutoffangle")
+        layout.prop(obj.data, "magickcow_light_intensity_diffuse")
+        layout.prop(obj.data, "magickcow_light_intensity_ambient")
+        layout.prop(obj.data, "magickcow_light_intensity_specular")
+        layout.prop(obj.data, "magickcow_light_shadow_map_size")
+        layout.prop(obj.data, "magickcow_light_casts_shadows")
+    
+    
+    # README : The collision layer / material appears under 2 if blocks in this code, not that it's bad, but important to remember when editing in the future.
+    # Properties that must be displayed for meshes
+    def draw_mesh(self, layout, obj):
+        layout.prop(obj.data, "magickcow_mesh_type")
+        
+        if obj.data.magickcow_mesh_type == "GEOMETRY":
+            self.draw_mesh_geometry(layout, obj)
+            # self.draw_mesh_vertex_properties(layout, obj)
+        elif obj.data.magickcow_mesh_type in ["WATER", "LAVA"]:
+            self.draw_mesh_liquid(layout, obj)
+            # self.draw_mesh_vertex_properties(layout, obj)
+        elif obj.data.magickcow_mesh_type == "COLLISION":
+            self.draw_mesh_collision(layout, obj)
+        elif obj.data.magickcow_mesh_type == "FORCE_FIELD":
+            self.draw_mesh_force_field(layout, obj)
+            # self.draw_mesh_vertex_properties(layout, obj)
+        return
+    
+    def draw_mesh_geometry(self, layout, obj):
+        layout.prop(obj, "magickcow_collision_enabled")
+        if(obj.magickcow_collision_enabled):
+            layout.prop(obj, "magickcow_collision_material") # 1
+    
+    def draw_mesh_liquid(self, layout, obj):
+        layout.prop(obj.data, "magickcow_mesh_can_drown")
+        layout.prop(obj.data, "magickcow_mesh_freezable")
+        layout.prop(obj.data, "magickcow_mesh_autofreeze")
+    
+    def draw_mesh_collision(self, layout, obj):
+        layout.prop(obj, "magickcow_collision_material") # 2
+
+    def draw_mesh_force_field(self, layout, obj):
+        # layout.prop(obj.data, "magickcow_force_field_ripple_color")
+        return
+    
+    # def draw_mesh_vertex_properties(self, layout, obj):
+    #     layout.prop(obj.data, "magickcow_vertex_color_enabled")
+
+class MagickCowPanelObjectPropertiesPhysicsEntity:
+    
+    def draw(self, layout, obj):
+        if obj:
+            if obj.type == "EMPTY":
+                self.draw_empty(layout, obj)
+            elif obj.type == "MESH":
+                self.draw_mesh(layout, obj)
+    
+    def draw_empty(self, layout, obj):
+        obj_type = obj.mcow_physics_entity_empty_type
+        layout.prop(obj, "mcow_physics_entity_empty_type")
+        if obj_type == "ROOT":
+            self.draw_empty_root(layout, obj)
+        elif obj_type == "BONE":
+            self.draw_empty_bone(layout, obj)
+    
+    def draw_empty_root(self, layout, obj):
+        # Simple properties
+        layout.prop(obj, "mcow_physics_entity_is_movable")
+        layout.prop(obj, "mcow_physics_entity_is_pushable")
+        layout.prop(obj, "mcow_physics_entity_is_solid")
+        layout.prop(obj, "mcow_physics_entity_mass")
+        layout.prop(obj, "mcow_physics_entity_can_have_status")
+        layout.prop(obj, "mcow_physics_entity_hitpoints")
+
+        # NOTE : Using the layout.prop(obj, "mcow_physics_entity_resistances") method does not work for lists of properties ("collection properties"). You must use a box instead.
+
+        # Resistances list
+        layout.label(text="Resistances")
+        layout.operator("magickcow.resistance_add_item")
+        for index, item in enumerate(obj.mcow_physics_entity_resistances):
+            box = layout.box()
+            box.prop(item, "element")
+            box.prop(item, "multiplier")
+            box.prop(item, "modifier")
+            remove_op = box.operator("magickcow.resistance_remove_item")
+            remove_op.index = index
+        
+        # Gibs list
+        layout.label(text="Gibs")
+        layout.operator("magickcow.gibs_add_item")
+        for index, item in enumerate(obj.mcow_physics_entity_gibs):
+            box = layout.box()
+            box.prop(item, "model")
+            box.prop(item, "mass")
+            box.prop(item, "scale")
+            remove_op = box.operator("magickcow.gibs_remove_item")
+            remove_op.index = index
+    
+    def draw_empty_bone(self, layout, obj):
+        # TODO : Implement
+        return
+
+    def draw_mesh(self, layout, obj):
+        mesh_type = obj.data.mcow_physics_entity_mesh_type
+        layout.prop(obj.data, "mcow_physics_entity_mesh_type")
+        if mesh_type == "GEOMETRY":
+            self.draw_mesh_geometry(layout, obj)
+        elif mesh_type == "COLLISION":
+            self.draw_mesh_collision(layout, obj)
+    
+    # NOTE : Collision meshes for physics entities don't have specific collision materials / "channels", so we don't display them, unlike for level part collisions, which do have specific collision materials support.
+    def draw_mesh_geometry(self, layout, obj):
+        layout.prop(obj, "magickcow_collision_enabled") # Determines if complex collision is enabled or not for this visual mesh.
+    
+    def draw_mesh_collision(self, layout, obj):
+        # NOTE : In the case of physics entities, draw nothing else, because they don't have collision material support, so we don't need to specify it.
+        # layout.prop(obj, "magickcow_collision_material")
+        return
+
+# endregion
+
+# This class is the one that controls the N-Key panel for selected object configuration.
+class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
+
+    bl_label = "MagickCow Properties"
+    bl_idname = "OBJECT_PT_MagickCowProperties_panel"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "MagickCow"
+
+    mcow_panel_none = MagickCowPanelObjectPropertiesNone()
+    mcow_panel_generic = MagickCowPanelObjectPropertiesGeneric()
+    mcow_panel_map = MagickCowPanelObjectPropertiesMap()
+    mcow_panel_physics_entity = MagickCowPanelObjectPropertiesPhysicsEntity()
+
+    # Base draw function. Calls the specific drawing functions based on the type of the selected object.
+    def draw(self, context):
+        # Get the panel's layout and the currently selected object
+        layout = self.layout
+        obj = context.object
+        
+        # Get the scene config to check what scene mode we're in
+        mode = context.scene.mcow_scene_mode
+
+        # Draw selected object properties
+        # Calls the specific draw functions according to the selected scene mode
+        if obj:
+            if mode == "MAP":
+                self.draw_panel(layout, obj, self.mcow_panel_map)
+            elif mode == "PHYSICS_ENTITY":
+                self.draw_panel(layout, obj, self.mcow_panel_physics_entity)
+            else:
+                self.draw_none(layout, obj) # Object panel draw call for case "NONE" or any other invalid value
+
+    # NOTE : The reason I've implemented it like this is because I don't want the generic object properties to be displayed when working with the NONE scene export mode, that way we can quickly signal to the users that they forgot to configure their scene and avoid confusion when they look for settings on a panel and don't find it...
+    def draw_panel(self, layout, obj, mcow_panel_type):
+        self.mcow_panel_generic.draw(layout, obj) # Draw all of the properties that are common to all object types.
+        mcow_panel_type.draw(layout, obj) # Draw all of the properties that are specific to the selected object type.
+
+    def draw_none(self, layout, obj):
+        self.mcow_panel_none.draw(layout, obj)
+
+# endregion
+
+# region Blender Object Properties Register, Unregister and Update
+
+# region Object Properties - Map / Level
+
+# NOTE : The name of these parameters is important, as Blender internally calls them using "self = ..." and "context = ...".
+# If the names are different, the function will not properly allow objects to be modified.
+def update_properties_map_empty(self, context):
+    
+    if self.magickcow_empty_original_setting_must_update:
+        # Restore the original settings and mark as updated / restored
+        self.magickcow_empty_original_setting_must_update = False
+        self.empty_display_type = self.magickcow_empty_original_setting_display_type
+        self.show_name = self.magickcow_empty_original_setting_display_name
+    
+    else:
+        # Save / Back Up the original settings
+        self.magickcow_empty_original_setting_display_type = self.empty_display_type
+        self.magickcow_empty_original_setting_display_name = self.show_name
+    
+    if self.magickcow_empty_type != "NONE":
+        # Mark for restoration so that it will restore its original settings when returning to the default empty type ("NONE")
+        self.magickcow_empty_original_setting_must_update = True
+        
+        # Perform the corresponding updates for each empty type
+        if self.magickcow_empty_type == "LOCATOR":
+            self.empty_display_type = "PLAIN_AXES"
+            self.show_name = True
+                
+        elif self.magickcow_empty_type == "TRIGGER":
+            self.empty_display_type = "CUBE"
+            self.show_name = True
+        
+        elif self.magickcow_empty_type == "PARTICLE":
+            self.empty_display_type = "SPHERE"
+            self.show_name = False
+        
+        elif self.magickcow_empty_type == "BONE":
+            self.empty_display_type = "PLAIN_AXES"
+            self.show_name = True
+        
+        elif self.magickcow_empty_type == "PHYSICS_ENTITY":
+            self.empty_display_type = "ARROWS"
+            self.show_name = False
+
+def register_properties_map_empty():
+    empty = bpy.types.Object
+    
+    # Object type for empty objects
+    empty.magickcow_empty_type = bpy.props.EnumProperty(
+        name = "Type",
+        description = "Determine the type of this object",
+        items = [
+            ("NONE", "None", "This object will be treated as a regular empty object and will be ignored by the exporter"),
+            ("ROOT", "Root", "This object will be exported as the root of the level scene"),
+            ("LOCATOR", "Locator", "This object will be exported as a locator"),
+            ("TRIGGER", "Trigger", "This object will be exported as a trigger"),
+            ("PARTICLE", "Particle", "This object will be exported as a particle effect"),
+            ("BONE", "Bone", "This object will be exported as a model bone for animated level parts"),
+            ("PHYSICS_ENTITY", "Physics Entity", "This object will be exported as a physics entity"),
+            # ("HIERARCHY_NODE", "Hierarchy Node", "This object will be used to structure the hierarchy of the scene. Allows the exporter to organize the objects in the scene.")
+        ],
+        default = "NONE", # By default, it will be marked as none, so you need to manually select whether you want the empty to be a locator or a trigger
+        update = update_properties_map_empty
+    )
+    
+    # Locator Properties
+    empty.magickcow_locator_radius = bpy.props.FloatProperty(
+        name = "Radius",
+        description = "Radius of the locator",
+        default = 2.0
+    )
+    
+    # Particle Properties
+    empty.magickcow_particle_name = bpy.props.StringProperty(
+        name = "Particle",
+        description = "Name of the effect XML file to use for this particle",
+        default = "ambient_fire_torch"
+    )
+    
+    empty.magickcow_particle_range = bpy.props.FloatProperty(
+        name = "Range",
+        description = "Range of the particle effect",
+        default = 0.0
+    )
+    
+    # Properties to save original settings of the empty (this is used in case we go back from a locator / trigger to a "none" default empty)
+    empty.magickcow_empty_original_setting_display_type = bpy.props.StringProperty(
+        name = "__original_display_type__",
+        description = "Determines the original display type of the selected empty. Used to return to the original display config when selecting type None",
+        default = "__none__",
+        maxlen = 1024
+    )
+    empty.magickcow_empty_original_setting_display_name = bpy.props.BoolProperty(
+        name = "__original_display_name__",
+        description = "Determines the original display name of the selected empty. Used to return to the original display config when selecting type None",
+        default = False
+    )
+    empty.magickcow_empty_original_setting_must_update = bpy.props.BoolProperty(
+        name = "__original_display_must_update__",
+        description = "Determines if the original display settings must be restored",
+        default = False
+    )
+    
+    # Bone Properties
+    empty.magickcow_bone_affects_shields = bpy.props.BoolProperty(
+        name = "Affects Shields",
+        description = "Determines whether this animated level part will affect shields (wards) or not.",
+        default = True
+    )
+    
+    # Collision Properties
+    empty.magickcow_collision_enabled = bpy.props.BoolProperty(
+        name = "Has Collision",
+        description = "Determines whether this object will have a collision mesh when exported or not.",
+        default = True
+    )
+    empty.magickcow_collision_material = bpy.props.EnumProperty(
+        name = "Collision Material",
+        description = "Determine the collision material used by this object's collision",
+        items = [
+            ("GENERIC", "Generic", "The material will be marked as generic"),
+            ("GRAVEL", "Gravel", "The material will be marked as gravel"),
+            ("GRASS", "Grass", "The material will be marked as grass"),
+            ("WOOD", "Wood", "The material will be marked as wood"),
+            ("SNOW", "Snow", "The material will be marked as snow"),
+            ("STONE", "Stone", "The material will be marked as stone"),
+            ("MUD", "Mud", "The material will be marked as mud"),
+            ("REFLECT", "Reflect", "The material will be marked as reflective. Allows beams (arcane and healing) to reflect from this surface. Used for objects like mirrors from R'lyeh."),
+            ("WATER", "Water", "The material will be marked as water"),
+            ("LAVA", "Lava", "The material will be marked as lava")
+        ],
+        default = "GENERIC"
+    )
+
+    # Physics Entity Properties
+    empty.magickcow_physics_entity_name = bpy.props.StringProperty(
+        name = "Template",
+        description = "Name of the physics entity template XNB file to use for this physics entity",
+        default = "barrel_explosive"
+    )
+
+def unregister_properties_map_empty():
+    empty = bpy.types.Object
+    
+    del empty.magickcow_empty_type
+    del empty.magickcow_locator_radius
+    del empty.magickcow_empty_original_setting_display_type
+    del empty.magickcow_empty_original_setting_display_name
+    del empty.magickcow_empty_original_setting_must_update
+    del empty.magickcow_particle_name
+    del empty.magickcow_particle_range
+    del empty.magickcow_bone_affects_shields
+    del empty.magickcow_collision_enabled
+    del empty.magickcow_collision_material
+    del empty.magickcow_physics_entity_name
+
+def register_properties_map_mesh():
+    mesh = bpy.types.Mesh
+    
+    # region Object type for mesh objects:
+    
+    mesh.magickcow_mesh_type = bpy.props.EnumProperty(
+        name = "Type",
+        description = "Determine the type of this object",
+        items = [
+            ("GEOMETRY", "Geometry", "This object will be exported as a piece of level geometry"),
+            ("COLLISION", "Collision", "This object will be exported as a piece of level collision"),
+            ("WATER", "Water", "This object will be exported as a liquid of type \"Water\""),
+            ("LAVA", "Lava", "This object will be exported as a liquid of type \"Lava\""),
+            ("NAV", "Nav", "This object will be exported as a nav mesh"),
+            ("FORCE_FIELD", "Force Field", "This object will be exported as a force field")
+        ],
+        default = "GEOMETRY"
+    )
+
+    # endregion
+    
+    # region Liquid properties (for both water and lava):
+    
+    mesh.magickcow_mesh_can_drown = bpy.props.BoolProperty(
+        name = "Can Drown Entities",
+        description = "Determines whether the entities that collide with this liquid's surface will die by drowning in the liquid or not. Useful for maps with shallow water like \"Eye Sockey Rink\", where entities can contact the liquid but will not instantly drown. Entities will drown both in water and lava when this setting is enabled for the selected liquid.",
+        default = False
+    )
+    mesh.magickcow_mesh_freezable = bpy.props.BoolProperty(
+        name = "Freezable",
+        description = "Determines whether the liquid can be frozen or not. Note that liquid freezing works on a per vertex manner, meaning that a freezable surface needs to be subdivided to have enough vertices to allow for proper freezing behaviour.", # This is probably because it uses vertex painting / weights for freezing (makes sense if you think about how water sort of freezes in square patches in Magicka and Magicka 2). This means that a somewhat evenly distributed grid of vertices is the best way to go to make freezable liquids.
+        default = False
+    )
+    mesh.magickcow_mesh_autofreeze = bpy.props.BoolProperty(
+        name = "Auto Freeze",
+        description = "Determines whether the liquid will freeze automatically or not. Useful for cold maps and areas like \"Frostjord\" where the environment is cold and water would logically freeze automatically into ice as time passes.",
+        default = False
+    )
+
+    # endregion
+
+    # region Force Field Properties
+
+    # NOTE : Disabled because this property is now controlled via material JSON files.
+    """
+    mesh.magickcow_force_field_ripple_color = bpy.props.FloatVectorProperty(
+        name = "Ripple Color",
+        description = "Color used for the ripple effect displayed when an entity collides with the force field.\nThe lower the values, the more transparent they will appear. This means that color < 0.0, 0.0, 0.0 >, which corresponds to black, is displayed as a transparent ripple effect with no color tint.",
+        subtype = "COLOR",
+        default = (0.0, 0.0, 0.0),
+        min = 0.0,
+        max = 1.0,
+        size = 3 # RGB has 3 values. Magicka lights are Vec3, so no alpha channel.
+    )
+    """
+
+    # endregion
+
+    # region Vertex Properties
+    
+    # NOTE : Some day in the future we may allow adding custom properties at will to the vertices, for now we're just going to roll with the same config for all meshes except for vertex color,
+    # cause that's the only special case there is for now tbh. Something something ease of use etc etc...
+    """
+    mesh.magickcow_vertex_normal_enabled = bpy.props.BoolProperty(
+        name = "Use Vertex Normals",
+        description = "Allow vertex normals to be exported for this mesh",
+        default = True
+    )
+    mesh.magickcow_vertex_tangent_enabled = bpy.props.BoolProperty(
+        name = "Use Vertex Tangents",
+        description = "Allow vertex tangents to be exported for this mesh",
+        default = True
+    )
+    mesh.magickcow_vertex_color_enabled = bpy.props.BoolProperty(
+        name = "Vertex Color Enabled",
+        description = "Export the vertex color property for this mesh",
+        default = True
+    )
+    """
+    # endregion
+
+def unregister_properties_map_mesh():
+    mesh = bpy.types.Mesh
+    
+    del mesh.magickcow_mesh_type
+    del mesh.magickcow_mesh_can_drown
+    del mesh.magickcow_mesh_freezable
+    del mesh.magickcow_mesh_autofreeze
+    # del mesh.magickcow_force_field_ripple_color
+
+    # del mesh.magickcow_vertex_normal_enabled
+    # del mesh.magickcow_vertex_tangent_enabled
+    # del mesh.magickcow_vertex_color_enabled
+
+def register_properties_map_light():
+    light = bpy.types.Light
+
+    # Light Variation Settings:
+    light.magickcow_light_variation_type = bpy.props.EnumProperty(
+        name = "Variation Type",
+        description = "Determine the type of light variation to be used by this light source when exported.",
+        items = [
+            ("NONE", "None", "This light will have no variation"),
+            ("SINE", "Sine", "This light will have the variation determined by a sine wave"),
+            ("FLICKER", "Flicker", "This light will flicker"),
+            ("CANDLE", "Candle", "This light will behave like a candle"),
+            ("STROBE", "Strobe", "This light will behave like a strobe")
+        ],
+        default = "NONE"
+    )
+    
+    light.magickcow_light_variation_speed = bpy.props.FloatProperty(
+        name = "Variation Speed",
+        description = "The speed of light variation",
+        default = 0.0
+    )
+    
+    light.magickcow_light_variation_amount = bpy.props.FloatProperty(
+        name = "Variation Amount",
+        description = "The amount of light variation",
+        default = 0.0
+    )
+    
+    # Light radius settings
+    light.magickcow_light_reach = bpy.props.FloatProperty(
+        name = "Reach",
+        description = "The \"distance\" or \"radius\" of effect of the light.\n - For point lights, it defines the radius.\n - For spot lights, it defines the length of the light.\n - For directional lights, it is ignored.",
+        default = 5.0
+    )
+    
+    # Light attenuation and cutoff settings
+    light.magickcow_light_use_attenuation = bpy.props.BoolProperty(
+        name = "Use Attenuation",
+        description = "Determines if the light should use attenuation or not",
+        default = False
+    )
+    
+    light.magickcow_light_cutoffangle = bpy.props.FloatProperty(
+        name = "Cutoff Angle",
+        description = "Angle at which the light is cut off",
+        default = 0.0
+    )
+    
+    light.magickcow_light_sharpness = bpy.props.FloatProperty(
+        name = "Sharpness",
+        description = "Sharpness of the light",
+        default = 0.0
+    )
+    
+    # Light color properties
+    light.magickcow_light_color_diffuse = bpy.props.FloatVectorProperty(
+        name = "Diffuse Color",
+        description = "Difuse color of the light",
+        subtype = "COLOR",
+        default = (1.0, 1.0, 1.0),
+        min = 0.0,
+        max = 1.0,
+        size = 3 # RGB has 3 values. Magicka lights are Vec3, so no alpha channel.
+    )
+    
+    light.magickcow_light_color_ambient = bpy.props.FloatVectorProperty(
+        name = "Ambient Color",
+        description = "Ambient color of the light",
+        subtype = "COLOR",
+        default = (1.0, 1.0, 1.0),
+        min = 0.0,
+        max = 1.0,
+        size = 3 # RGB has 3 values. Magicka lights are Vec3, so no alpha channel.
+    )
+    
+    # Intensity settings:
+    light.magickcow_light_intensity_specular = bpy.props.FloatProperty(
+        name = "Specular Intensity",
+        description = "Specular intensity of the light",
+        default = 0.0
+    )
+    
+    light.magickcow_light_intensity_diffuse = bpy.props.FloatProperty(
+        name = "Diffuse Intensity",
+        description = "Intensity of the light's diffuse color emission. Acts as a multiplier over the diffuse color value. The result is NOT clamped to the [0,1] interval.",
+        default = 1.0
+    )
+    
+    light.magickcow_light_intensity_ambient = bpy.props.FloatProperty(
+        name = "Ambient Intensity",
+        description = "Intensity of the light's ambient color. Acts as a multiplier over the ambient color value. The result is NOT clamped to the [0,1] interval.",
+        default = 1.0
+    )
+    
+    # Other light settings:
+    light.magickcow_light_shadow_map_size = bpy.props.IntProperty(
+        name = "Shadow Map Size",
+        description = "Size of the shadow map used for the light",
+        default = 64,
+        min = 0
+    )
+    
+    light.magickcow_light_casts_shadows = bpy.props.BoolProperty(
+        name = "Casts Shadows",
+        description = "Determine whether the light should cast shadows or not",
+        default = True
+    )
+
+def unregister_properties_map_light():
+    light = bpy.types.Light
+    
+    del light.magickcow_light_variation_type
+    del light.magickcow_light_variation_speed
+    del light.magickcow_light_variation_amount
+    del light.magickcow_light_reach
+    del light.magickcow_light_use_attenuation
+    del light.magickcow_light_cutoffangle
+    del light.magickcow_light_sharpness
+    del light.magickcow_light_color_diffuse
+    del light.magickcow_light_color_ambient
+    del light.magickcow_light_intensity_specular
+    del light.magickcow_light_intensity_diffuse
+    del light.magickcow_light_intensity_ambient
+    del light.magickcow_light_shadow_map_size
+    del light.magickcow_light_casts_shadows
+
+def register_properties_map():
+    # Register the properties for each object type
+    register_properties_map_empty()
+    register_properties_map_mesh()
+    register_properties_map_light()
+
+def unregister_properties_map():
+    # Unregister the properties for each object type
+    unregister_properties_map_empty()
+    unregister_properties_map_mesh()
+    unregister_properties_map_light()
+
+# endregion
+
+# region Object Properties - Physics Entity
+
+# TODO : Implement
+# TODO : In the future maybe rework the system so that custom properties are stored within dicts so that we can actually have a better organization and just delete the dict rather than each prop one by one?
+
+def update_properties_physics_entity_empty(self, context):
+    
+    if self.magickcow_empty_original_setting_must_update:
+        # Restore the original settings and mark as updated / restored
+        self.magickcow_empty_original_setting_must_update = False
+        self.empty_display_type = self.magickcow_empty_original_setting_display_type
+        self.show_name = self.magickcow_empty_original_setting_display_name
+    
+    else:
+        # Save / Back Up the original settings
+        self.magickcow_empty_original_setting_display_type = self.empty_display_type
+        self.magickcow_empty_original_setting_display_name = self.show_name
+    
+    if self.mcow_physics_entity_empty_type != "NONE":
+        # Mark for restoration so that it will restore its original settings when returning to the default empty type ("NONE")
+        self.magickcow_empty_original_setting_must_update = True
+        
+        # Perform the corresponding updates for each empty type
+        if self.mcow_physics_entity_empty_type == "BONE":
+            self.empty_display_type = "PLAIN_AXES"
+            self.show_name = True
+        
+        elif self.mcow_physics_entity_empty_type == "ROOT":
+            self.empty_display_type = "SPHERE"
+            self.show_name = False
+        
+        elif self.mcow_physics_entity_empty_type == "BOUNDING_BOX":
+            self.empty_display_type = "CUBE"
+            self.show_name = True
+
+def register_properties_physics_entity_empty():
+    
+    empty = bpy.types.Object
+    
+    # region Properties - Generic
+
+    # Object type for empty objects
+    empty.mcow_physics_entity_empty_type = bpy.props.EnumProperty(
+        name = "Type",
+        description = "Determine the type of this object.",
+        items = [
+            ("NONE", "None", "This object will be treated as a regular empty object and will be ignored by the exporter."),
+            ("ROOT", "Root", "This object will be exported as the root of a physics entity."),
+            ("BONE", "Bone", "This object will be exported as a model bone for a physics entity."),
+            ("BOUNDING_BOX", "Bounding Box", "This Object will be exported as a bounding box for the physics entity.")
+        ],
+        default = "NONE", # By default, it will be marked as none, so you need to manually select what type of point data object you want this to be
+        update = update_properties_physics_entity_empty
+    )
+
+    # endregion
+
+    # region Properties - Root
+
+    # region Deprecated
+    
+    # NOTE : Discarded for now because I'm actually going to get the name / ID from the name of the root object in the inspector panel.
+    # empty.mcow_physics_entity_id = bpy.props.StringProperty(
+    #     name = "ID", # NOTE : The ID must be unique!!! each physics entity asset must have its own unique name within the game's data!!!
+    #     description = "Determine the ID of this physics entity",
+    #     default = "root"
+    # )
+
+    # endregion
+
+    empty.mcow_physics_entity_is_movable = bpy.props.BoolProperty(
+        name = "Is Movable", # This hurts me... movable is the "correct" modern spelling used nowadays, moveable is my preferred spelling, altough it is an archaism and nobody really uses it anymore... fuck me, but yeah, I'll pick whatever people use the most so as to make it more user friendly I guess...
+        description = "Determines whether this physics entity can be moved or not.",
+        default = False
+    )
+
+    empty.mcow_physics_entity_is_pushable = bpy.props.BoolProperty(
+        name = "Is Pushable",
+        description = "Determines whether this physics entity can be pushed or not.",
+        default = False
+    )
+
+    empty.mcow_physics_entity_is_solid = bpy.props.BoolProperty(
+        name = "Is Solid",
+        description = "Determines whether this physics entity is solid or not.",
+        default = True
+    )
+
+    empty.mcow_physics_entity_mass = bpy.props.FloatProperty(
+        name = "Mass",
+        description = "Determines the mass of this physics object.",
+        default = 200
+    )
+
+    empty.mcow_physics_entity_hitpoints = bpy.props.IntProperty(
+        name = "Health",
+        description = "Determines the number of hit points for this physics object.",
+        default = 300
+    )
+
+    empty.mcow_physics_entity_can_have_status = bpy.props.BoolProperty(
+        name = "Can Have Status",
+        description = "Determines whether the physics entity can have a status or not.",
+        default = True
+    )
+
+    empty.mcow_physics_entity_resistances = bpy.props.CollectionProperty(
+        type = MagickCowProperty_Resistance,
+        name = "Resistances",
+        description = "Determines the elemental resistances and weaknesses of this physics entity."
+    )
+
+    empty.mcow_physics_entity_gibs = bpy.props.CollectionProperty(
+        type = MagickCowProperty_Gib,
+        name = "Gibs",
+        description = "List of the gibs spawned by this physics entity when destroyed."
+    )
+
+    # endregion
+    
+    return
+
+def unregister_properties_physics_entity_empty():
+    empty = bpy.types.Object
+
+    del empty.mcow_physics_entity_empty_type
+
+    del empty.mcow_physics_entity_is_movable
+    del empty.mcow_physics_entity_is_pushable
+    del empty.mcow_physics_entity_is_solid
+    del empty.mcow_physics_entity_mass
+    del empty.mcow_physics_entity_hitpoints
+    del empty.mcow_physics_entity_can_have_status
+
+    del empty.mcow_physics_entity_resistances
+    del empty.mcow_physics_entity_gibs
+
+    return
+
+def register_properties_physics_entity_mesh():
+    mesh = bpy.types.Mesh
+
+    mesh.mcow_physics_entity_mesh_type = bpy.props.EnumProperty(
+        name = "Type",
+        description = "Determines the type of object this piece of geometry will be exported as.",
+        items = [
+            ("GEOMETRY", "Geometry", "This mesh will be exported as a piece of visual geometry for the physics entity."),
+            ("COLLISION", "Collision", "This mesh will be exported as a collision mesh for the physics entity.")
+        ],
+        default = "GEOMETRY"
+    )
+
+def unregister_properties_physics_entity_mesh():
+    mesh = bpy.types.Mesh
+
+    del mesh.mcow_physics_entity_mesh_type
+
+def register_properties_physics_entity():
+    register_properties_physics_entity_empty()
+    register_properties_physics_entity_mesh()
+
+def unregister_properties_physics_entity():
+    unregister_properties_physics_entity_empty()
+    unregister_properties_physics_entity_mesh()
+
+# endregion
+
+# region Object Properties - Generic
+
+# Generic properties are properties that all objects share no matter their type.
+
+def register_properties_generic():
+    obj = bpy.types.Object
+
+    # Allow export option for all objects:
+    obj.magickcow_allow_export = bpy.props.BoolProperty(
+        name = "Export",
+        description = "Determines whether this object will be exported or not. If set to false, the object will be ignored by the exporter, as well as all of its children objects.",
+        default = True
+    )
+
+def unregister_properties_generic():
+    obj = bpy.types.Object
+    
+    del obj.magickcow_allow_export
+
+# endregion
+
+# region Global Register and Unregister functions for objects
+
+def register_properties_object():
+
+    # Register the properties that all objects should have
+    register_properties_generic()
+
+    # Register the properties for each object type and for each scene mode type
+    register_properties_map()
+    register_properties_physics_entity()
+
+    # Register the class for the properties panel itself
+    bpy.utils.register_class(OBJECT_PT_MagickCowPropertiesPanel)
+
+def unregister_properties_object():
+
+    # Unregister the properties that all objects should have
+    unregister_properties_generic()
+
+    # Unregister the properties for each object type and for each scene mode type
+    unregister_properties_map()
+    unregister_properties_physics_entity()
+
+    # Unregister the class for the properties panel itself
+    bpy.utils.unregister_class(OBJECT_PT_MagickCowPropertiesPanel)
+
+# endregion
+
+# endregion
+
+# region Blender Operator classes for Scene Panel
+
+# This class is the one that controls the N-Key panel for global scene config.
+# region Comment
+    # It is inspired by Valve's blender source tools, where they have the equivalent of this panel on the scene menu.
+    # In my case, I am not sure this is the best way to go, as we could also make this an N-Key panel that works without selecting any objects, but as of now I have decided to make it like this because it feels
+    # like it would make things less cluttered. The right most panel, which is where the scene panel is located by default, is pretty large by default and it is a location that makes sense for the kind of configuration
+    # that it will store, so I'd rather put it there, since I believe this is more intuitive for Blender users than coming up with my own conventions.
+# endregion
+class MagickCowScenePanel(bpy.types.Panel):
+    bl_label = "MagickCow Scene Configuration"
+    bl_idname = "SCENE_PT_MagickCow_Scene_Tools"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "scene" # This makes the panel appear on under the Scene Properties.
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+
+        layout.label(text="Scene Export Settings")
+        layout.prop(scene, "mcow_scene_mode")
+        layout.prop(scene, "mcow_scene_base_path")
+        layout.prop(scene, "mcow_scene_animation")
+        
+        layout.label(text="JSON Export Settings")
+        layout.prop(scene, "mcow_scene_json_pretty")
+        if scene.mcow_scene_json_pretty:
+            layout.prop(scene, "mcow_scene_json_char")
+            if scene.mcow_scene_json_char == "SPACE":
+                layout.prop(scene, "mcow_scene_json_indent")
+
+# endregion
+
+# region Blender Scene Panel functions, Register and Unregister functions
+
+def update_properties_scene_empty(self, context):
+    # NOTE : This is an aux function whose purpose is to restore all of the empties to their saved state
+    self.show_name = self.magickcow_empty_original_setting_display_name
+    self.empty_display_type = self.magickcow_empty_original_setting_display_type
+
+def update_properties_scene(self, context):
+    
+    # NOTE : The "self" parameter is simply ignored in this case, we just want to iterate over all of the objects of type empty in the scene and call their respective update methods.
+    if context.scene.mcow_scene_mode == "MAP":
+        fn = update_properties_map_empty
+    
+    elif context.scene.mcow_scene_mode == "PHYSICS_ENTITY":
+        fn = update_properties_physics_entity_empty
+    
+    else:
+        fn = update_properties_scene_empty
+    
+    empties = [obj for obj in bpy.data.objects if obj.type == "EMPTY"]
+    for empty in empties:
+        fn(empty, context)
+
+def register_properties_scene():
+
+    # Register properties for the scene panel
+
+    # By default, it will be marked as None, so you need to manually select what type of object you want to export the scene as.
+    # This is done as a safeguard to prevent unexpectedly long export times or receiving an unexpected output exported file, which would needlessly waste the user's time if they
+    # forget to pick the type when this could just error out quickly.
+    # The resulting behaviour is that the program simply displays an error when the export button is pressed, notifying the user that the export process failed because no export type was chosen / selected.
+    bpy.types.Scene.mcow_scene_mode = bpy.props.EnumProperty(
+        name = "Export Mode",
+        description = "Select the type of object that will be exported when exporting the current scene to a JSON file.",
+        items = [
+            ("NONE", "None", "The current scene will not be exported as any type of object. Exporting as a MagickaPUP JSON file will be disabled until the user selects what type of export they want to perform with the current scene."),
+            ("MAP", "Map", "The current scene will be exported as an asset containing a map for Magicka."),
+            ("PHYSICS_ENTITY", "Physics Entity", "The current scene will be exported as an asset containing a physics entity for Magicka.")
+        ],
+        default = "NONE",
+        update = update_properties_scene
+    )
+
+    bpy.types.Scene.mcow_scene_json_pretty = bpy.props.BoolProperty(
+        name = "Pretty Format",
+        description = "The JSON file will be exported with indentation and newlines for easier reading. Slows down export times due to the extra processing required. Also increasing the resulting file size."
+    )
+
+    bpy.types.Scene.mcow_scene_json_indent = bpy.props.IntProperty(
+        name = "Indent Depth",
+        description = "Number of space characters to use in the output JSON file for indentation. This setting is ignored if pretty JSON formatting is disabled.",
+        default = 2,
+        min = 1,
+        max = 256 # Again, who in the name of fuck will ever use this? I don't know, but fuck you if you do! lmao...
+    )
+
+    bpy.types.Scene.mcow_scene_json_char = bpy.props.EnumProperty(
+        name = "Indent Character",
+        description = "The character to be used to indent in the generated JSON files.",
+        items = [
+            ("SPACE", "Space", "Space character (' ')"),
+            ("TAB", "Tab", "Tab character ('\\t')")
+        ],
+        default = "SPACE"
+    )
+
+    # NOTE : A list of benefits of storing all of the export config within the scene panel rather than the export menu:
+    # - The settings are saved across sessions (extremely useful for the base folder path, it used to be extremely fucking annoying for it to disappear all the time when reopening a Blender project...)
+    # - The settings are tied to a specific blend file within a single session rather than being carried over across scenes (if you have multiple scenes, and some are maps and others are assets, it can become a fucking pain in the ass to constantly have to change the export settings and fine tune them, when you could just do it once and be done with it...)
+    # Note that having to reconfigure the export each time you make a new project is an extremely minor inconvenience compared to the crap one had to put up with before... not to mention that this is how Valve does it in their source tools for blender...
+    # In short, it is far more benefitial to associate these settings on a per project basis than on a global basis for the entire editor...
+    bpy.types.Scene.mcow_scene_base_path = bpy.props.StringProperty(
+        name = "Base Directory Path",
+        description = "Select the path in which the exporter will look for the base directory. This directory contains JSON files which correspond to effects (materials) that will be applied to the surfaces that have a material with the name of the corresponding effect file to be used.",
+        default = "C:\\"
+    )
+
+    # TODO : Improve the description string so that it is more generic and also applies to all other forms of exportable object types / scene types rather than being specific to level (map) export.
+    bpy.types.Scene.mcow_scene_animation = bpy.props.BoolProperty(
+        name = "Export Animation Data",
+        description = "Determines whether the animation data of the current scene will be exported or not.\n - If True : The animated level parts will be exported, including all of the child objects and animation data.\n - If False : The animated level parts will be completely ignored and not exported. All children components, including geometry, lights, and any other type of object, that is attached to animated level parts, will also be ignored.\n - Note : The animated level parts root still needs to be present for the exporter to properly generate the level data.",
+        default = False
+    )
+
+    # Register the scene panel itself
+    bpy.utils.register_class(MagickCowScenePanel)
+
+def unregister_properties_scene():
+    
+    # Unregister properties for the scene panel
+    del bpy.types.Scene.mcow_scene_mode
+    del bpy.types.Scene.mcow_scene_json_pretty
+    del bpy.types.Scene.mcow_scene_json_indent
+    del bpy.types.Scene.mcow_scene_base_path
+    del bpy.types.Scene.mcow_scene_animation
+
+    # Unregister the scene panel
+    bpy.utils.unregister_class(MagickCowScenePanel)
 
 # endregion
 
@@ -527,7 +1755,13 @@ def get_action_keyframes(action):
 
 # endregion
 
-# region Generator classes
+# region Get Stage
+
+# TODO : Move logic from data generation classes into external functions and place them here...
+
+# endregion
+
+# region Generate Stage
 
 # region Comment - DataGenerator
     # A generic class for data generation.
@@ -1265,7 +2499,7 @@ class DataGenerator:
 
     def generate_mesh_data(self, obj, transform, uses_material = True, material_index = 0):
         # Generate mesh data
-        mcow_mesh = MagickCowMesh(obj, transform)
+        mcow_mesh = MCow_Mesh(obj, transform)
         
         # Generate material data
         matname = self.get_material_name(obj, material_index)
@@ -1347,7 +2581,7 @@ class DataGenerator:
 
     def generate_mesh_data_testing_1(self, obj, transform, uses_material = True, material_index = 0):
         # Generate mesh data
-        mcow_mesh = MagickCowMesh(obj, transform)
+        mcow_mesh = MCow_Mesh(obj, transform)
         
         # Generate material data
         matname = self.get_material_name(obj, material_index)
@@ -1897,7 +3131,7 @@ class DataGeneratorMap(DataGenerator):
                 if not bpy.context.scene.mcow_scene_animation:
                     continue
                 
-                found_objects_new = SceneObjectsFound()
+                found_objects_new = MCow_Map_SceneObjectsFound()
                 
                 self.get_scene_data_rec(found_objects_global, found_objects_new, obj.children, obj)
                 
@@ -1911,7 +3145,7 @@ class DataGeneratorMap(DataGenerator):
         root_objects = get_scene_root_objects()
         
         # Create an instance of the found objects class. It will get passed around by the recursive calls to form a tree-like structure, adding the found objects to it and its children.
-        found_objects = SceneObjectsFound()
+        found_objects = MCow_Map_SceneObjectsFound()
         
         # Call the recursive function and start getting the data.
         self.get_scene_data_rec(found_objects, found_objects, root_objects, None)
@@ -2568,13 +3802,13 @@ class DataGeneratorMap(DataGenerator):
 
         # Iterate over the child animated level parts
         for child in children_found.animated_parts:
-            generated_child = SceneObjectsGeneratedAnimated()
+            generated_child = MCow_Map_SceneObjectsGeneratedAnimated()
             self.generate_scene_data_animated_rec(child, generated_child)
             generated_scene_objects.animated_parts.append(generated_child)
 
     def generate_scene_data_animated(self, found_scene_objects, generated_scene_objects):
         for part in found_scene_objects.animated_parts:
-            generated_part = SceneObjectsGeneratedAnimated()
+            generated_part = MCow_Map_SceneObjectsGeneratedAnimated()
             self.generate_scene_data_animated_rec(part, generated_part)
             generated_scene_objects.animated_parts.append(generated_part)
     
@@ -2583,7 +3817,7 @@ class DataGeneratorMap(DataGenerator):
         self.generate_scene_data_animated(found_scene_objects, generated_scene_objects)
     
     def generate_scene_data(self, found_scene_objects):
-        generated_scene_objects = SceneObjectsGeneratedStatic()
+        generated_scene_objects = MCow_Map_SceneObjectsGeneratedStatic()
         self.generate_scene_data_internal(found_scene_objects, generated_scene_objects)
         return generated_scene_objects
     
@@ -3812,1257 +5046,9 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
 # endregion
 
-# region Blender Operator classes for JSON Exporter.
+# region Make Stage
 
-# This class is the exporter operator for all types of files that can be generated by MagickCow.
-# NOTE : In the past, we used to have a different export operator for each type of object. Now, they all contain their code within this operator, since the export type is selected on the scene panel.
-# We still separate the logic in different methods tho, that way things are easier to deal with, but we only have 1 single exporter operator class rather than multiple classes.
-class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
-    
-    # region Blender specific configuration:
-    
-    bl_idname = "object.magickcow_map"
-    bl_label = "MagickCow Export Map"
-    bl_description = "MagickCow Export Map to JSON file"
-    filename_ext = ".json"
-
-    # endregion
-    
-    # region Exporter Panel Config
-
-    filter_glob : bpy.props.StringProperty(default = "*.json", options = {'HIDDEN'})
-    
-    # region Deprecated
-
-    # Discarded code where the properties used to depend on the export operator itself. Now they are global to the scene config / data instead.
-    # region Deprecated Code
-    # mcow_setting_export_path : bpy.props.StringProperty(
-    #     name = "Config Path",
-    #     description = "Select the path in which the exporter will look for the base folder. This folder contains JSON files which correspond to effects (materials) that will be applied to the surfaces that have a material with the name of the corresponding effect file to be used.",
-    #     default = "C:\\"
-    # )
-    # 
-    # mcow_setting_export_animation_data : bpy.props.BoolProperty(
-    #     name = "Export Animation Data",
-    #     description = "Determines whether the animation side of the scene will be exported or not.\n - If True : The animated level parts will be exported, including all of the child objects and animation data.\n - If False : The animated level parts will be completely ignored and not exported. All children components, including geometry, lights, and any other type of object, that is attached to animated level parts, will also be ignored.\n - Note : The animated level parts root still needs to be present for the exporter to properly generate the level data.",
-    #     default = False
-    # )
-    # 
-    # mcow_setting_export_pretty : bpy.props.BoolProperty(
-    #     name = "Pretty JSON Format",
-    #     description = "The JSON file will be exported with indentation and newlines for easier reading. Slows down export times due to the extra processing required. It also increases the resulting file size due to the extra characters required for newlines and indentation. Recommended to only enable this setting if debugging the output of the generated JSON file is absolutely necessary, specially when working with large maps with high level of detail.",
-    #     default = False
-    # )
-    # 
-    # mcow_setting_export_indent : bpy.props.IntProperty(
-    #     name = "Indent Depth",
-    #     description = "Number of space characters to use in the output JSON file for indentation. This setting is ignored if pretty JSON formatting is disabled.",
-    #     default = 2,
-    #     min = 1,
-    #     max = 256 # Who the fuck is going to need this tho??? Anyone who is dicking around and wants to find out the limit, I guess.
-    # )
-
-    # endregion
-
-    # endregion
-
-    # endregion
-
-    # region JSON aux methods
-
-    # NOTE : We use json.dumps to make a string rather than json.dump to dump directly into a file because json.dump is absurdly slow, but json.dumps and then writing the generated string into a file is way faster...
-    # Maybe some weird python buffering shenanigans? Oh how I miss fprintf...
-    def json_dump_str(self, context, obj_dict):
-
-        is_pretty = context.scene.mcow_scene_json_pretty
-        selected_indent = context.scene.mcow_scene_json_indent if context.scene.mcow_scene_json_char == "SPACE" else "\t"
-
-        if is_pretty:
-            return json.dumps(obj_dict, indent = selected_indent, separators = (",", ":"), check_circular = False)
-        return json.dumps(obj_dict, indent = None, separators = (",", ":"), check_circular = False)
-
-    # endregion
-
-    # region Main Exporter Code
-
-    def execute(self, context):
-        return self.export_data(context)
-    
-    def export_data(self, context):
-        scene = context.scene
-        export_mode = scene.mcow_scene_mode
-        ans = {} # This is an empty object, but the type of answer object we expect from the export functions is a Blender message, something like {"FINISHED"} or {"CANCELLED"} or whatever.
-        
-        # Save (backup) the scene state as it was before exporting the scene
-        # NOTE : The bpy.data properties used to check if the file is saved are the following: 
-        # - is_saved : checks if the scene is saved into a file
-        # - is_dirty : checks if the latest state in memory has been saved to the file on disk
-        if (not bpy.data.is_saved) or bpy.data.is_dirty:
-            self.report({"ERROR"}, "Cannot export the scene if it has not been saved!")
-            return {"CANCELLED"}
-        
-        # Perform export process
-        try:
-            if export_mode == "MAP":
-                ans = self.export_data_map(context)
-            elif export_mode == "PHYSICS_ENTITY":
-                ans = self.export_data_physics_entity(context)
-            else:
-                ans = self.export_data_none(context)
-        except MagickCowExportException as e:
-            self.report({"ERROR"}, f"Failed to export data: {e}")
-            return {"CANCELLED"}
-        finally:
-            # Load (restore) the scene state as it was before exporting the scene
-            # This undoes the scene rotations, modifier applications, etc... basically performs and undo that undoes all destructive changes that were performed when exporting the scene
-            # This happens within the finally block so that it always takes place even if an error were to happen during export, which prevents the mcow exporter from breaking the scene during export.
-            bpy.ops.wm.open_mainfile(filepath = bpy.data.filepath)
-
-        return ans
-
-    def export_data_none(self, context):
-        self.report({"ERROR"}, "Cannot export scene data unless a scene export mode is selected!")
-        return {"CANCELLED"}
-
-    def export_data_physics_entity(self, context):
-        return self.export_data_func(context, "Physics Entity", DataGeneratorPhysicsEntity())
-
-    def export_data_map(self, context):
-        return self.export_data_func(context, "Map", DataGeneratorMap())
-    
-    def write_to_file(self, contents):
-        try:
-            with open(self.filepath, 'w') as outfile:
-                outfile.write(contents)
-            self.report({"INFO"}, f"Successfully exported data to file \"{self.filepath}\"")
-            return {"FINISHED"}
-        except Exception as e:
-            self.report({"ERROR"}, f"Failed to export data: {e}")
-            return {"CANCELLED"}
-
-    def export_data_func(self, context, name, generator):
-        self.report({"INFO"}, f"Exporting to MagickaPUP .json {name} file...")
-
-        xnb_dict = generator.process_scene_data()
-        json_str = self.json_dump_str(context, xnb_dict)
-
-        return self.write_to_file(json_str)
-
-    # endregion
-
-# endregion
-
-# region Blender Operator classes for N-Key Panel
-
-# region Internal logic classes
-
-# NOTE : This is a dummy class that exists to draw empty panels
-class MagickCowPanelObjectPropertiesNone:
-    def draw(self, layout, obj):
-        layout.label(text = "No available properties:")
-        layout.label(text = " - Export mode is \"None\"!")
-
-class MagickCowPanelObjectPropertiesGeneric:
-    # Properties that must be displayed for all objects no matter their type
-    def draw(self, layout, obj):
-        # NOTE : For information stored within an Ojbect, we use obj directly. For information stored within a specific type, we must access obj.data
-        layout.prop(obj, "magickcow_allow_export")
-        return
-
-
-class MagickCowPanelObjectPropertiesMap:
-    
-    # Base draw function. Calls the specific drawing functions based on the type of the selected object.
-    def draw(self, layout, obj):
-        
-        # If the object exists (the user is currently selecting an object), draw the properties in the panel
-        # The displayed properties are changed depending on the type of the selected object
-        # This "if obj" thing could be an early return with "if not obj" or whatever, but all examples I've seen do it like this, so there must be a pythonic reason to do this...
-        if obj:
-            if obj.type == "LIGHT":
-                self.draw_light(layout, obj)
-            elif obj.type == "MESH":
-                self.draw_mesh(layout, obj)
-            elif obj.type == "EMPTY":
-                self.draw_empty(layout, obj)
-    
-    # Properties that must be displayed for empties
-    def draw_empty(self, layout, obj):
-        layout.prop(obj, "magickcow_empty_type")
-        
-        if obj.magickcow_empty_type == "LOCATOR":
-            layout.prop(obj, "magickcow_locator_radius")
-        elif obj.magickcow_empty_type == "PARTICLE":
-            layout.prop(obj, "magickcow_particle_name")
-            layout.prop(obj, "magickcow_particle_range")
-        elif obj.magickcow_empty_type == "PHYSICS_ENTITY":
-            layout.prop(obj, "magickcow_physics_entity_name")
-        elif obj.magickcow_empty_type == "BONE":
-            layout.prop(obj, "magickcow_locator_radius")
-            layout.prop(obj, "magickcow_bone_affects_shields")
-            layout.prop(obj, "magickcow_collision_enabled")
-            if obj.magickcow_collision_enabled:
-                layout.prop(obj, "magickcow_collision_material")
-    
-    
-    # Properties that must be displayed for lights
-    def draw_light(self, layout, obj):
-        layout.prop(obj.data, "magickcow_light_color_diffuse")
-        layout.prop(obj.data, "magickcow_light_color_ambient")
-        layout.prop(obj.data, "magickcow_light_variation_type")
-        layout.prop(obj.data, "magickcow_light_variation_speed")
-        layout.prop(obj.data, "magickcow_light_variation_amount")
-        layout.prop(obj.data, "magickcow_light_reach")
-        layout.prop(obj.data, "magickcow_light_use_attenuation")
-        layout.prop(obj.data, "magickcow_light_sharpness")
-        layout.prop(obj.data, "magickcow_light_cutoffangle")
-        layout.prop(obj.data, "magickcow_light_intensity_diffuse")
-        layout.prop(obj.data, "magickcow_light_intensity_ambient")
-        layout.prop(obj.data, "magickcow_light_intensity_specular")
-        layout.prop(obj.data, "magickcow_light_shadow_map_size")
-        layout.prop(obj.data, "magickcow_light_casts_shadows")
-    
-    
-    # README : The collision layer / material appears under 2 if blocks in this code, not that it's bad, but important to remember when editing in the future.
-    # Properties that must be displayed for meshes
-    def draw_mesh(self, layout, obj):
-        layout.prop(obj.data, "magickcow_mesh_type")
-        
-        if obj.data.magickcow_mesh_type == "GEOMETRY":
-            self.draw_mesh_geometry(layout, obj)
-            # self.draw_mesh_vertex_properties(layout, obj)
-        elif obj.data.magickcow_mesh_type in ["WATER", "LAVA"]:
-            self.draw_mesh_liquid(layout, obj)
-            # self.draw_mesh_vertex_properties(layout, obj)
-        elif obj.data.magickcow_mesh_type == "COLLISION":
-            self.draw_mesh_collision(layout, obj)
-        elif obj.data.magickcow_mesh_type == "FORCE_FIELD":
-            self.draw_mesh_force_field(layout, obj)
-            # self.draw_mesh_vertex_properties(layout, obj)
-        return
-    
-    def draw_mesh_geometry(self, layout, obj):
-        layout.prop(obj, "magickcow_collision_enabled")
-        if(obj.magickcow_collision_enabled):
-            layout.prop(obj, "magickcow_collision_material") # 1
-    
-    def draw_mesh_liquid(self, layout, obj):
-        layout.prop(obj.data, "magickcow_mesh_can_drown")
-        layout.prop(obj.data, "magickcow_mesh_freezable")
-        layout.prop(obj.data, "magickcow_mesh_autofreeze")
-    
-    def draw_mesh_collision(self, layout, obj):
-        layout.prop(obj, "magickcow_collision_material") # 2
-
-    def draw_mesh_force_field(self, layout, obj):
-        # layout.prop(obj.data, "magickcow_force_field_ripple_color")
-        return
-    
-    # def draw_mesh_vertex_properties(self, layout, obj):
-    #     layout.prop(obj.data, "magickcow_vertex_color_enabled")
-
-class MagickCowPanelObjectPropertiesPhysicsEntity:
-    
-    def draw(self, layout, obj):
-        if obj:
-            if obj.type == "EMPTY":
-                self.draw_empty(layout, obj)
-            elif obj.type == "MESH":
-                self.draw_mesh(layout, obj)
-    
-    def draw_empty(self, layout, obj):
-        obj_type = obj.mcow_physics_entity_empty_type
-        layout.prop(obj, "mcow_physics_entity_empty_type")
-        if obj_type == "ROOT":
-            self.draw_empty_root(layout, obj)
-        elif obj_type == "BONE":
-            self.draw_empty_bone(layout, obj)
-    
-    def draw_empty_root(self, layout, obj):
-        # Simple properties
-        layout.prop(obj, "mcow_physics_entity_is_movable")
-        layout.prop(obj, "mcow_physics_entity_is_pushable")
-        layout.prop(obj, "mcow_physics_entity_is_solid")
-        layout.prop(obj, "mcow_physics_entity_mass")
-        layout.prop(obj, "mcow_physics_entity_can_have_status")
-        layout.prop(obj, "mcow_physics_entity_hitpoints")
-
-        # NOTE : Using the layout.prop(obj, "mcow_physics_entity_resistances") method does not work for lists of properties ("collection properties"). You must use a box instead.
-
-        # Resistances list
-        layout.label(text="Resistances")
-        layout.operator("magickcow.resistance_add_item")
-        for index, item in enumerate(obj.mcow_physics_entity_resistances):
-            box = layout.box()
-            box.prop(item, "element")
-            box.prop(item, "multiplier")
-            box.prop(item, "modifier")
-            remove_op = box.operator("magickcow.resistance_remove_item")
-            remove_op.index = index
-        
-        # Gibs list
-        layout.label(text="Gibs")
-        layout.operator("magickcow.gibs_add_item")
-        for index, item in enumerate(obj.mcow_physics_entity_gibs):
-            box = layout.box()
-            box.prop(item, "model")
-            box.prop(item, "mass")
-            box.prop(item, "scale")
-            remove_op = box.operator("magickcow.gibs_remove_item")
-            remove_op.index = index
-    
-    def draw_empty_bone(self, layout, obj):
-        # TODO : Implement
-        return
-
-    def draw_mesh(self, layout, obj):
-        mesh_type = obj.data.mcow_physics_entity_mesh_type
-        layout.prop(obj.data, "mcow_physics_entity_mesh_type")
-        if mesh_type == "GEOMETRY":
-            self.draw_mesh_geometry(layout, obj)
-        elif mesh_type == "COLLISION":
-            self.draw_mesh_collision(layout, obj)
-    
-    # NOTE : Collision meshes for physics entities don't have specific collision materials / "channels", so we don't display them, unlike for level part collisions, which do have specific collision materials support.
-    def draw_mesh_geometry(self, layout, obj):
-        layout.prop(obj, "magickcow_collision_enabled") # Determines if complex collision is enabled or not for this visual mesh.
-    
-    def draw_mesh_collision(self, layout, obj):
-        # NOTE : In the case of physics entities, draw nothing else, because they don't have collision material support, so we don't need to specify it.
-        # layout.prop(obj, "magickcow_collision_material")
-        return
-
-# endregion
-
-# This class is the one that controls the N-Key panel for selected object configuration.
-class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
-
-    bl_label = "MagickCow Properties"
-    bl_idname = "OBJECT_PT_MagickCowProperties_panel"
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "UI"
-    bl_category = "MagickCow"
-
-    mcow_panel_none = MagickCowPanelObjectPropertiesNone()
-    mcow_panel_generic = MagickCowPanelObjectPropertiesGeneric()
-    mcow_panel_map = MagickCowPanelObjectPropertiesMap()
-    mcow_panel_physics_entity = MagickCowPanelObjectPropertiesPhysicsEntity()
-
-    # Base draw function. Calls the specific drawing functions based on the type of the selected object.
-    def draw(self, context):
-        # Get the panel's layout and the currently selected object
-        layout = self.layout
-        obj = context.object
-        
-        # Get the scene config to check what scene mode we're in
-        mode = context.scene.mcow_scene_mode
-
-        # Draw selected object properties
-        # Calls the specific draw functions according to the selected scene mode
-        if obj:
-            if mode == "MAP":
-                self.draw_panel(layout, obj, self.mcow_panel_map)
-            elif mode == "PHYSICS_ENTITY":
-                self.draw_panel(layout, obj, self.mcow_panel_physics_entity)
-            else:
-                self.draw_none(layout, obj) # Object panel draw call for case "NONE" or any other invalid value
-
-    # NOTE : The reason I've implemented it like this is because I don't want the generic object properties to be displayed when working with the NONE scene export mode, that way we can quickly signal to the users that they forgot to configure their scene and avoid confusion when they look for settings on a panel and don't find it...
-    def draw_panel(self, layout, obj, mcow_panel_type):
-        self.mcow_panel_generic.draw(layout, obj) # Draw all of the properties that are common to all object types.
-        mcow_panel_type.draw(layout, obj) # Draw all of the properties that are specific to the selected object type.
-
-    def draw_none(self, layout, obj):
-        self.mcow_panel_none.draw(layout, obj)
-
-# endregion
-
-# region Blender Operator classes for Scene Panel
-
-# This class is the one that controls the N-Key panel for global scene config.
-# region Comment
-    # It is inspired by Valve's blender source tools, where they have the equivalent of this panel on the scene menu.
-    # In my case, I am not sure this is the best way to go, as we could also make this an N-Key panel that works without selecting any objects, but as of now I have decided to make it like this because it feels
-    # like it would make things less cluttered. The right most panel, which is where the scene panel is located by default, is pretty large by default and it is a location that makes sense for the kind of configuration
-    # that it will store, so I'd rather put it there, since I believe this is more intuitive for Blender users than coming up with my own conventions.
-# endregion
-class MagickCowScenePanel(bpy.types.Panel):
-    bl_label = "MagickCow Scene Configuration"
-    bl_idname = "SCENE_PT_MagickCow_Scene_Tools"
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "scene" # This makes the panel appear on under the Scene Properties.
-
-    def draw(self, context):
-        layout = self.layout
-        scene = context.scene
-
-        layout.label(text="Scene Export Settings")
-        layout.prop(scene, "mcow_scene_mode")
-        layout.prop(scene, "mcow_scene_base_path")
-        layout.prop(scene, "mcow_scene_animation")
-        
-        layout.label(text="JSON Export Settings")
-        layout.prop(scene, "mcow_scene_json_pretty")
-        if scene.mcow_scene_json_pretty:
-            layout.prop(scene, "mcow_scene_json_char")
-            if scene.mcow_scene_json_char == "SPACE":
-                layout.prop(scene, "mcow_scene_json_indent")
-
-# endregion
-
-# region Custom Blender Property types and related Blender Operator classes
-
-# This region contains classes that describe custom property types for Blender.
-# Note that these properties can be used on any place in Blender, such as object properties or scene properties.
-
-# region Resistances
-
-
-# TODO : Maybe make the elements enum into some kind of function that returns the result of the bpy.props.EnumProperty() call so that we can make element enums anywhere we want?
-# Also, think about adding support for all of the possible values for elements, including stuff like "Beams" and whatnot...
-class MagickCowProperty_Resistance(bpy.types.PropertyGroup):
-    element : bpy.props.EnumProperty(
-        name = "Element",
-        description = "Magical element described by this entry",
-        items = [
-            ("Water", "Water", "Water Element"),
-            ("Life", "Life", "Life Element"),
-            ("Shield", "Shield", "Shield Element"),
-            ("Cold", "Cold", "Cold Element"),
-            ("Lighting", "Lighting", "Electricity Element"),
-            ("Arcane", "Arcane", "Arcane Element"),
-            ("Earth", "Earth", "Earth Element"),
-            ("Fire", "Fire", "Fire Element"),
-            ("Steam", "Steam", "Steam Element"),
-            ("Ice", "Ice", "Ice Element"),
-            ("Poison", "Poison", "Poison Element")
-        ],
-        default = "Earth"
-    )
-    multiplier : bpy.props.FloatProperty(
-        name = "Multiplier",
-        description = "Multiplies the effects applied by the selected element. If set to 1, the value will be unchanged and the default damage will be applied. If set to a negative value, the effects of the spell will be inverted. If set to 0, the spell will have no effect unless specified on the modifier property.",
-        default = 1
-    )
-    modifier : bpy.props.FloatProperty(
-        name = "Modifier",
-        description = "Modifies the effects applied by the selected element. If set to 0, the value will be unchaged.",
-        default = 0
-    )
-
-class MAGICKCOW_OT_Operator_Resistance_AddItem(bpy.types.Operator):
-    bl_label = "Add"
-    bl_idname = "magickcow.resistance_add_item"
-    def execute(self, context):
-        obj = context.object
-        obj.mcow_physics_entity_resistances.add()
-        return {"FINISHED"}
-
-class MAGICKCOW_OT_Operator_Resistance_RemoveItem(bpy.types.Operator):
-    bl_label = "Remove"
-    bl_idname = "magickcow.resistance_remove_item"
-    index : bpy.props.IntProperty() # NOTE : For this property to be accessible from the outside without errors, we need to use ":" rather than "=" on assignment, for some reason...
-    def execute(self, context):
-        obj = context.object
-        if self.index >= 0 and self.index < len(obj.mcow_physics_entity_resistances): # NOTE : This check is not really necessary considering how we're assured that the index should theoretically always be correct when iterating on the collection.
-            obj.mcow_physics_entity_resistances.remove(self.index)
-        return {"FINISHED"}
-
-# endregion
-
-# region Gibs
-
-class MagickCowProperty_Gib(bpy.types.PropertyGroup):
-    model : bpy.props.StringProperty(
-        name = "Model",
-        description = "Path to the file that contains the model used for this gib",
-        default = "..\\..\\Models\\AnimatedProps\\Dungeons\\gib_slime01_0"
-    )
-
-    mass : bpy.props.FloatProperty(
-        name = "Mass",
-        description = "The mass of this gib",
-        default = 20
-    )
-
-    scale : bpy.props.FloatProperty(
-        name = "Scale",
-        description = "The scale of this gib",
-        default = 1
-    )
-
-class MAGICKCOW_OT_Operator_Gib_AddItem(bpy.types.Operator):
-    bl_label = "Add"
-    bl_idname = "magickcow.gibs_add_item"
-    def execute(self, context):
-        obj = context.object
-        obj.mcow_physics_entity_gibs.add()
-        return {"FINISHED"}
-
-class MAGICKCOW_OT_Operator_Gib_RemoveItem(bpy.types.Operator):
-    bl_label = "Remove"
-    bl_idname = "magickcow.gibs_remove_item"
-    index : bpy.props.IntProperty()
-    def execute(self, context):
-        obj = context.object
-        if self.index >= 0 and self.index < len(obj.mcow_physics_entity_gibs):
-            obj.mcow_physics_entity_gibs.remove(self.index)
-        return {"FINISHED"}
-
-
-# endregion
-
-# region Register functions
-
-def register_properties_classes():
-    # Resistances
-    bpy.utils.register_class(MagickCowProperty_Resistance)
-    bpy.utils.register_class(MAGICKCOW_OT_Operator_Resistance_AddItem)
-    bpy.utils.register_class(MAGICKCOW_OT_Operator_Resistance_RemoveItem)
-
-    # Gibs
-    bpy.utils.register_class(MagickCowProperty_Gib)
-    bpy.utils.register_class(MAGICKCOW_OT_Operator_Gib_AddItem)
-    bpy.utils.register_class(MAGICKCOW_OT_Operator_Gib_RemoveItem)
-
-def unregister_properties_classes():
-    # Resistances
-    bpy.utils.unregister_class(MagickCowProperty_Resistance)
-    bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Resistance_AddItem)
-    bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Resistance_RemoveItem)
-
-    # Gibs
-    bpy.utils.unregister_class(MagickCowProperty_Gib)
-    bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Gib_AddItem)
-    bpy.utils.unregister_class(MAGICKCOW_OT_Operator_Gib_RemoveItem)
-
-# endregion
-
-# endregion
-
-# region Blender Object Properties Register, Unregister and Update
-
-# region Object Properties - Map / Level
-
-# NOTE : The name of these parameters is important, as Blender internally calls them using "self = ..." and "context = ...".
-# If the names are different, the function will not properly allow objects to be modified.
-def update_properties_map_empty(self, context):
-    
-    if self.magickcow_empty_original_setting_must_update:
-        # Restore the original settings and mark as updated / restored
-        self.magickcow_empty_original_setting_must_update = False
-        self.empty_display_type = self.magickcow_empty_original_setting_display_type
-        self.show_name = self.magickcow_empty_original_setting_display_name
-    
-    else:
-        # Save / Back Up the original settings
-        self.magickcow_empty_original_setting_display_type = self.empty_display_type
-        self.magickcow_empty_original_setting_display_name = self.show_name
-    
-    if self.magickcow_empty_type != "NONE":
-        # Mark for restoration so that it will restore its original settings when returning to the default empty type ("NONE")
-        self.magickcow_empty_original_setting_must_update = True
-        
-        # Perform the corresponding updates for each empty type
-        if self.magickcow_empty_type == "LOCATOR":
-            self.empty_display_type = "PLAIN_AXES"
-            self.show_name = True
-                
-        elif self.magickcow_empty_type == "TRIGGER":
-            self.empty_display_type = "CUBE"
-            self.show_name = True
-        
-        elif self.magickcow_empty_type == "PARTICLE":
-            self.empty_display_type = "SPHERE"
-            self.show_name = False
-        
-        elif self.magickcow_empty_type == "BONE":
-            self.empty_display_type = "PLAIN_AXES"
-            self.show_name = True
-        
-        elif self.magickcow_empty_type == "PHYSICS_ENTITY":
-            self.empty_display_type = "ARROWS"
-            self.show_name = False
-
-def register_properties_map_empty():
-    empty = bpy.types.Object
-    
-    # Object type for empty objects
-    empty.magickcow_empty_type = bpy.props.EnumProperty(
-        name = "Type",
-        description = "Determine the type of this object",
-        items = [
-            ("NONE", "None", "This object will be treated as a regular empty object and will be ignored by the exporter"),
-            ("ROOT", "Root", "This object will be exported as the root of the level scene"),
-            ("LOCATOR", "Locator", "This object will be exported as a locator"),
-            ("TRIGGER", "Trigger", "This object will be exported as a trigger"),
-            ("PARTICLE", "Particle", "This object will be exported as a particle effect"),
-            ("BONE", "Bone", "This object will be exported as a model bone for animated level parts"),
-            ("PHYSICS_ENTITY", "Physics Entity", "This object will be exported as a physics entity"),
-            # ("HIERARCHY_NODE", "Hierarchy Node", "This object will be used to structure the hierarchy of the scene. Allows the exporter to organize the objects in the scene.")
-        ],
-        default = "NONE", # By default, it will be marked as none, so you need to manually select whether you want the empty to be a locator or a trigger
-        update = update_properties_map_empty
-    )
-    
-    # Locator Properties
-    empty.magickcow_locator_radius = bpy.props.FloatProperty(
-        name = "Radius",
-        description = "Radius of the locator",
-        default = 2.0
-    )
-    
-    # Particle Properties
-    empty.magickcow_particle_name = bpy.props.StringProperty(
-        name = "Particle",
-        description = "Name of the effect XML file to use for this particle",
-        default = "ambient_fire_torch"
-    )
-    
-    empty.magickcow_particle_range = bpy.props.FloatProperty(
-        name = "Range",
-        description = "Range of the particle effect",
-        default = 0.0
-    )
-    
-    # Properties to save original settings of the empty (this is used in case we go back from a locator / trigger to a "none" default empty)
-    empty.magickcow_empty_original_setting_display_type = bpy.props.StringProperty(
-        name = "__original_display_type__",
-        description = "Determines the original display type of the selected empty. Used to return to the original display config when selecting type None",
-        default = "__none__",
-        maxlen = 1024
-    )
-    empty.magickcow_empty_original_setting_display_name = bpy.props.BoolProperty(
-        name = "__original_display_name__",
-        description = "Determines the original display name of the selected empty. Used to return to the original display config when selecting type None",
-        default = False
-    )
-    empty.magickcow_empty_original_setting_must_update = bpy.props.BoolProperty(
-        name = "__original_display_must_update__",
-        description = "Determines if the original display settings must be restored",
-        default = False
-    )
-    
-    # Bone Properties
-    empty.magickcow_bone_affects_shields = bpy.props.BoolProperty(
-        name = "Affects Shields",
-        description = "Determines whether this animated level part will affect shields (wards) or not.",
-        default = True
-    )
-    
-    # Collision Properties
-    empty.magickcow_collision_enabled = bpy.props.BoolProperty(
-        name = "Has Collision",
-        description = "Determines whether this object will have a collision mesh when exported or not.",
-        default = True
-    )
-    empty.magickcow_collision_material = bpy.props.EnumProperty(
-        name = "Collision Material",
-        description = "Determine the collision material used by this object's collision",
-        items = [
-            ("GENERIC", "Generic", "The material will be marked as generic"),
-            ("GRAVEL", "Gravel", "The material will be marked as gravel"),
-            ("GRASS", "Grass", "The material will be marked as grass"),
-            ("WOOD", "Wood", "The material will be marked as wood"),
-            ("SNOW", "Snow", "The material will be marked as snow"),
-            ("STONE", "Stone", "The material will be marked as stone"),
-            ("MUD", "Mud", "The material will be marked as mud"),
-            ("REFLECT", "Reflect", "The material will be marked as reflective. Allows beams (arcane and healing) to reflect from this surface. Used for objects like mirrors from R'lyeh."),
-            ("WATER", "Water", "The material will be marked as water"),
-            ("LAVA", "Lava", "The material will be marked as lava")
-        ],
-        default = "GENERIC"
-    )
-
-    # Physics Entity Properties
-    empty.magickcow_physics_entity_name = bpy.props.StringProperty(
-        name = "Template",
-        description = "Name of the physics entity template XNB file to use for this physics entity",
-        default = "barrel_explosive"
-    )
-
-def unregister_properties_map_empty():
-    empty = bpy.types.Object
-    
-    del empty.magickcow_empty_type
-    del empty.magickcow_locator_radius
-    del empty.magickcow_empty_original_setting_display_type
-    del empty.magickcow_empty_original_setting_display_name
-    del empty.magickcow_empty_original_setting_must_update
-    del empty.magickcow_particle_name
-    del empty.magickcow_particle_range
-    del empty.magickcow_bone_affects_shields
-    del empty.magickcow_collision_enabled
-    del empty.magickcow_collision_material
-    del empty.magickcow_physics_entity_name
-
-def register_properties_map_mesh():
-    mesh = bpy.types.Mesh
-    
-    # region Object type for mesh objects:
-    
-    mesh.magickcow_mesh_type = bpy.props.EnumProperty(
-        name = "Type",
-        description = "Determine the type of this object",
-        items = [
-            ("GEOMETRY", "Geometry", "This object will be exported as a piece of level geometry"),
-            ("COLLISION", "Collision", "This object will be exported as a piece of level collision"),
-            ("WATER", "Water", "This object will be exported as a liquid of type \"Water\""),
-            ("LAVA", "Lava", "This object will be exported as a liquid of type \"Lava\""),
-            ("NAV", "Nav", "This object will be exported as a nav mesh"),
-            ("FORCE_FIELD", "Force Field", "This object will be exported as a force field")
-        ],
-        default = "GEOMETRY"
-    )
-
-    # endregion
-    
-    # region Liquid properties (for both water and lava):
-    
-    mesh.magickcow_mesh_can_drown = bpy.props.BoolProperty(
-        name = "Can Drown Entities",
-        description = "Determines whether the entities that collide with this liquid's surface will die by drowning in the liquid or not. Useful for maps with shallow water like \"Eye Sockey Rink\", where entities can contact the liquid but will not instantly drown. Entities will drown both in water and lava when this setting is enabled for the selected liquid.",
-        default = False
-    )
-    mesh.magickcow_mesh_freezable = bpy.props.BoolProperty(
-        name = "Freezable",
-        description = "Determines whether the liquid can be frozen or not. Note that liquid freezing works on a per vertex manner, meaning that a freezable surface needs to be subdivided to have enough vertices to allow for proper freezing behaviour.", # This is probably because it uses vertex painting / weights for freezing (makes sense if you think about how water sort of freezes in square patches in Magicka and Magicka 2). This means that a somewhat evenly distributed grid of vertices is the best way to go to make freezable liquids.
-        default = False
-    )
-    mesh.magickcow_mesh_autofreeze = bpy.props.BoolProperty(
-        name = "Auto Freeze",
-        description = "Determines whether the liquid will freeze automatically or not. Useful for cold maps and areas like \"Frostjord\" where the environment is cold and water would logically freeze automatically into ice as time passes.",
-        default = False
-    )
-
-    # endregion
-
-    # region Force Field Properties
-
-    # NOTE : Disabled because this property is now controlled via material JSON files.
-    """
-    mesh.magickcow_force_field_ripple_color = bpy.props.FloatVectorProperty(
-        name = "Ripple Color",
-        description = "Color used for the ripple effect displayed when an entity collides with the force field.\nThe lower the values, the more transparent they will appear. This means that color < 0.0, 0.0, 0.0 >, which corresponds to black, is displayed as a transparent ripple effect with no color tint.",
-        subtype = "COLOR",
-        default = (0.0, 0.0, 0.0),
-        min = 0.0,
-        max = 1.0,
-        size = 3 # RGB has 3 values. Magicka lights are Vec3, so no alpha channel.
-    )
-    """
-
-    # endregion
-
-    # region Vertex Properties
-    
-    # NOTE : Some day in the future we may allow adding custom properties at will to the vertices, for now we're just going to roll with the same config for all meshes except for vertex color,
-    # cause that's the only special case there is for now tbh. Something something ease of use etc etc...
-    """
-    mesh.magickcow_vertex_normal_enabled = bpy.props.BoolProperty(
-        name = "Use Vertex Normals",
-        description = "Allow vertex normals to be exported for this mesh",
-        default = True
-    )
-    mesh.magickcow_vertex_tangent_enabled = bpy.props.BoolProperty(
-        name = "Use Vertex Tangents",
-        description = "Allow vertex tangents to be exported for this mesh",
-        default = True
-    )
-    mesh.magickcow_vertex_color_enabled = bpy.props.BoolProperty(
-        name = "Vertex Color Enabled",
-        description = "Export the vertex color property for this mesh",
-        default = True
-    )
-    """
-    # endregion
-
-def unregister_properties_map_mesh():
-    mesh = bpy.types.Mesh
-    
-    del mesh.magickcow_mesh_type
-    del mesh.magickcow_mesh_can_drown
-    del mesh.magickcow_mesh_freezable
-    del mesh.magickcow_mesh_autofreeze
-    # del mesh.magickcow_force_field_ripple_color
-
-    # del mesh.magickcow_vertex_normal_enabled
-    # del mesh.magickcow_vertex_tangent_enabled
-    # del mesh.magickcow_vertex_color_enabled
-
-def register_properties_map_light():
-    light = bpy.types.Light
-
-    # Light Variation Settings:
-    light.magickcow_light_variation_type = bpy.props.EnumProperty(
-        name = "Variation Type",
-        description = "Determine the type of light variation to be used by this light source when exported.",
-        items = [
-            ("NONE", "None", "This light will have no variation"),
-            ("SINE", "Sine", "This light will have the variation determined by a sine wave"),
-            ("FLICKER", "Flicker", "This light will flicker"),
-            ("CANDLE", "Candle", "This light will behave like a candle"),
-            ("STROBE", "Strobe", "This light will behave like a strobe")
-        ],
-        default = "NONE"
-    )
-    
-    light.magickcow_light_variation_speed = bpy.props.FloatProperty(
-        name = "Variation Speed",
-        description = "The speed of light variation",
-        default = 0.0
-    )
-    
-    light.magickcow_light_variation_amount = bpy.props.FloatProperty(
-        name = "Variation Amount",
-        description = "The amount of light variation",
-        default = 0.0
-    )
-    
-    # Light radius settings
-    light.magickcow_light_reach = bpy.props.FloatProperty(
-        name = "Reach",
-        description = "The \"distance\" or \"radius\" of effect of the light.\n - For point lights, it defines the radius.\n - For spot lights, it defines the length of the light.\n - For directional lights, it is ignored.",
-        default = 5.0
-    )
-    
-    # Light attenuation and cutoff settings
-    light.magickcow_light_use_attenuation = bpy.props.BoolProperty(
-        name = "Use Attenuation",
-        description = "Determines if the light should use attenuation or not",
-        default = False
-    )
-    
-    light.magickcow_light_cutoffangle = bpy.props.FloatProperty(
-        name = "Cutoff Angle",
-        description = "Angle at which the light is cut off",
-        default = 0.0
-    )
-    
-    light.magickcow_light_sharpness = bpy.props.FloatProperty(
-        name = "Sharpness",
-        description = "Sharpness of the light",
-        default = 0.0
-    )
-    
-    # Light color properties
-    light.magickcow_light_color_diffuse = bpy.props.FloatVectorProperty(
-        name = "Diffuse Color",
-        description = "Difuse color of the light",
-        subtype = "COLOR",
-        default = (1.0, 1.0, 1.0),
-        min = 0.0,
-        max = 1.0,
-        size = 3 # RGB has 3 values. Magicka lights are Vec3, so no alpha channel.
-    )
-    
-    light.magickcow_light_color_ambient = bpy.props.FloatVectorProperty(
-        name = "Ambient Color",
-        description = "Ambient color of the light",
-        subtype = "COLOR",
-        default = (1.0, 1.0, 1.0),
-        min = 0.0,
-        max = 1.0,
-        size = 3 # RGB has 3 values. Magicka lights are Vec3, so no alpha channel.
-    )
-    
-    # Intensity settings:
-    light.magickcow_light_intensity_specular = bpy.props.FloatProperty(
-        name = "Specular Intensity",
-        description = "Specular intensity of the light",
-        default = 0.0
-    )
-    
-    light.magickcow_light_intensity_diffuse = bpy.props.FloatProperty(
-        name = "Diffuse Intensity",
-        description = "Intensity of the light's diffuse color emission. Acts as a multiplier over the diffuse color value. The result is NOT clamped to the [0,1] interval.",
-        default = 1.0
-    )
-    
-    light.magickcow_light_intensity_ambient = bpy.props.FloatProperty(
-        name = "Ambient Intensity",
-        description = "Intensity of the light's ambient color. Acts as a multiplier over the ambient color value. The result is NOT clamped to the [0,1] interval.",
-        default = 1.0
-    )
-    
-    # Other light settings:
-    light.magickcow_light_shadow_map_size = bpy.props.IntProperty(
-        name = "Shadow Map Size",
-        description = "Size of the shadow map used for the light",
-        default = 64,
-        min = 0
-    )
-    
-    light.magickcow_light_casts_shadows = bpy.props.BoolProperty(
-        name = "Casts Shadows",
-        description = "Determine whether the light should cast shadows or not",
-        default = True
-    )
-
-def unregister_properties_map_light():
-    light = bpy.types.Light
-    
-    del light.magickcow_light_variation_type
-    del light.magickcow_light_variation_speed
-    del light.magickcow_light_variation_amount
-    del light.magickcow_light_reach
-    del light.magickcow_light_use_attenuation
-    del light.magickcow_light_cutoffangle
-    del light.magickcow_light_sharpness
-    del light.magickcow_light_color_diffuse
-    del light.magickcow_light_color_ambient
-    del light.magickcow_light_intensity_specular
-    del light.magickcow_light_intensity_diffuse
-    del light.magickcow_light_intensity_ambient
-    del light.magickcow_light_shadow_map_size
-    del light.magickcow_light_casts_shadows
-
-def register_properties_map():
-    # Register the properties for each object type
-    register_properties_map_empty()
-    register_properties_map_mesh()
-    register_properties_map_light()
-
-def unregister_properties_map():
-    # Unregister the properties for each object type
-    unregister_properties_map_empty()
-    unregister_properties_map_mesh()
-    unregister_properties_map_light()
-
-# endregion
-
-# region Object Properties - Physics Entity
-
-# TODO : Implement
-# TODO : In the future maybe rework the system so that custom properties are stored within dicts so that we can actually have a better organization and just delete the dict rather than each prop one by one?
-
-def update_properties_physics_entity_empty(self, context):
-    
-    if self.magickcow_empty_original_setting_must_update:
-        # Restore the original settings and mark as updated / restored
-        self.magickcow_empty_original_setting_must_update = False
-        self.empty_display_type = self.magickcow_empty_original_setting_display_type
-        self.show_name = self.magickcow_empty_original_setting_display_name
-    
-    else:
-        # Save / Back Up the original settings
-        self.magickcow_empty_original_setting_display_type = self.empty_display_type
-        self.magickcow_empty_original_setting_display_name = self.show_name
-    
-    if self.mcow_physics_entity_empty_type != "NONE":
-        # Mark for restoration so that it will restore its original settings when returning to the default empty type ("NONE")
-        self.magickcow_empty_original_setting_must_update = True
-        
-        # Perform the corresponding updates for each empty type
-        if self.mcow_physics_entity_empty_type == "BONE":
-            self.empty_display_type = "PLAIN_AXES"
-            self.show_name = True
-        
-        elif self.mcow_physics_entity_empty_type == "ROOT":
-            self.empty_display_type = "SPHERE"
-            self.show_name = False
-        
-        elif self.mcow_physics_entity_empty_type == "BOUNDING_BOX":
-            self.empty_display_type = "CUBE"
-            self.show_name = True
-
-def register_properties_physics_entity_empty():
-    
-    empty = bpy.types.Object
-    
-    # region Properties - Generic
-
-    # Object type for empty objects
-    empty.mcow_physics_entity_empty_type = bpy.props.EnumProperty(
-        name = "Type",
-        description = "Determine the type of this object.",
-        items = [
-            ("NONE", "None", "This object will be treated as a regular empty object and will be ignored by the exporter."),
-            ("ROOT", "Root", "This object will be exported as the root of a physics entity."),
-            ("BONE", "Bone", "This object will be exported as a model bone for a physics entity."),
-            ("BOUNDING_BOX", "Bounding Box", "This Object will be exported as a bounding box for the physics entity.")
-        ],
-        default = "NONE", # By default, it will be marked as none, so you need to manually select what type of point data object you want this to be
-        update = update_properties_physics_entity_empty
-    )
-
-    # endregion
-
-    # region Properties - Root
-
-    # region Deprecated
-    
-    # NOTE : Discarded for now because I'm actually going to get the name / ID from the name of the root object in the inspector panel.
-    # empty.mcow_physics_entity_id = bpy.props.StringProperty(
-    #     name = "ID", # NOTE : The ID must be unique!!! each physics entity asset must have its own unique name within the game's data!!!
-    #     description = "Determine the ID of this physics entity",
-    #     default = "root"
-    # )
-
-    # endregion
-
-    empty.mcow_physics_entity_is_movable = bpy.props.BoolProperty(
-        name = "Is Movable", # This hurts me... movable is the "correct" modern spelling used nowadays, moveable is my preferred spelling, altough it is an archaism and nobody really uses it anymore... fuck me, but yeah, I'll pick whatever people use the most so as to make it more user friendly I guess...
-        description = "Determines whether this physics entity can be moved or not.",
-        default = False
-    )
-
-    empty.mcow_physics_entity_is_pushable = bpy.props.BoolProperty(
-        name = "Is Pushable",
-        description = "Determines whether this physics entity can be pushed or not.",
-        default = False
-    )
-
-    empty.mcow_physics_entity_is_solid = bpy.props.BoolProperty(
-        name = "Is Solid",
-        description = "Determines whether this physics entity is solid or not.",
-        default = True
-    )
-
-    empty.mcow_physics_entity_mass = bpy.props.FloatProperty(
-        name = "Mass",
-        description = "Determines the mass of this physics object.",
-        default = 200
-    )
-
-    empty.mcow_physics_entity_hitpoints = bpy.props.IntProperty(
-        name = "Health",
-        description = "Determines the number of hit points for this physics object.",
-        default = 300
-    )
-
-    empty.mcow_physics_entity_can_have_status = bpy.props.BoolProperty(
-        name = "Can Have Status",
-        description = "Determines whether the physics entity can have a status or not.",
-        default = True
-    )
-
-    empty.mcow_physics_entity_resistances = bpy.props.CollectionProperty(
-        type = MagickCowProperty_Resistance,
-        name = "Resistances",
-        description = "Determines the elemental resistances and weaknesses of this physics entity."
-    )
-
-    empty.mcow_physics_entity_gibs = bpy.props.CollectionProperty(
-        type = MagickCowProperty_Gib,
-        name = "Gibs",
-        description = "List of the gibs spawned by this physics entity when destroyed."
-    )
-
-    # endregion
-    
-    return
-
-def unregister_properties_physics_entity_empty():
-    empty = bpy.types.Object
-
-    del empty.mcow_physics_entity_empty_type
-
-    del empty.mcow_physics_entity_is_movable
-    del empty.mcow_physics_entity_is_pushable
-    del empty.mcow_physics_entity_is_solid
-    del empty.mcow_physics_entity_mass
-    del empty.mcow_physics_entity_hitpoints
-    del empty.mcow_physics_entity_can_have_status
-
-    del empty.mcow_physics_entity_resistances
-    del empty.mcow_physics_entity_gibs
-
-    return
-
-def register_properties_physics_entity_mesh():
-    mesh = bpy.types.Mesh
-
-    mesh.mcow_physics_entity_mesh_type = bpy.props.EnumProperty(
-        name = "Type",
-        description = "Determines the type of object this piece of geometry will be exported as.",
-        items = [
-            ("GEOMETRY", "Geometry", "This mesh will be exported as a piece of visual geometry for the physics entity."),
-            ("COLLISION", "Collision", "This mesh will be exported as a collision mesh for the physics entity.")
-        ],
-        default = "GEOMETRY"
-    )
-
-def unregister_properties_physics_entity_mesh():
-    mesh = bpy.types.Mesh
-
-    del mesh.mcow_physics_entity_mesh_type
-
-def register_properties_physics_entity():
-    register_properties_physics_entity_empty()
-    register_properties_physics_entity_mesh()
-
-def unregister_properties_physics_entity():
-    unregister_properties_physics_entity_empty()
-    unregister_properties_physics_entity_mesh()
-
-# endregion
-
-# region Object Properties - Generic
-
-# Generic properties are properties that all objects share no matter their type.
-
-def register_properties_generic():
-    obj = bpy.types.Object
-
-    # Allow export option for all objects:
-    obj.magickcow_allow_export = bpy.props.BoolProperty(
-        name = "Export",
-        description = "Determines whether this object will be exported or not. If set to false, the object will be ignored by the exporter, as well as all of its children objects.",
-        default = True
-    )
-
-def unregister_properties_generic():
-    obj = bpy.types.Object
-    
-    del obj.magickcow_allow_export
-
-# endregion
-
-# region Global Register and Unregister functions for objects
-
-def register_properties_object():
-
-    # Register the properties that all objects should have
-    register_properties_generic()
-
-    # Register the properties for each object type and for each scene mode type
-    register_properties_map()
-    register_properties_physics_entity()
-
-    # Register the class for the properties panel itself
-    bpy.utils.register_class(OBJECT_PT_MagickCowPropertiesPanel)
-
-def unregister_properties_object():
-
-    # Unregister the properties that all objects should have
-    unregister_properties_generic()
-
-    # Unregister the properties for each object type and for each scene mode type
-    unregister_properties_map()
-    unregister_properties_physics_entity()
-
-    # Unregister the class for the properties panel itself
-    bpy.utils.unregister_class(OBJECT_PT_MagickCowPropertiesPanel)
-
-# endregion
-
-# endregion
-
-# region Blender Export Panel functions, Register and Unregister functions
-
-def menu_func(self, context):
-    self.layout.operator(MagickCowExporterOperator.bl_idname, text = "Export Scene to MagickaPUP JSON file (.json)")
-
-def register_exporters():
-    bpy.utils.register_class(MagickCowExporterOperator)
-    bpy.types.TOPBAR_MT_file_export.append(menu_func)
-
-def unregister_exporters():
-    bpy.utils.unregister_class(MagickCowExporterOperator)
-    bpy.types.TOPBAR_MT_file_export.remove(menu_func)
-
-# endregion
-
-# region Blender Scene Panel functions, Register and Unregister functions
-
-def update_properties_scene_empty(self, context):
-    # NOTE : This is an aux function whose purpose is to restore all of the empties to their saved state
-    self.show_name = self.magickcow_empty_original_setting_display_name
-    self.empty_display_type = self.magickcow_empty_original_setting_display_type
-
-def update_properties_scene(self, context):
-    
-    # NOTE : The "self" parameter is simply ignored in this case, we just want to iterate over all of the objects of type empty in the scene and call their respective update methods.
-    if context.scene.mcow_scene_mode == "MAP":
-        fn = update_properties_map_empty
-    
-    elif context.scene.mcow_scene_mode == "PHYSICS_ENTITY":
-        fn = update_properties_physics_entity_empty
-    
-    else:
-        fn = update_properties_scene_empty
-    
-    empties = [obj for obj in bpy.data.objects if obj.type == "EMPTY"]
-    for empty in empties:
-        fn(empty, context)
-
-def register_properties_scene():
-
-    # Register properties for the scene panel
-
-    # By default, it will be marked as None, so you need to manually select what type of object you want to export the scene as.
-    # This is done as a safeguard to prevent unexpectedly long export times or receiving an unexpected output exported file, which would needlessly waste the user's time if they
-    # forget to pick the type when this could just error out quickly.
-    # The resulting behaviour is that the program simply displays an error when the export button is pressed, notifying the user that the export process failed because no export type was chosen / selected.
-    bpy.types.Scene.mcow_scene_mode = bpy.props.EnumProperty(
-        name = "Export Mode",
-        description = "Select the type of object that will be exported when exporting the current scene to a JSON file.",
-        items = [
-            ("NONE", "None", "The current scene will not be exported as any type of object. Exporting as a MagickaPUP JSON file will be disabled until the user selects what type of export they want to perform with the current scene."),
-            ("MAP", "Map", "The current scene will be exported as an asset containing a map for Magicka."),
-            ("PHYSICS_ENTITY", "Physics Entity", "The current scene will be exported as an asset containing a physics entity for Magicka.")
-        ],
-        default = "NONE",
-        update = update_properties_scene
-    )
-
-    bpy.types.Scene.mcow_scene_json_pretty = bpy.props.BoolProperty(
-        name = "Pretty Format",
-        description = "The JSON file will be exported with indentation and newlines for easier reading. Slows down export times due to the extra processing required. Also increasing the resulting file size."
-    )
-
-    bpy.types.Scene.mcow_scene_json_indent = bpy.props.IntProperty(
-        name = "Indent Depth",
-        description = "Number of space characters to use in the output JSON file for indentation. This setting is ignored if pretty JSON formatting is disabled.",
-        default = 2,
-        min = 1,
-        max = 256 # Again, who in the name of fuck will ever use this? I don't know, but fuck you if you do! lmao...
-    )
-
-    bpy.types.Scene.mcow_scene_json_char = bpy.props.EnumProperty(
-        name = "Indent Character",
-        description = "The character to be used to indent in the generated JSON files.",
-        items = [
-            ("SPACE", "Space", "Space character (' ')"),
-            ("TAB", "Tab", "Tab character ('\\t')")
-        ],
-        default = "SPACE"
-    )
-
-    # NOTE : A list of benefits of storing all of the export config within the scene panel rather than the export menu:
-    # - The settings are saved across sessions (extremely useful for the base folder path, it used to be extremely fucking annoying for it to disappear all the time when reopening a Blender project...)
-    # - The settings are tied to a specific blend file within a single session rather than being carried over across scenes (if you have multiple scenes, and some are maps and others are assets, it can become a fucking pain in the ass to constantly have to change the export settings and fine tune them, when you could just do it once and be done with it...)
-    # Note that having to reconfigure the export each time you make a new project is an extremely minor inconvenience compared to the crap one had to put up with before... not to mention that this is how Valve does it in their source tools for blender...
-    # In short, it is far more benefitial to associate these settings on a per project basis than on a global basis for the entire editor...
-    bpy.types.Scene.mcow_scene_base_path = bpy.props.StringProperty(
-        name = "Base Directory Path",
-        description = "Select the path in which the exporter will look for the base directory. This directory contains JSON files which correspond to effects (materials) that will be applied to the surfaces that have a material with the name of the corresponding effect file to be used.",
-        default = "C:\\"
-    )
-
-    # TODO : Improve the description string so that it is more generic and also applies to all other forms of exportable object types / scene types rather than being specific to level (map) export.
-    bpy.types.Scene.mcow_scene_animation = bpy.props.BoolProperty(
-        name = "Export Animation Data",
-        description = "Determines whether the animation data of the current scene will be exported or not.\n - If True : The animated level parts will be exported, including all of the child objects and animation data.\n - If False : The animated level parts will be completely ignored and not exported. All children components, including geometry, lights, and any other type of object, that is attached to animated level parts, will also be ignored.\n - Note : The animated level parts root still needs to be present for the exporter to properly generate the level data.",
-        default = False
-    )
-
-    # Register the scene panel itself
-    bpy.utils.register_class(MagickCowScenePanel)
-
-def unregister_properties_scene():
-    
-    # Unregister properties for the scene panel
-    del bpy.types.Scene.mcow_scene_mode
-    del bpy.types.Scene.mcow_scene_json_pretty
-    del bpy.types.Scene.mcow_scene_json_indent
-    del bpy.types.Scene.mcow_scene_base_path
-    del bpy.types.Scene.mcow_scene_animation
-
-    # Unregister the scene panel
-    bpy.utils.unregister_class(MagickCowScenePanel)
+# TODO : Move logic from data generation classes into external functions and place them here...
 
 # endregion
 
@@ -5098,3 +5084,4 @@ if __name__ == "__main__":
     register()
 
 # endregion
+
