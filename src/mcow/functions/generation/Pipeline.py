@@ -3,9 +3,31 @@
 # The classes within this region define the top level logic of the pipeline for data generation for MagickCow.
 # The data generator classes within this region make use of the internal lower level Get Stage, Generate Stage and Make Stage classes.
 
+# NOTE : When implementing a new MagickCow data pipeline class, the top level / main logic must be implemented within the process_scene_data() method.
+
+# TODO : Implement all classes here
+
 class MCow_Data_Pipeline:
-    def __init__(self, get_stage_generator, generate_stage_generator, make_stage_generator): # NOTE : Maybe it would make more sense to manually implement each class rather than forcing the user to define their own pipeline, which could lead to errors where the wrong logic is performed? Like, imagine some pipeline where a few extra bits of shared logic exists between steps appart from shared resource generation.
+    def __init__(self):
         pass
-        # TODO : Implement top level / main logic here
+    
+    def process_scene_data(self):
+        pass
+
+def MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
+    def __init__(self):
+        super().__init__()
+        return
+    
+    def process_scene_data(self):
+        pass
+
+def MCow_Data_Pipeline_PhysicsEntity(self):
+    def __init__(self):
+        super().__init__()
+        return
+    
+    def process_scene_data(self):
+        pass
 
 # endregion
