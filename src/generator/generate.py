@@ -10,24 +10,21 @@
 # endregion
 
 def mcow_file_append(write_file, filename):
+    print(f"Appending File : {filename}")
     with open(filename, "r") as read_file:
         contents = read_file.read()
         write_file.write(contents)
         write_file.write("\n") # I would write \r\n in Windows, but doing so leads to \r\r\n since \n is translated to \r\n automatically when working with "r" and "w" modes rather than "rb" and "wb". In short, python handles text mode operations for us already so we don't have anything to worry about.
 
 def mcow_file_generate(out_filename, in_filenames):
-    terminated_successfully = True
+    print(f"Generating File : {out_filename}")
     try:
-        print("Generating ")
         with open(out_filename, "w") as file:
             for filename in in_filenames:
                 mcow_file_append(file, filename)
         print("Data successfully generated!")
     except Exception as e:
         print(f"There was an error generating the output file: {e}")
-        terminated_successfully = False
-    finally:
-        print(f"Data generation process terminated {'successfully' if terminated_successfully else 'abnormally'}!")
 
 def main():
     ofilename = "../../magickcow.py"
