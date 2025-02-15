@@ -3299,6 +3299,5 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         return ans
 
     # endregion
-    
 
 # endregion
