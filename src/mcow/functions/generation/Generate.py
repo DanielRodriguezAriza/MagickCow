@@ -1186,6 +1186,7 @@ class DataGeneratorMap(DataGenerator):
         # underlying implementation, which is way faster and speeds up the export process by a ton (python is so slow!!! shocker!!! who would have thought???)
         # Note that this rotation will affect the actual objects of the scene, so we must undo it later.
         # Also, if the process ahead fails, the rotation won't get undone, so it would be wise to add a try-catch-finally block, but for now this is good enough.
+        # TODO : Replace outdated comments... because we already have the try-catch thing set up, and we also reload the whole scene on export... so yeah...
         self.rotate_scene_old_2(-90)
 
         # Get Scene Objects (Get Stage)
