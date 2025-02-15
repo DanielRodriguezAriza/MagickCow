@@ -736,7 +736,7 @@ class DataGenerator:
 
     def generate_mesh_data(self, obj, transform, uses_material = True, material_index = 0):
         # Generate mesh data
-        mcow_mesh = MagickCowMesh(obj, transform)
+        mcow_mesh = MCow_Mesh(obj, transform)
         
         # Generate material data
         matname = self.get_material_name(obj, material_index)
@@ -818,7 +818,7 @@ class DataGenerator:
 
     def generate_mesh_data_testing_1(self, obj, transform, uses_material = True, material_index = 0):
         # Generate mesh data
-        mcow_mesh = MagickCowMesh(obj, transform)
+        mcow_mesh = MCow_Mesh(obj, transform)
         
         # Generate material data
         matname = self.get_material_name(obj, material_index)
@@ -1368,7 +1368,7 @@ class DataGeneratorMap(DataGenerator):
                 if not bpy.context.scene.mcow_scene_animation:
                     continue
                 
-                found_objects_new = SceneObjectsFound()
+                found_objects_new = MCow_Map_SceneObjectsFound()
                 
                 self.get_scene_data_rec(found_objects_global, found_objects_new, obj.children, obj)
                 
@@ -1382,7 +1382,7 @@ class DataGeneratorMap(DataGenerator):
         root_objects = get_scene_root_objects()
         
         # Create an instance of the found objects class. It will get passed around by the recursive calls to form a tree-like structure, adding the found objects to it and its children.
-        found_objects = SceneObjectsFound()
+        found_objects = MCow_Map_SceneObjectsFound()
         
         # Call the recursive function and start getting the data.
         self.get_scene_data_rec(found_objects, found_objects, root_objects, None)
@@ -2039,13 +2039,13 @@ class DataGeneratorMap(DataGenerator):
 
         # Iterate over the child animated level parts
         for child in children_found.animated_parts:
-            generated_child = SceneObjectsGeneratedAnimated()
+            generated_child = MCow_Map_SceneObjectsGeneratedAnimated()
             self.generate_scene_data_animated_rec(child, generated_child)
             generated_scene_objects.animated_parts.append(generated_child)
 
     def generate_scene_data_animated(self, found_scene_objects, generated_scene_objects):
         for part in found_scene_objects.animated_parts:
-            generated_part = SceneObjectsGeneratedAnimated()
+            generated_part = MCow_Map_SceneObjectsGeneratedAnimated()
             self.generate_scene_data_animated_rec(part, generated_part)
             generated_scene_objects.animated_parts.append(generated_part)
     
@@ -2054,7 +2054,7 @@ class DataGeneratorMap(DataGenerator):
         self.generate_scene_data_animated(found_scene_objects, generated_scene_objects)
     
     def generate_scene_data(self, found_scene_objects):
-        generated_scene_objects = SceneObjectsGeneratedStatic()
+        generated_scene_objects = MCow_Map_SceneObjectsGeneratedStatic()
         self.generate_scene_data_internal(found_scene_objects, generated_scene_objects)
         return generated_scene_objects
     
