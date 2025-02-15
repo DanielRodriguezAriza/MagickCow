@@ -1757,7 +1757,21 @@ def get_action_keyframes(action):
 
 # region Get Stage
 
+# This section contains classes whose purpose is to define the logic of the Get Stage of the code.
+
 # TODO : Move logic from data generation classes into external functions and place them here...
+
+# Base Data Getter class.
+class MCow_Data_Getter:
+    pass
+
+# Data Getter class for Maps / Levels
+class MCow_Data_Getter_Map(MCow_Data_Getter):
+    pass
+
+# Data Getter class for Physics entities
+class MCow_Data_Getter_PhysicsEntity(MCow_Data_Getter):
+    pass
 
 # endregion
 
@@ -1818,7 +1832,26 @@ class DataGenerator:
             # obj.rotation_euler.rotate_axis(axis, math.radians(angle_degrees)) # idk why this doesn't work for all objects, I guess I'd know if only Blender's documentation had any information related to it. Oh well!
             obj.matrix_world = rotation_matrix @ obj.matrix_world
 
-    
+    # region Comment - rotate_objects_local_old_2
+
+    # NOTE : For future reference, read this comment, very important, I had forgotten about how I had implemented this and just wasted like 40 mins trying to figure out where the Y up conversion was done for
+    # locators...
+    # basically, the trick is the following:
+    # If you rotate in blender an object by -90d in the X axis to pass it to Y up, the rotation value stays wrong because now it is rotated by -90d around X.
+    # To solve this, objects that require matrix data to be stored such as locators get their rotation undone... but if we undid the rotation through blender's rotations, we would go back to what we had before!
+    # For example, imagine an object in Blender Z up with rot <0d, 0d, 45d>
+    # If we rotate -90d around X, we end up with <-90d, 45d, 0d>
+    # If we rotate +90d around X, we end up with <0d, 0d, 45d> again... so what's the solution?
+    # The solution is what we do in this function... which is "faking" the "unrotation" process.
+    # We manually add +90d to the X axis, which does not compute a real rotation as one would expect when using Blender rotation operations, but it does change the numeric value of the rotation, so the final
+    # rotation will be <0d, 45d, 0d>, which is what we wanted!
+    # This is such a fucking hack that I don't know how I had forgotten about this implementation detail... it is true that I've been many months away from the code, but Jesus fucking Christ, this is a really
+    # important implementation detail to remember...
+
+    # NOTE : Maybe I should apply this "unrotation" process to bones too? they work just fine with the "Z up" rotation value within their matrices tho, since all coordinates are relative, so whatever...
+    # for now at least...
+
+    # endregion
     def rotate_objects_local_old_2(self, objects, angle_degrees, axis):
         axis_num = find_element_index(["X", "Y", "Z"], axis, 0)
         for obj in objects:
@@ -2949,6 +2982,7 @@ class DataGeneratorMap(DataGenerator):
         # underlying implementation, which is way faster and speeds up the export process by a ton (python is so slow!!! shocker!!! who would have thought???)
         # Note that this rotation will affect the actual objects of the scene, so we must undo it later.
         # Also, if the process ahead fails, the rotation won't get undone, so it would be wise to add a try-catch-finally block, but for now this is good enough.
+        # TODO : Replace outdated comments... because we already have the try-catch thing set up, and we also reload the whole scene on export... so yeah...
         self.rotate_scene_old_2(-90)
 
         # Get Scene Objects (Get Stage)
@@ -5042,13 +5076,46 @@ class DataGeneratorPhysicsEntity(DataGenerator):
         return ans
 
     # endregion
-    
 
 # endregion
 
 # region Make Stage
 
 # TODO : Move logic from data generation classes into external functions and place them here...
+
+# endregion
+
+# region Data Generation pipeline classes
+
+# The classes within this region define the top level logic of the pipeline for data generation for MagickCow.
+# The data generator classes within this region make use of the internal lower level Get Stage, Generate Stage and Make Stage classes.
+
+# NOTE : When implementing a new MagickCow data pipeline class, the top level / main logic must be implemented within the process_scene_data() method.
+
+# TODO : Implement all classes here
+
+class MCow_Data_Pipeline:
+    def __init__(self):
+        pass
+    
+    def process_scene_data(self):
+        pass
+
+def MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
+    def __init__(self):
+        super().__init__()
+        return
+    
+    def process_scene_data(self):
+        pass
+
+def MCow_Data_Pipeline_PhysicsEntity(self):
+    def __init__(self):
+        super().__init__()
+        return
+    
+    def process_scene_data(self):
+        pass
 
 # endregion
 
