@@ -9,23 +9,33 @@
 
 # endregion
 
+def mcow_file_get_size(file):
+    current = file.tell()
+    file.seek(0, 2)
+    size = file.tell()
+    file.seek(current, 0)
+    return size
+
 def mcow_debug_log(message):
     print(f"[Generator] : {message}")
 
 def mcow_file_append(write_file, filename):
-    mcow_debug_log(f"Appending File : {filename}")
+    mcow_debug_log(f"Appending File : \"{filename}\"")
     with open(filename, "r") as read_file:
         contents = read_file.read()
         write_file.write(contents)
         write_file.write("\n") # I would write \r\n in Windows, but doing so leads to \r\r\n since \n is translated to \r\n automatically when working with "r" and "w" modes rather than "rb" and "wb". In short, python handles text mode operations for us already so we don't have anything to worry about.
 
 def mcow_file_generate(out_filename, in_filenames):
-    mcow_debug_log(f"Generating File : {out_filename}")
+    mcow_debug_log(f"Generating File : \"{out_filename}\"")
     try:
+        size = 0
         with open(out_filename, "w") as file:
             for filename in in_filenames:
                 mcow_file_append(file, filename)
+            size = mcow_file_get_size(file)
         mcow_debug_log("Data successfully generated!")
+        mcow_debug_log(f"Generated File : ( name = \"{out_filename}\", size = {size} bytes )")
     except Exception as e:
         mcow_debug_log(f"There was an error generating the output file: {e}")
 
