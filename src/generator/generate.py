@@ -24,7 +24,7 @@ def mcow_file_generate(out_filename, in_filenames):
             print(f"There was an error generating the output file: {e}")
 
 def main():
-    ofilename = "../magickcow.py"
+    ofilename = "../../magickcow.py"
     ifilenames = [
         # Top
         "../mcow/License.py",
