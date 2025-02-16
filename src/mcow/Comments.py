@@ -10,4 +10,24 @@
 # TODO : There's a bug when dealing with meshes that have 0 triangles. Discard those by seeing their triangle count on the get stage both on the map and physics entity handling code...
 # TODO : Fix issue where attaching a light or other orientation based objects to a locator causes the resulting rotation values to be wrong (the locator has a pretty shitty rotation undo fix which is fucking things up...)
 
+# TODO : Maybe modify the names of the blender properties bpy.props used by the objects and scene panel so that they are located within a custom object of their own for easier localization? Something like a dict?
+# Maybe something like this:
+"""
+
+mcow_props : {
+    type : bpy.props.enumproperty(whatever...),
+    mesh_properties : {
+        etc...
+    },
+    empty_properties : {
+        etc...
+    }
+    liquid_properties : {
+        etc...
+    }
+}
+
+"""
+# Or whatever the fuck, idk... we'll see if this is even possible in the first place...
+
 # endregion
