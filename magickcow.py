@@ -571,11 +571,11 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
         self.report({"ERROR"}, "Cannot export scene data unless a scene export mode is selected!")
         return {"CANCELLED"}
 
-    def export_data_physics_entity(self, context):
-        return self.export_data_func(context, "Physics Entity", DataGeneratorPhysicsEntity())
-
     def export_data_map(self, context):
-        return self.export_data_func(context, "Map", DataGeneratorMap())
+        return self.export_data_func(context, "Map", MCow_Data_Pipeline_Map())
+
+    def export_data_physics_entity(self, context):
+        return self.export_data_func(context, "Physics Entity", MCow_Data_Pipeline_PhysicsEntity())
     
     def write_to_file(self, contents):
         try:
@@ -1800,7 +1800,7 @@ class MCow_Data_Getter_PhysicsEntity(MCow_Data_Getter):
     # Each specific Data generator class will implement data generation methods that are specific for each type of asset to be exported.
     # NOTE : At some point in the future, it may make sense to move much of the logic here to some intermediate DataGenerator class (that inherits from the base one) that implements all of the 3D related operations and materials / effects / shared resources handling which some other forms of files that we could generate may not deal with... for example character creation...
 # endregion
-class DataGenerator:
+class MCow_Data_Generator:
     
     # region Constructor
     
@@ -2873,7 +2873,7 @@ class DataGenerator:
     # Also that would make things harder to handle caching materials, shared resources and implementing object instance caching as well, etc... because what happens when you modify a Blender scene?
     # In short, that would add quite a bit of complexity, and it is not really worth it as of now.
 #endregion
-class DataGeneratorMap(DataGenerator):
+class MCow_Data_Generator_Map(MCow_Data_Generator):
 
     # region Constructor
 
@@ -4734,7 +4734,7 @@ class DataGeneratorMap(DataGenerator):
     # The export process is pretty different from that of map scenes, but it also has multiple similarities.
     # One of the similarities is that physics entities contain an XNB model class within it, which means that the animated level part side of the code is pretty much almost identical to what this class requires.
 # endregion
-class DataGeneratorPhysicsEntity(DataGenerator):
+class MCow_Data_Generator_PhysicsEntity(MCow_Data_Generator):
 
     # region Constructor
 
