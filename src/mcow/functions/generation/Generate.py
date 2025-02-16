@@ -2941,38 +2941,11 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
     # One of the similarities is that physics entities contain an XNB model class within it, which means that the animated level part side of the code is pretty much almost identical to what this class requires.
 # endregion
 class MCow_Data_Generator_PhysicsEntity(MCow_Data_Generator):
-
-    # region Constructor
-
     def __init__(self):
         super().__init__()
         return
-    
-    # endregion
-
-    # region Process Scene Data
-
-    # TODO : Implement
-    def process_scene_data(self):
-        # Get
-        get_stage_physics_entity = self.get()
-
-        # Generate
-        generate_stage_physics_entity = self.generate(get_stage_physics_entity)
-
-        # Make
-        make_stage_physics_entity = self.make(generate_stage_physics_entity, self.dict_shared_resources)
-
-        return make_stage_physics_entity
-
-    # endregion
-
-    
-
-    # region Generate Stage
 
     def generate(self, found_objects):
-        # TODO : Implement everything else
         ans = self.generate_physics_entity_data(found_objects)
         return ans
 
@@ -3055,8 +3028,5 @@ class MCow_Data_Generator_PhysicsEntity(MCow_Data_Generator):
         ans.parent = bone.parent
         ans.children = bone.children
         return ans
-
-    # endregion
-
     
 # endregion
