@@ -36,6 +36,28 @@
 # TODO : There's a bug when dealing with meshes that have 0 triangles. Discard those by seeing their triangle count on the get stage both on the map and physics entity handling code...
 # TODO : Fix issue where attaching a light or other orientation based objects to a locator causes the resulting rotation values to be wrong (the locator has a pretty shitty rotation undo fix which is fucking things up...)
 
+# TODO : Maybe modify the names of the blender properties bpy.props used by the objects and scene panel so that they are located within a custom object of their own for easier localization? Something like a dict?
+# Maybe something like this:
+"""
+
+mcow_props : {
+    type : bpy.props.enumproperty(whatever...),
+    mesh_properties : {
+        etc...
+    },
+    empty_properties : {
+        etc...
+    }
+    liquid_properties : {
+        etc...
+    }
+}
+
+"""
+# Or whatever the fuck, idk... we'll see if this is even possible in the first place...
+
+# TODO : Fix Make stage material getting step by adding material cache dict as input tuple ok mk stage
+
 # endregion
 
 # region BL Info
@@ -1770,6 +1792,38 @@ class MCow_Data_Getter:
     def get(self):
         return None # Return an empty object by default since the base class does not implement the data getting for any specific class.
 
+    # region Comment
+
+    # Returns a list of meshes in the form of a tuple (obj, transform, material_index).
+    # Segments a single mesh into multiple meshes based on the indices of the applied materials.
+    # This is used because it is easier to just export a new mesh for each material than it is to implement BiTree nodes and multi material XNA models...
+    
+    # endregion
+    def get_mesh_segments(self, obj):
+        
+        # NOTE : The return value of this function is a list filled with tuples of form (mesh_object, material_index)
+        
+        mesh = obj.data
+        num_materials = len(mesh.materials)
+
+        # If there are no materials, then add the mesh to the list of found meshes 
+        if num_materials <= 0:
+            ans = [(obj, 0)]
+        
+        # If there are materials, then add each segment of the mesh that uses an specific material as a separate mesh for simplicity
+        else:
+
+            found_polygons_with_material_index = [0 for i in range(0, num_materials)]
+            for poly in mesh.polygons:
+                found_polygons_with_material_index[poly.material_index] += 1
+            
+            ans = []
+            for index, count in enumerate(found_polygons_with_material_index):
+                if count > 0:
+                    ans.append((obj, index))
+        
+        return ans
+
 # Data Getter class for Maps / Levels
 class MCow_Data_Getter_Map(MCow_Data_Getter):
     def __init__(self):
@@ -1787,8 +1841,111 @@ class MCow_Data_Getter_PhysicsEntity(MCow_Data_Getter):
         return
     
     def get(self):
-        # TODO : Implement
-        return None
+        return self._get_scene_data()
+
+    def _get_scene_data(self):
+
+        # NOTE : We have to make sure that we only have 1 single object of type "ROOT" in the scene, and that it is also a root within the scene. All other root objects that are not of type "ROOT" will be ignored.
+        # Objects of type "ROOT" within the tree hierarchy but that are not true roots will trigger an error.
+
+        # NOTE : For now, we only handle exporting 1 single physics entity object per physics entity scene.
+
+        # Get all of the objects in the scene that are of type "ROOT"
+        all_objects_of_type_root = [obj for obj in bpy.data.objects if (obj.type == "EMPTY" and obj.mcow_physics_entity_empty_type == "ROOT")]
+        if len(all_objects_of_type_root) != 1:
+            raise MagickCowExportException("Physics Entity Scene must contain exactly 1 Root!")
+
+        # Get all of the objects in the scene that are roots (have no parent) and are of type "ROOT"
+        root_objects = [obj for obj in bpy.data.objects if (obj.parent is None and obj.type == "EMPTY" and obj.mcow_physics_entity_empty_type == "ROOT")]
+        if len(root_objects) != 1:
+            raise MagickCowExportException("Physics Entity Scene Root object must be at the root of the scene!")
+
+        # Get the objects in the scene and form a tree-like structure for exporting.
+        found_objects = Storage_PhysicsEntity()
+        found_objects.root = root_objects[0]
+        
+        scene_root_bone = PE_Storage_Bone()
+        scene_root_bone.obj = found_objects.root
+        scene_root_bone.transform = found_objects.root.matrix_world
+        scene_root_bone.index = 0
+        scene_root_bone.parent = -1
+        scene_root_bone.children = []
+
+        found_objects.model.bones.append(scene_root_bone) # The root object will act as a bone for us when exporting the mesh. We add a list with element -1 because that is how we signal that there are no parent bones for the root bone.
+        self.get_scene_data_rec(found_objects, root_objects[0].children, 0)
+        
+        return found_objects
+    
+    def _get_scene_data_rec(self, found_objects, current_objects, parent_bone_index):
+        
+        for obj in current_objects:
+
+            # Ignore objects that are marked as no export. This also excludes all children from the export process.
+            if not obj.magickcow_allow_export:
+                continue
+            
+            # Calculate the transform for this object, relative to what is considered its parent in the Magicka tree structure
+            if parent_bone_index < 0:
+                transform = get_object_transform(obj, None)
+            else:
+                transform = get_object_transform(obj, found_objects.model.bones[parent_bone_index].obj)
+
+            # Process objects of type mesh, which should be visual geometry meshes and collision meshes
+            if obj.type == "MESH":
+                mesh = obj.data
+                mesh_type = mesh.mcow_physics_entity_mesh_type
+
+                # Process meshes for visual geometry
+                if mesh_type == "GEOMETRY":
+                    self._get_scene_data_add_mesh(found_objects, obj, transform, parent_bone_index) # TODO : Implement relative transform calculations
+                
+                # Process meshes for collision geometry
+                elif mesh_type == "COLLISION":
+                    found_objects.collisions.append(obj)
+            
+            # Process objects of type empty, which should be roots and bones
+            elif obj.type == "EMPTY":
+                
+                # Process empties for bones
+                if obj.mcow_physics_entity_empty_type == "BONE":
+                    
+                    # Throw an exception if the found bone has a name that is reserved
+                    reserved_bone_names = ["Root", "RootNode"]
+                    bone_name_lower = obj.name.lower()
+                    for name in reserved_bone_names: # NOTE : We could have used "if bone_name_lower in reserved_bone_names:" instead, but I would prefer to keep the reserved strings just as they are stored within the XNB file rather than hardcoding them in full lowercase. This is because I don't exactly remember as of now whether XNA checks for exact bone names or if it is not case sensitive. I'd need to check again, but whatever. Also, these reserved bone names are not because of XNA, they are just present in ALL physics entity files within Magicka's base game data, so it's a Magicka animation system requirement instead.
+                        if bone_name_lower == name.lower():
+                            raise MagickCowExportException(f"The bone name \"{name}\" is reserved!")
+
+                    # Add the current bone to the list of found bones
+
+                    current_bone = PE_Storage_Bone()
+                    current_bone.obj = obj
+                    current_bone.transform = transform
+                    current_bone.index = len(found_objects.model.bones) # NOTE : We don't subtract 1 because the current bone has not been added to the list yet!!!
+                    current_bone.parent = parent_bone_index
+                    current_bone.children = []
+
+                    found_objects.model.bones.append(current_bone)
+                    
+                    # Update the list of child bone indices for the parent bone
+                    found_objects.model.bones[current_bone.parent].children.append(current_bone.index)
+
+                    # Make recursive call to get all of the data of the child objects of this bone.
+                    self._get_scene_data_rec(found_objects, obj.children, current_bone.index) # NOTE : The index we pass is literally the index of the bone we just added to the found objects' bones list.
+
+                # Process empties for bounding boxes
+                elif obj.mcow_physics_entity_empty_type == "BOUNDING_BOX":
+                    # Add the found bounding box
+                    found_objects.boxes.append(obj)
+
+
+            # NOTE : We ignore objects of any type other than empties and meshes when getting objects to be processed for physics entity generation.
+            # No need for an else case because we do nothing else within the loop.
+
+    def _get_scene_data_add_mesh(self, found_objects, obj, transform, parent_bone_index):
+        segments = self.get_mesh_segments(obj)
+        ans = [(segment_obj, transform, material_index, parent_bone_index) for segment_obj, material_index in segments]
+        found_objects.model.meshes.extend(ans)
 
 # endregion
 
@@ -1829,124 +1986,6 @@ class MCow_Data_Generator:
     # endregion
 
     # region Auxiliary Functions
-
-    # region Scene Rotation
-
-    # region Deprecated
-
-    # Iterates over all of the root objects of the scene and rotates them by the input angle in degrees around the specified axis.
-    # The rotation takes place around the world origin (0,0,0), so it would be equivalent to attaching all objects to a parent located in the world origin and then rotating said parent.
-    # This way, there is no hierarchical requirements for scene export, since all root objects will be translated properly, and thus the child objects will also be automatically translated to the coorect coordinates.
-    def rotate_scene_old_1(self, angle_degrees = 90, axis = "X"):
-        root_objects = get_scene_root_objects()
-        for obj in root_objects:
-            obj.rotation_euler.rotate_axis(axis, math.radians(angle_degrees))
-        bpy.context.view_layer.update() # Force the scene to update so that the rotation is properly applied before we start evaluating the objects in the scene.
-    
-    def rotate_objects_global_old_2(self, objects, angle_degrees, axis):
-        rotation_matrix = mathutils.Matrix.Rotation(math.radians(angle_degrees), 4, axis)
-        for obj in objects:
-            # obj.rotation_euler.rotate_axis(axis, math.radians(angle_degrees)) # idk why this doesn't work for all objects, I guess I'd know if only Blender's documentation had any information related to it. Oh well!
-            obj.matrix_world = rotation_matrix @ obj.matrix_world
-
-    # region Comment - rotate_objects_local_old_2
-
-    # NOTE : For future reference, read this comment, very important, I had forgotten about how I had implemented this and just wasted like 40 mins trying to figure out where the Y up conversion was done for
-    # locators...
-    # basically, the trick is the following:
-    # If you rotate in blender an object by -90d in the X axis to pass it to Y up, the rotation value stays wrong because now it is rotated by -90d around X.
-    # To solve this, objects that require matrix data to be stored such as locators get their rotation undone... but if we undid the rotation through blender's rotations, we would go back to what we had before!
-    # For example, imagine an object in Blender Z up with rot <0d, 0d, 45d>
-    # If we rotate -90d around X, we end up with <-90d, 45d, 0d>
-    # If we rotate +90d around X, we end up with <0d, 0d, 45d> again... so what's the solution?
-    # The solution is what we do in this function... which is "faking" the "unrotation" process.
-    # We manually add +90d to the X axis, which does not compute a real rotation as one would expect when using Blender rotation operations, but it does change the numeric value of the rotation, so the final
-    # rotation will be <0d, 45d, 0d>, which is what we wanted!
-    # This is such a fucking hack that I don't know how I had forgotten about this implementation detail... it is true that I've been many months away from the code, but Jesus fucking Christ, this is a really
-    # important implementation detail to remember...
-
-    # NOTE : Maybe I should apply this "unrotation" process to bones too? they work just fine with the "Z up" rotation value within their matrices tho, since all coordinates are relative, so whatever...
-    # for now at least...
-
-    # endregion
-    def rotate_objects_local_old_2(self, objects, angle_degrees, axis):
-        axis_num = find_element_index(["X", "Y", "Z"], axis, 0)
-        for obj in objects:
-            obj.rotation_euler[axis_num] += math.radians(angle_degrees)
-
-    # NOTE : It also iterates over the locator objects and rotates them in the opposite direction.
-    # This is because the rotation of the transform obtained after rotating the scene is only useful for objects where we need to translate other data, such as points and vectors (meshes, etc...)
-    # In the case of locators, we directly use the transform matrix of the object itself, which means that the extra 90 degree rotation is going to change the orientation of the locators by 90 degrees.
-    # This can be fixed by manually rotating the locators... or by having the rotate_scene() function do it for us, so the users will never know that it even happened! 
-    # NOTE : Another fix would be to have a single world root object of sorts, and having to attach all objects to that root. That way, we would only have to rotate that one single root by 90 degrees and nothing else, no corrections required...
-    # TODO : Basically make it so that we also have a root object in map scenes, just like we do in physics entity scenes...
-    def rotate_scene_old_2(self, angle_degrees = 90, axis = "X"):
-        # Objects that are "roots" of the Blender scene
-        root_objects = []
-
-        # Point data objects that need to have their transform matrix corrected
-        # region Comment
-            # Objects that use their raw transform matrix as a way to represent their transform in game, such as locators.
-            # They need to be corrected, since the transform matrix in Blender will contain the correct translation and scale, but will have a skewed rotation, because of the 90 degree rotation we use as
-            # a hack to align the scene with the Y up coordinate system, so we need to correct it by undoing the 90 degree rotation locally around their origin point for every object of this type after
-            # having performed the global 90 degree rotation around <0,0,0>
-        # endregion
-        objects_to_correct = []
-        
-        # All of the objects in the scene
-        all_objects = get_all_objects()
-
-        for obj in all_objects:
-            if obj.parent is None:
-                root_objects.append(obj)
-            if obj.type == "EMPTY" and obj.magickcow_empty_type in ["LOCATOR", "PHYSICS_ENTITY"]:
-                objects_to_correct.append(obj)
-
-        self.rotate_objects_global_old_2(root_objects, angle_degrees, axis) # Rotate the entire scene
-        self.rotate_objects_local_old_2(objects_to_correct, -1.0 * angle_degrees, axis) # The correction rotation goes in the opposite direction to the input rotation
-
-        bpy.context.view_layer.update() # Force the scene to update so that the rotation is properly applied before we start evaluating the objects in the scene.
-
-    # endregion
-
-    # NOTE : First we rotate by -90º, then to unrotate we rotate by +90º, this way we can pass from Z up to to Y up coords
-    # TODO : Once you implement the new scene root system for the map exporting side of the code, you will be capable of getting rid of the _aux suffix for this method's name.
-    # Also, get rid of the rotate_scene() method within the map data generator class...
-    # TODO : To be able to use this simpler root based rotation for map scenes, we need to find a way to translate rotations. We don't have to have the 90 degree rotation fix for empties anymore, sure, but
-    # previously we did not apply any rotation fix to lights either... why? because lights with a rotation apply over a direction vector. What this means is that without the rotation fix, all of my final rotations
-    # are Z up based, even tho my final points will be Y up based... or maybe I'm confused and this is actually wrong?
-    # NOTE : Actually, now that I think about it, wouldn't we still have to undo rotations locally for point data whose location, rotation and scalre are exported with a matrix? If you think about it, lights are not affected despite being point data because their direction is exported as a director vector. I need to think about this shit tbh...
-    def rotate_scene(self, angle_degrees, axis = "X"):
-        roots = self.get_scene_roots()
-        rotation_matrix = mathutils.Matrix.Rotation(math.radians(angle_degrees), 4, axis)
-        for root in roots: # We should only have 1 single root, which is validated on the exporter side, but we support multi-root scenes here to prevent getting funny results if we make any changes in the future...
-            root.matrix_world = rotation_matrix @ root.matrix_world
-        bpy.context.view_layer.update() # Force the scene to update so that the rotation is properly applied before we start evaluating the objects in the scene.
-    
-    def get_scene_roots_map(self):
-        roots = [obj for obj in bpy.data.objects if (obj.parent is None and obj.magickcow_empty_type == "ROOT")]
-        return roots
-    
-    def get_scene_roots_physics_entity(self):
-        roots = [obj for obj in bpy.data.objects if (obj.parent is None and obj.mcow_physics_entity_empty_type == "ROOT")]
-        return roots
-
-    def get_scene_roots(self):
-        if bpy.context.scene.mcow_scene_mode == "MAP":
-            return self.get_scene_roots_map()
-        elif bpy.context.scene.mcow_scene_mode == "PHYSICS_ENTITY":
-            return self.get_scene_roots_physics_entity()
-        return [] # In the case where the selected mode is not any of the implemented ones, we then return an empty list.
-
-    # Aux functions to perform rotations without having to remember what values and axes are specifically required when exporting a scene to Magicka.
-    # Makes it easier to go from Z up to Y up, progress the scene, and then go back from Y up to Z up.
-    def do_scene_rotation(self):
-        self.rotate_scene(-90, "X")
-    
-    def undo_scene_rotation(self):
-        self.rotate_scene(90, "X")
-
-    # endregion
 
     # region Shared Resources Related Operations
 
@@ -2212,38 +2251,6 @@ class MCow_Data_Generator:
         return self.generate_default_effect_data(fallback_type)
 
     # endregion
-
-    # endregion
-
-    # region Get (Aux methods for Get stage)
-
-    # Returns a list of meshes in the form of a tuple (obj, transform, material_index).
-    # Segments a single mesh into multiple meshes based on the indices of the applied materials.
-    # This is used because it is easier to just export a new mesh for each material than it is to implement BiTree nodes and multi material XNA models...
-    def get_mesh_segments(self, obj):
-        
-        # NOTE : The return value of this function is a list filled with tuples of form (mesh_object, material_index)
-        
-        mesh = obj.data
-        num_materials = len(mesh.materials)
-
-        # If there are no materials, then add the mesh to the list of found meshes 
-        if num_materials <= 0:
-            ans = [(obj, 0)]
-        
-        # If there are materials, then add each segment of the mesh that uses an specific material as a separate mesh for simplicity
-        else:
-
-            found_polygons_with_material_index = [0 for i in range(0, num_materials)]
-            for poly in mesh.polygons:
-                found_polygons_with_material_index[poly.material_index] += 1
-            
-            ans = []
-            for index, count in enumerate(found_polygons_with_material_index):
-                if count > 0:
-                    ans.append((obj, index))
-        
-        return ans
 
     # endregion
 
@@ -2693,173 +2700,6 @@ class MCow_Data_Generator:
 
     # endregion
 
-    # region Make
-
-    # region Make - XNA
-
-    # NOTE : This is obviously NOT the structure of a binary XNB file... this is just the JSON text based way of organizing the data for an XNB file that MagickaPUP uses.
-    # This comment is pretty absurd as it states the obvious for myself... I just made it for future readers so that they don't tear the balls out trying to figure out wtf is going on, even tho I think it should be pretty obvious.
-    def make_xnb_file(self, primary_object, shared_resources):
-        ans = {
-            "PrimaryObject" : primary_object,
-            "SharedResources" : shared_resources
-        }
-        return ans
-    
-    # endregion
-
-    # region Make - Math
-
-    # region Make - Math - Matrices
-    
-    def make_matrix(self, transform_matrix):
-        m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44 = transform_matrix
-        ans = {
-            "M11" : m11,
-            "M12" : m12,
-            "M13" : m13,
-            "M14" : m14,
-            "M21" : m21,
-            "M22" : m22,
-            "M23" : m23,
-            "M24" : m24,
-            "M31" : m31,
-            "M32" : m32,
-            "M33" : m33,
-            "M34" : m34,
-            "M41" : m41,
-            "M42" : m42,
-            "M43" : m43,
-            "M44" : m44
-        }
-        return ans
-    
-    def make_matrix_identity(self):
-        ans = {
-            "M11" : 1,
-            "M12" : 0,
-            "M13" : 0,
-            "M14" : 0,
-            "M21" : 0,
-            "M22" : 1,
-            "M23" : 0,
-            "M24" : 0,
-            "M31" : 0,
-            "M32" : 0,
-            "M33" : 1,
-            "M34" : 0,
-            "M41" : 0,
-            "M42" : 0,
-            "M43" : 0,
-            "M44" : 1
-        }
-        return ans
-
-    # endregion
-
-    # region Make - Math - Vectors
-
-    def make_vector_2(self, vec2):
-        ans = {
-            "x" : vec2[0],
-            "y" : vec2[1]
-        }
-        return ans
-    
-    def make_vector_3(self, vec3):
-        ans = {
-            "x" : vec3[0],
-            "y" : vec3[1],
-            "z" : vec3[2]
-        }
-        return ans
-    
-    def make_vector_4(self, vec4):
-        ans = {
-            "x" : vec4[0],
-            "y" : vec4[1],
-            "z" : vec4[2],
-            "w" : vec4[3]
-        }
-        return ans
-
-    # endregion
-
-    # endregion
-
-    # region Make - meshes, vertex declarations and effects
-
-    def make_vertex_declaration_entry(self, entry):
-        stream, offset, element_format, element_method, element_usage, usage_index = entry
-        ans = {
-            "stream" : stream,
-            "offset" : offset,
-            "elementFormat" : element_format,
-            "elementMethod" : element_method,
-            "elementUsage" : element_usage,
-            "usageIndex" : usage_index
-        }
-        return ans
-
-    def make_vertex_declaration(self, entries):
-        entries_arr = []
-        for entry in entries:
-            declaration = self.make_vertex_declaration_entry(entry)
-            entries_arr.append(declaration)
-        ans = {
-            "numEntries" : len(entries_arr),
-            "entries" : entries_arr
-        }
-        return ans
-    
-    def make_vertex_declaration_default(self):
-        return self.make_vertex_declaration([(0, 0, 2, 0, 0, 0), (0, 12, 2, 0, 3, 0), (0, 24, 1, 0, 5, 0), (0, 32, 2, 0, 6, 0), (0, 24, 1, 0, 5, 1), (0, 32, 2, 0, 6, 1), (0, 44, 3, 0, 10, 0)])
-    
-    def make_vertex_stride_default(self):
-        # Old Stide was 44, the vertex color inclusion has changed that. No need to make special cases because it's actually quite slim, vertex color doesn't even bloat mesh memory usage that much despite the 2GB limit...
-        # return 44 # 44 = 11*4; only 11 because we do not account for those vertex declarations that use usage index 1, because they overlap with already existing values from the usage index 0.
-        return 60 # 60 because we include the vertex color now, which has its own vertex declaration.
-    
-    def make_vertex_buffer(self, vertices):
-        buf = []
-        for vertex in vertices:
-            global_idx, position, normal, tangent, uv, color = vertex
-            buffer_part = struct.pack("fffffffffffffff", position[0], position[1], position[2], normal[0], normal[1], normal[2], uv[0], uv[1], tangent[0], tangent[1], tangent[2], color[0], color[1], color[2], color[3])
-            byte_array = bytearray(buffer_part)
-            # int_array = array.array("i")
-            # int_array.frombytes(byte_array)
-            buf += byte_array
-        ans = {
-            "NumBytes" : len(buf),
-            "Buffer" : buf
-        }
-        return ans
-    
-    def make_index_buffer(self, indices):
-        # Always use 16 bit indices if we can fit the max value of the index within the u16 range [0, 65535]. If the max index is larger than that, then we start making use of 32 bit values
-        # I don't really like this because it feels like it can be pretty slow to find the max element like this, but whatever... we'll keep it like this for now, since 99% of maps are most
-        # likely not going to have such massive models within a single piece.
-        index_size = 0
-        num_bytes = len(indices) * 2
-        if max(indices) > 65535:
-            index_size = 1
-            num_bytes = len(indices) * 4
-        ans = {
-            "indexSize" : index_size,
-            "data" : indices,
-            "numBytes" : num_bytes
-        }
-        return ans
-
-    # This once used to be an useful function... now, it is quite an useless wrapper! :D
-    def make_effect(self, matname, fallback_type = "GEOMETRY"):
-        material_contents = self.get_material(matname, fallback_type)
-        return material_contents
-
-    # endregion
-
-    # endregion
-
 # region Comment - DataGeneratorMap
     # This class is the one in charge of getting, generating and storing in a final dict the data that is found within the scene.
     # The reason this class exists outside of the main exporter operator class is to prevent its generated data from staying around in memory after the export process has finished.
@@ -2874,24 +2714,9 @@ class MCow_Data_Generator:
     # In short, that would add quite a bit of complexity, and it is not really worth it as of now.
 #endregion
 class MCow_Data_Generator_Map(MCow_Data_Generator):
-
-    # region Constructor
-
     def __init__(self):
-
         super().__init__()
-
-        self.time_get = 0
-        self.time_generate = 0
-        self.time_make = 0
-
-        self.objects_get = None
-        self.objects_generate = None
-        self.objects_make = None
-
         return
-    
-    # endregion
 
     # region Bounding Box Related Operations
 
@@ -4735,147 +4560,11 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
     # One of the similarities is that physics entities contain an XNB model class within it, which means that the animated level part side of the code is pretty much almost identical to what this class requires.
 # endregion
 class MCow_Data_Generator_PhysicsEntity(MCow_Data_Generator):
-
-    # region Constructor
-
     def __init__(self):
         super().__init__()
         return
-    
-    # endregion
-
-    # region Process Scene Data
-
-    # TODO : Implement
-    def process_scene_data(self):
-        # Get
-        get_stage_physics_entity = self.get()
-
-        # Generate
-        generate_stage_physics_entity = self.generate(get_stage_physics_entity)
-
-        # Make
-        make_stage_physics_entity = self.make(generate_stage_physics_entity, self.dict_shared_resources)
-
-        return make_stage_physics_entity
-
-    # endregion
-
-    # region Get Stage
-
-    def get(self):
-        return self.get_scene_data()
-
-    def get_scene_data(self):
-
-        # NOTE : We have to make sure that we only have 1 single object of type "ROOT" in the scene, and that it is also a root within the scene. All other root objects that are not of type "ROOT" will be ignored.
-        # Objects of type "ROOT" within the tree hierarchy but that are not true roots will trigger an error.
-
-        # NOTE : For now, we only handle exporting 1 single physics entity object per physics entity scene.
-
-        # Get all of the objects in the scene that are of type "ROOT"
-        all_objects_of_type_root = [obj for obj in bpy.data.objects if (obj.type == "EMPTY" and obj.mcow_physics_entity_empty_type == "ROOT")]
-        if len(all_objects_of_type_root) != 1:
-            raise MagickCowExportException("Physics Entity Scene must contain exactly 1 Root!")
-
-        # Get all of the objects in the scene that are roots (have no parent) and are of type "ROOT"
-        root_objects = [obj for obj in bpy.data.objects if (obj.parent is None and obj.type == "EMPTY" and obj.mcow_physics_entity_empty_type == "ROOT")]
-        if len(root_objects) != 1:
-            raise MagickCowExportException("Physics Entity Scene Root object must be at the root of the scene!")
-
-        # Get the objects in the scene and form a tree-like structure for exporting.
-        found_objects = Storage_PhysicsEntity()
-        found_objects.root = root_objects[0]
-        
-        scene_root_bone = PE_Storage_Bone()
-        scene_root_bone.obj = found_objects.root
-        scene_root_bone.transform = found_objects.root.matrix_world
-        scene_root_bone.index = 0
-        scene_root_bone.parent = -1
-        scene_root_bone.children = []
-
-        found_objects.model.bones.append(scene_root_bone) # The root object will act as a bone for us when exporting the mesh. We add a list with element -1 because that is how we signal that there are no parent bones for the root bone.
-        self.get_scene_data_rec(found_objects, root_objects[0].children, 0)
-        
-        return found_objects
-    
-    def get_scene_data_rec(self, found_objects, current_objects, parent_bone_index):
-        
-        for obj in current_objects:
-
-            # Ignore objects that are marked as no export. This also excludes all children from the export process.
-            if not obj.magickcow_allow_export:
-                continue
-            
-            # Calculate the transform for this object, relative to what is considered its parent in the Magicka tree structure
-            if parent_bone_index < 0:
-                transform = get_object_transform(obj, None)
-            else:
-                transform = get_object_transform(obj, found_objects.model.bones[parent_bone_index].obj)
-
-            # Process objects of type mesh, which should be visual geometry meshes and collision meshes
-            if obj.type == "MESH":
-                mesh = obj.data
-                mesh_type = mesh.mcow_physics_entity_mesh_type
-
-                # Process meshes for visual geometry
-                if mesh_type == "GEOMETRY":
-                    self.get_scene_data_add_mesh(found_objects, obj, transform, parent_bone_index) # TODO : Implement relative transform calculations
-                
-                # Process meshes for collision geometry
-                elif mesh_type == "COLLISION":
-                    found_objects.collisions.append(obj)
-            
-            # Process objects of type empty, which should be roots and bones
-            elif obj.type == "EMPTY":
-                
-                # Process empties for bones
-                if obj.mcow_physics_entity_empty_type == "BONE":
-                    
-                    # Throw an exception if the found bone has a name that is reserved
-                    reserved_bone_names = ["Root", "RootNode"]
-                    bone_name_lower = obj.name.lower()
-                    for name in reserved_bone_names: # NOTE : We could have used "if bone_name_lower in reserved_bone_names:" instead, but I would prefer to keep the reserved strings just as they are stored within the XNB file rather than hardcoding them in full lowercase. This is because I don't exactly remember as of now whether XNA checks for exact bone names or if it is not case sensitive. I'd need to check again, but whatever. Also, these reserved bone names are not because of XNA, they are just present in ALL physics entity files within Magicka's base game data, so it's a Magicka animation system requirement instead.
-                        if bone_name_lower == name.lower():
-                            raise MagickCowExportException(f"The bone name \"{name}\" is reserved!")
-
-                    # Add the current bone to the list of found bones
-
-                    current_bone = PE_Storage_Bone()
-                    current_bone.obj = obj
-                    current_bone.transform = transform
-                    current_bone.index = len(found_objects.model.bones) # NOTE : We don't subtract 1 because the current bone has not been added to the list yet!!!
-                    current_bone.parent = parent_bone_index
-                    current_bone.children = []
-
-                    found_objects.model.bones.append(current_bone)
-                    
-                    # Update the list of child bone indices for the parent bone
-                    found_objects.model.bones[current_bone.parent].children.append(current_bone.index)
-
-                    # Make recursive call to get all of the data of the child objects of this bone.
-                    self.get_scene_data_rec(found_objects, obj.children, current_bone.index) # NOTE : The index we pass is literally the index of the bone we just added to the found objects' bones list.
-
-                # Process empties for bounding boxes
-                elif obj.mcow_physics_entity_empty_type == "BOUNDING_BOX":
-                    # Add the found bounding box
-                    found_objects.boxes.append(obj)
-
-
-            # NOTE : We ignore objects of any type other than empties and meshes when getting objects to be processed for physics entity generation.
-            # No need for an else case because we do nothing else within the loop.
-
-    def get_scene_data_add_mesh(self, found_objects, obj, transform, parent_bone_index):
-        segments = self.get_mesh_segments(obj)
-        ans = [(segment_obj, transform, material_index, parent_bone_index) for segment_obj, material_index in segments]
-        found_objects.model.meshes.extend(ans)
-
-    # endregion
-
-    # region Generate Stage
 
     def generate(self, found_objects):
-        # TODO : Implement everything else
         ans = self.generate_physics_entity_data(found_objects)
         return ans
 
@@ -4958,16 +4647,214 @@ class MCow_Data_Generator_PhysicsEntity(MCow_Data_Generator):
         ans.parent = bone.parent
         ans.children = bone.children
         return ans
+    
+# endregion
+
+# region Make Stage
+
+# This section contains classes whose purpose is to define the logic of the Make Stage of the code.
+
+# TODO : Move logic from data generation classes into external functions and place them here...
+
+# Base Data Maker class.
+class MCow_Data_Maker:
+    def __init__(self):
+        return
+    
+    def make(self):
+        ans = {} # We return an empty object by default since this is the base class and it doesn't really implement any type of object data generation anyway, so yeah.
+        return ans
+
+    # region Make - XNA
+
+    # NOTE : This is obviously NOT the structure of a binary XNB file... this is just the JSON text based way of organizing the data for an XNB file that MagickaPUP uses.
+    # This comment is pretty absurd as it states the obvious for myself... I just made it for future readers so that they don't tear the balls out trying to figure out wtf is going on, even tho I think it should be pretty obvious.
+    def make_xnb_file(self, primary_object, shared_resources):
+        ans = {
+            "PrimaryObject" : primary_object,
+            "SharedResources" : shared_resources
+        }
+        return ans
+    
+    # endregion
+
+    # region Make - Math
+
+    # region Make - Math - Matrices
+    
+    def make_matrix(self, transform_matrix):
+        m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44 = transform_matrix
+        ans = {
+            "M11" : m11,
+            "M12" : m12,
+            "M13" : m13,
+            "M14" : m14,
+            "M21" : m21,
+            "M22" : m22,
+            "M23" : m23,
+            "M24" : m24,
+            "M31" : m31,
+            "M32" : m32,
+            "M33" : m33,
+            "M34" : m34,
+            "M41" : m41,
+            "M42" : m42,
+            "M43" : m43,
+            "M44" : m44
+        }
+        return ans
+    
+    def make_matrix_identity(self):
+        ans = {
+            "M11" : 1,
+            "M12" : 0,
+            "M13" : 0,
+            "M14" : 0,
+            "M21" : 0,
+            "M22" : 1,
+            "M23" : 0,
+            "M24" : 0,
+            "M31" : 0,
+            "M32" : 0,
+            "M33" : 1,
+            "M34" : 0,
+            "M41" : 0,
+            "M42" : 0,
+            "M43" : 0,
+            "M44" : 1
+        }
+        return ans
 
     # endregion
 
-    # region Make Stage
+    # region Make - Math - Vectors
 
-    def make(self, generated_scene_data, shared_resources_data):
+    def make_vector_2(self, vec2):
+        ans = {
+            "x" : vec2[0],
+            "y" : vec2[1]
+        }
+        return ans
+    
+    def make_vector_3(self, vec3):
+        ans = {
+            "x" : vec3[0],
+            "y" : vec3[1],
+            "z" : vec3[2]
+        }
+        return ans
+    
+    def make_vector_4(self, vec4):
+        ans = {
+            "x" : vec4[0],
+            "y" : vec4[1],
+            "z" : vec4[2],
+            "w" : vec4[3]
+        }
+        return ans
+
+    # endregion
+
+    # endregion
+
+    # region Make - meshes, vertex declarations and effects
+
+    def make_vertex_declaration_entry(self, entry):
+        stream, offset, element_format, element_method, element_usage, usage_index = entry
+        ans = {
+            "stream" : stream,
+            "offset" : offset,
+            "elementFormat" : element_format,
+            "elementMethod" : element_method,
+            "elementUsage" : element_usage,
+            "usageIndex" : usage_index
+        }
+        return ans
+
+    def make_vertex_declaration(self, entries):
+        entries_arr = []
+        for entry in entries:
+            declaration = self.make_vertex_declaration_entry(entry)
+            entries_arr.append(declaration)
+        ans = {
+            "numEntries" : len(entries_arr),
+            "entries" : entries_arr
+        }
+        return ans
+    
+    def make_vertex_declaration_default(self):
+        return self.make_vertex_declaration([(0, 0, 2, 0, 0, 0), (0, 12, 2, 0, 3, 0), (0, 24, 1, 0, 5, 0), (0, 32, 2, 0, 6, 0), (0, 24, 1, 0, 5, 1), (0, 32, 2, 0, 6, 1), (0, 44, 3, 0, 10, 0)])
+    
+    def make_vertex_stride_default(self):
+        # Old Stide was 44, the vertex color inclusion has changed that. No need to make special cases because it's actually quite slim, vertex color doesn't even bloat mesh memory usage that much despite the 2GB limit...
+        # return 44 # 44 = 11*4; only 11 because we do not account for those vertex declarations that use usage index 1, because they overlap with already existing values from the usage index 0.
+        return 60 # 60 because we include the vertex color now, which has its own vertex declaration.
+    
+    def make_vertex_buffer(self, vertices):
+        buf = []
+        for vertex in vertices:
+            global_idx, position, normal, tangent, uv, color = vertex
+            buffer_part = struct.pack("fffffffffffffff", position[0], position[1], position[2], normal[0], normal[1], normal[2], uv[0], uv[1], tangent[0], tangent[1], tangent[2], color[0], color[1], color[2], color[3])
+            byte_array = bytearray(buffer_part)
+            # int_array = array.array("i")
+            # int_array.frombytes(byte_array)
+            buf += byte_array
+        ans = {
+            "NumBytes" : len(buf),
+            "Buffer" : buf
+        }
+        return ans
+    
+    def make_index_buffer(self, indices):
+        # Always use 16 bit indices if we can fit the max value of the index within the u16 range [0, 65535]. If the max index is larger than that, then we start making use of 32 bit values
+        # I don't really like this because it feels like it can be pretty slow to find the max element like this, but whatever... we'll keep it like this for now, since 99% of maps are most
+        # likely not going to have such massive models within a single piece.
+        index_size = 0
+        num_bytes = len(indices) * 2
+        if max(indices) > 65535:
+            index_size = 1
+            num_bytes = len(indices) * 4
+        ans = {
+            "indexSize" : index_size,
+            "data" : indices,
+            "numBytes" : num_bytes
+        }
+        return ans
+
+    # This once used to be an useful function... now, it is quite an useless wrapper! :D
+    def make_effect(self, matname, fallback_type = "GEOMETRY"):
+        material_contents = self.get_material(matname, fallback_type)
+        return material_contents
+
+    # endregion
+
+# Data Maker class for Maps / Levels
+class MCow_Data_Maker_Map(MCow_Data_Maker):
+    def __init__(self):
+        super().__init__()
+        return
+    
+    def make(self, make_data):
+        # TODO : Implement
+        ans = {}
+        return ans
+
+# Data Maker class for Physics entities
+class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
+    def __init__(self):
+        super().__init__()
+        return
+
+    def make(self, make_data):
+        generated_scene_data, shared_resources_data = make_data
         return self.make_xnb_file(self.make_physics_entity(generated_scene_data), self.make_shared_resources_list(shared_resources_data))
 
-    def make_physics_entity(self, generated_data): # TODO : Add parameters
-        # TODO : Implement literally everything
+    def make_physics_entity(self, generated_data):
+        # TODO : Implement all remaining data (events and advanced settings)
+        # NOTE : Also need to polish the way that bounding boxes are obtained.
+        # Figure out what those are exactly within Magicka. If they are what I think they are
+        # (bbs like the visibility ones used for frustum culling in the level model side of things), then they could very easily be
+        # automatically calculated rather than manually selected by the user... same thing applies to sphere collisions (radius) for bones and stuff like that...
         ans = {
             "$type" : "PhysicsEntity",
             "PhysicsEntityID" : generated_data.physics_entity_id,
@@ -5092,47 +4979,6 @@ class MCow_Data_Generator_PhysicsEntity(MCow_Data_Generator):
         }
         return ans
 
-    # endregion
-
-# endregion
-
-# region Make Stage
-
-# This section contains classes whose purpose is to define the logic of the Make Stage of the code.
-
-# TODO : Move logic from data generation classes into external functions and place them here...
-
-# Base Data Maker class.
-class MCow_Data_Maker:
-    def __init__(self):
-        return
-    
-    def make(self):
-        ans = {} # We return an empty object by default since this is the base class and it doesn't really implement any type of object data generation anyway, so yeah.
-        return ans
-
-# Data Maker class for Maps / Levels
-class MCow_Data_Maker_Map(MCow_Data_Maker):
-    def __init__(self):
-        super().__init__()
-        return
-    
-    def make(self, make_data):
-        # TODO : Implement
-        ans = {}
-        return ans
-
-# Data Maker class for Physics entities
-class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
-    def __init__(self):
-        super().__init__()
-        return
-    
-    def make(self, make_data):
-        # TODO : Implement
-        ans = {}
-        return ans
-
 # endregion
 
 # region Data Generation pipeline classes
@@ -5141,6 +4987,9 @@ class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
 # The data generator classes within this region make use of the internal lower level Get Stage, Generate Stage and Make Stage classes.
 
 # NOTE : When implementing a new MagickCow data pipeline class, the top level / main logic must be implemented within the process_scene_data() method.
+
+# NOTE : As of now, part of the scene preprocessing (such as scene rotation) takes place in this step in between MCow_Data_Whatever processor classes.
+# Those steps could maybe be moved into separate preprocessor classes?
 
 # region Comment - Steps of the pipeline
 
@@ -5162,13 +5011,161 @@ class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
 # endregion
 
 class MCow_Data_Pipeline:
+    
+    # region Constructor
+    
     def __init__(self):
         pass
+
+    # endregion
     
+    # region Scene Processing
+
+    # Main scene processing entry point method
     def process_scene_data(self):
         # NOTE : Maybe throw an exception here to denote that the base class should never be instantiated and used?
         # We could also throw in the constructor and just never call it in the derived classes.
         pass
+    
+    # endregion
+
+    # region Scene Rotation
+
+    # region Deprecated
+
+    # region Comment
+
+    # Iterates over all of the root objects of the scene and rotates them by the input angle in degrees around the specified axis.
+    # The rotation takes place around the world origin (0,0,0), so it would be equivalent to attaching all objects to a parent located in the world origin and then rotating said parent.
+    # This way, there is no hierarchical requirements for scene export, since all root objects will be translated properly, and thus the child objects will also be automatically translated to the coorect coordinates.
+    
+    # endregion
+    def rotate_scene_old_1(self, angle_degrees = 90, axis = "X"):
+        root_objects = get_scene_root_objects()
+        for obj in root_objects:
+            obj.rotation_euler.rotate_axis(axis, math.radians(angle_degrees))
+        bpy.context.view_layer.update() # Force the scene to update so that the rotation is properly applied before we start evaluating the objects in the scene.
+    
+    def _rotate_objects_global(self, objects, angle_degrees, axis):
+        rotation_matrix = mathutils.Matrix.Rotation(math.radians(angle_degrees), 4, axis)
+        for obj in objects:
+            # obj.rotation_euler.rotate_axis(axis, math.radians(angle_degrees)) # idk why this doesn't work for all objects, I guess I'd know if only Blender's documentation had any information related to it. Oh well!
+            obj.matrix_world = rotation_matrix @ obj.matrix_world
+
+    # region Comment - rotate_objects_local_old_2
+
+    # NOTE : For future reference, read this comment, very important, I had forgotten about how I had implemented this and just wasted like 40 mins trying to figure out where the Y up conversion was done for
+    # locators...
+    # basically, the trick is the following:
+    # If you rotate in blender an object by -90d in the X axis to pass it to Y up, the rotation value stays wrong because now it is rotated by -90d around X.
+    # To solve this, objects that require matrix data to be stored such as locators get their rotation undone... but if we undid the rotation through blender's rotations, we would go back to what we had before!
+    # For example, imagine an object in Blender Z up with rot <0d, 0d, 45d>
+    # If we rotate -90d around X, we end up with <-90d, 45d, 0d>
+    # If we rotate +90d around X, we end up with <0d, 0d, 45d> again... so what's the solution?
+    # The solution is what we do in this function... which is "faking" the "unrotation" process.
+    # We manually add +90d to the X axis, which does not compute a real rotation as one would expect when using Blender rotation operations, but it does change the numeric value of the rotation, so the final
+    # rotation will be <0d, 45d, 0d>, which is what we wanted!
+    # This is such a fucking hack that I don't know how I had forgotten about this implementation detail... it is true that I've been many months away from the code, but Jesus fucking Christ, this is a really
+    # important implementation detail to remember...
+
+    # NOTE : Maybe I should apply this "unrotation" process to bones too? they work just fine with the "Z up" rotation value within their matrices tho, since all coordinates are relative, so whatever...
+    # for now at least...
+
+    # endregion
+    def _rotate_objects_local(self, objects, angle_degrees, axis):
+        axis_num = find_element_index(["X", "Y", "Z"], axis, 0)
+        for obj in objects:
+            obj.rotation_euler[axis_num] += math.radians(angle_degrees)
+
+    # region Comment
+
+    # NOTE : It also iterates over the locator objects and rotates them in the opposite direction.
+    # This is because the rotation of the transform obtained after rotating the scene is only useful for objects where we need to translate other data, such as points and vectors (meshes, etc...)
+    # In the case of locators, we directly use the transform matrix of the object itself, which means that the extra 90 degree rotation is going to change the orientation of the locators by 90 degrees.
+    # This can be fixed by manually rotating the locators... or by having the rotate_scene() function do it for us, so the users will never know that it even happened! 
+    # NOTE : Another fix would be to have a single world root object of sorts, and having to attach all objects to that root. That way, we would only have to rotate that one single root by 90 degrees and nothing else, no corrections required...
+    # TODO : Basically make it so that we also have a root object in map scenes, just like we do in physics entity scenes...
+    
+    # endregion
+    def _rotate_scene(self, angle_degrees = -90, axis = "X"):
+        # Objects that are "roots" of the Blender scene
+        root_objects = []
+
+        # Point data objects that need to have their transform matrix corrected
+        # region Comment
+            # Objects that use their raw transform matrix as a way to represent their transform in game, such as locators.
+            # They need to be corrected, since the transform matrix in Blender will contain the correct translation and scale, but will have a skewed rotation, because of the 90 degree rotation we use as
+            # a hack to align the scene with the Y up coordinate system, so we need to correct it by undoing the 90 degree rotation locally around their origin point for every object of this type after
+            # having performed the global 90 degree rotation around <0,0,0>
+        # endregion
+        objects_to_correct = []
+        
+        # All of the objects in the scene
+        all_objects = get_all_objects()
+
+        for obj in all_objects:
+            if obj.parent is None:
+                root_objects.append(obj)
+            if obj.type == "EMPTY" and obj.magickcow_empty_type in ["LOCATOR", "PHYSICS_ENTITY"]:
+                objects_to_correct.append(obj)
+
+        self._rotate_objects_global(root_objects, angle_degrees, axis) # Rotate the entire scene
+        self._rotate_objects_local(objects_to_correct, -1.0 * angle_degrees, axis) # The correction rotation goes in the opposite direction to the input rotation
+
+        bpy.context.view_layer.update() # Force the scene to update so that the rotation is properly applied before we start evaluating the objects in the scene.
+
+    # endregion
+
+    # region Experimental
+
+    # region Comment
+    
+    # NOTE : First we rotate by -90º, then to unrotate we rotate by +90º, this way we can pass from Z up to to Y up coords
+    # TODO : Once you implement the new scene root system for the map exporting side of the code, you will be capable of getting rid of the _aux suffix for this method's name.
+    # Also, get rid of the rotate_scene() method within the map data generator class...
+    # TODO : To be able to use this simpler root based rotation for map scenes, we need to find a way to translate rotations. We don't have to have the 90 degree rotation fix for empties anymore, sure, but
+    # previously we did not apply any rotation fix to lights either... why? because lights with a rotation apply over a direction vector. What this means is that without the rotation fix, all of my final rotations
+    # are Z up based, even tho my final points will be Y up based... or maybe I'm confused and this is actually wrong?
+    # NOTE : Actually, now that I think about it, wouldn't we still have to undo rotations locally for point data whose location, rotation and scalre are exported with a matrix? If you think about it, lights are not affected despite being point data because their direction is exported as a director vector. I need to think about this shit tbh...
+    
+    # endregion
+    def rotate_scene(self, angle_degrees, axis = "X"):
+        roots = self.get_scene_roots()
+        rotation_matrix = mathutils.Matrix.Rotation(math.radians(angle_degrees), 4, axis)
+        for root in roots: # We should only have 1 single root, which is validated on the exporter side, but we support multi-root scenes here to prevent getting funny results if we make any changes in the future...
+            root.matrix_world = rotation_matrix @ root.matrix_world
+        bpy.context.view_layer.update() # Force the scene to update so that the rotation is properly applied before we start evaluating the objects in the scene.
+    
+    def get_scene_roots_map(self):
+        roots = [obj for obj in bpy.data.objects if (obj.parent is None and obj.magickcow_empty_type == "ROOT")]
+        return roots
+    
+    def get_scene_roots_physics_entity(self):
+        roots = [obj for obj in bpy.data.objects if (obj.parent is None and obj.mcow_physics_entity_empty_type == "ROOT")]
+        return roots
+
+    def get_scene_roots(self):
+        if bpy.context.scene.mcow_scene_mode == "MAP":
+            return self.get_scene_roots_map()
+        elif bpy.context.scene.mcow_scene_mode == "PHYSICS_ENTITY":
+            return self.get_scene_roots_physics_entity()
+        return [] # In the case where the selected mode is not any of the implemented ones, we then return an empty list.
+
+    # region Comment
+
+    # Aux functions to perform rotations without having to remember what values and axes are specifically required when exporting a scene to Magicka.
+    # Makes it easier to go from Z up to Y up, progress the scene, and then go back from Y up to Z up.
+    
+    # endregion
+    def do_scene_rotation(self):
+        self.rotate_scene(-90, "X")
+    
+    def undo_scene_rotation(self):
+        self.rotate_scene(90, "X")
+
+    # endregion
+
+    # endregion
 
 def MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
     def __init__(self):
@@ -5179,6 +5176,7 @@ def MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
         return
     
     def process_scene_data(self):
+        self._rotate_scene()
         data_get = self._get.get()
         data_gen = self._gen.generate()
         data_mkr = self._mkr.make()
@@ -5193,10 +5191,21 @@ def MCow_Data_Pipeline_PhysicsEntity(self):
         return
     
     def process_scene_data(self):
+        self._rotate_scene()
         data_get = self._get.get()
         data_gen = self._gen.generate()
         data_mkr = self._mkr.make()
         return data_mrk
+
+# endregion
+
+# region Pipeline Cache Classes
+
+# The classes within this region correspond to cache dicts and other cache objects that must be shared across different steps of the pipeline.
+
+# TODO : Implement
+class MCow_Data_Pipeline_Cache:
+    pass
 
 # endregion
 
