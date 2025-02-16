@@ -12,6 +12,38 @@ class MCow_Data_Getter:
     def get(self):
         return None # Return an empty object by default since the base class does not implement the data getting for any specific class.
 
+    # region Comment
+
+    # Returns a list of meshes in the form of a tuple (obj, transform, material_index).
+    # Segments a single mesh into multiple meshes based on the indices of the applied materials.
+    # This is used because it is easier to just export a new mesh for each material than it is to implement BiTree nodes and multi material XNA models...
+    
+    # endregion
+    def get_mesh_segments(self, obj):
+        
+        # NOTE : The return value of this function is a list filled with tuples of form (mesh_object, material_index)
+        
+        mesh = obj.data
+        num_materials = len(mesh.materials)
+
+        # If there are no materials, then add the mesh to the list of found meshes 
+        if num_materials <= 0:
+            ans = [(obj, 0)]
+        
+        # If there are materials, then add each segment of the mesh that uses an specific material as a separate mesh for simplicity
+        else:
+
+            found_polygons_with_material_index = [0 for i in range(0, num_materials)]
+            for poly in mesh.polygons:
+                found_polygons_with_material_index[poly.material_index] += 1
+            
+            ans = []
+            for index, count in enumerate(found_polygons_with_material_index):
+                if count > 0:
+                    ans.append((obj, index))
+        
+        return ans
+
 # Data Getter class for Maps / Levels
 class MCow_Data_Getter_Map(MCow_Data_Getter):
     def __init__(self):
