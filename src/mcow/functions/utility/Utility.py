@@ -1,6 +1,7 @@
 # region General Purpose Utility Functions
 
 # TODO : Move a lot of this functionality into the generic DataGenerator base class...
+# TODO : Fucking cleanup this section of the code, this is fucking insane and I bet there's tons of unused functionality here that could fuck right off!
 
 # Get transform of an object relative to the transform of another object.
 # Returns transform of object_b relative to object_a
