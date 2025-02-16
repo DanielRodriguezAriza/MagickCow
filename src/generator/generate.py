@@ -72,6 +72,7 @@ def main():
         "../mcow/functions/generation/Generate.py",
         "../mcow/functions/generation/Make.py",
         "../mcow/functions/generation/Pipeline.py",
+        "../mcow/functions/generation/PipelineCache.py", # NOTE : Maybe this class makes more sense to be one of the MagickCow classes in "classes/MagickCow/Pipeline/Cache.py"? Or something...
 
         # Main entry point
         "../mcow/Main.py",
