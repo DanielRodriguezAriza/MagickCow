@@ -7,7 +7,8 @@
 
 # region Comment - Steps of the pipeline
 
-# NOTE : Each of the stages should return the following type of objects:
+# This section contains a comment that describes the steps of the data generation pipeline.
+# Each of the stages should return the following type of objects:
 
 # Get Stage:
 # The Get Stage class for each data pipeline should return an object containing lists of tuples with all of the objects to export from the scene, as well as
