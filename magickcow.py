@@ -1586,6 +1586,7 @@ def unregister_properties_scene():
 # region General Purpose Utility Functions
 
 # TODO : Move a lot of this functionality into the generic DataGenerator base class...
+# TODO : Fucking cleanup this section of the code, this is fucking insane and I bet there's tons of unused functionality here that could fuck right off!
 
 # Get transform of an object relative to the transform of another object.
 # Returns transform of object_b relative to object_a
@@ -1763,15 +1764,31 @@ def get_action_keyframes(action):
 
 # Base Data Getter class.
 class MCow_Data_Getter:
-    pass
+    def __init__(self):
+        return
+    
+    def get(self):
+        return None # Return an empty object by default since the base class does not implement the data getting for any specific class.
 
 # Data Getter class for Maps / Levels
 class MCow_Data_Getter_Map(MCow_Data_Getter):
-    pass
+    def __init__(self):
+        super().__init__()
+        return
+    
+    def get(self):
+        # TODO : Implement
+        return None
 
 # Data Getter class for Physics entities
 class MCow_Data_Getter_PhysicsEntity(MCow_Data_Getter):
-    pass
+    def __init__(self):
+        super().__init__()
+        return
+    
+    def get(self):
+        # TODO : Implement
+        return None
 
 # endregion
 
@@ -5081,7 +5098,40 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
 # region Make Stage
 
+# This section contains classes whose purpose is to define the logic of the Make Stage of the code.
+
 # TODO : Move logic from data generation classes into external functions and place them here...
+
+# Base Data Maker class.
+class MCow_Data_Maker:
+    def __init__(self):
+        return
+    
+    def make(self):
+        ans = {} # We return an empty object by default since this is the base class and it doesn't really implement any type of object data generation anyway, so yeah.
+        return ans
+
+# Data Maker class for Maps / Levels
+class MCow_Data_Maker_Map(MCow_Data_Maker):
+    def __init__(self):
+        super().__init__()
+        return
+    
+    def make(self, make_data):
+        # TODO : Implement
+        ans = {}
+        return ans
+
+# Data Maker class for Physics entities
+class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
+    def __init__(self):
+        super().__init__()
+        return
+    
+    def make(self, make_data):
+        # TODO : Implement
+        ans = {}
+        return ans
 
 # endregion
 
@@ -5092,30 +5142,61 @@ class DataGeneratorPhysicsEntity(DataGenerator):
 
 # NOTE : When implementing a new MagickCow data pipeline class, the top level / main logic must be implemented within the process_scene_data() method.
 
-# TODO : Implement all classes here
+# region Comment - Steps of the pipeline
+
+# This section contains a comment that describes the steps of the data generation pipeline.
+# Each of the stages should return the following type of objects:
+
+# Get Stage:
+# The Get Stage class for each data pipeline should return an object containing lists of tuples with all of the objects to export from the scene, as well as
+# their transforms relative to their parent in Magicka's target tree-like data structure.
+
+# Generate Stage:
+# The Generate Stage class for each data pipeline should return a tuple with the generated objects and the generated dicts with shared resources
+# as well as other cached data, such as the generated materials (effects) and such.
+
+# Make Stage:
+# The Make Stage class for each data pipeline should return a dict which will be finally serialized into a JSON string.
+# This dict should describe in a MagickaPUP compatible JSON structure the generated object / scene data.
+
+# endregion
 
 class MCow_Data_Pipeline:
     def __init__(self):
         pass
     
     def process_scene_data(self):
+        # NOTE : Maybe throw an exception here to denote that the base class should never be instantiated and used?
+        # We could also throw in the constructor and just never call it in the derived classes.
         pass
 
 def MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
     def __init__(self):
         super().__init__()
+        self._get = MCow_Data_Getter_Map()
+        self._gen = MCow_Data_Generator_Map()
+        self._mkr = MCow_Data_Maker_Map()
         return
     
     def process_scene_data(self):
-        pass
+        data_get = self._get.get()
+        data_gen = self._gen.generate()
+        data_mkr = self._mkr.make()
+        return data_mkr
 
 def MCow_Data_Pipeline_PhysicsEntity(self):
     def __init__(self):
         super().__init__()
+        self._get = MCow_Data_Getter_PhysicsEntity()
+        self._gen = MCow_Data_Generator_PhysicsEntity()
+        self._mkr = MCow_Data_Maker_PhysicsEntity()
         return
     
     def process_scene_data(self):
-        pass
+        data_get = self._get.get()
+        data_gen = self._gen.generate()
+        data_mkr = self._mkr.make()
+        return data_mrk
 
 # endregion
 
