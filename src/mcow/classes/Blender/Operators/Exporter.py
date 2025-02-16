@@ -110,11 +110,11 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
         self.report({"ERROR"}, "Cannot export scene data unless a scene export mode is selected!")
         return {"CANCELLED"}
 
-    def export_data_physics_entity(self, context):
-        return self.export_data_func(context, "Physics Entity", DataGeneratorPhysicsEntity())
-
     def export_data_map(self, context):
-        return self.export_data_func(context, "Map", DataGeneratorMap())
+        return self.export_data_func(context, "Map", MCow_Data_Pipeline_Map())
+
+    def export_data_physics_entity(self, context):
+        return self.export_data_func(context, "Physics Entity", MCow_Data_Pipeline_PhysicsEntity())
     
     def write_to_file(self, contents):
         try:
