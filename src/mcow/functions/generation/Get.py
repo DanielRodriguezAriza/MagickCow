@@ -6,14 +6,30 @@
 
 # Base Data Getter class.
 class MCow_Data_Getter:
-    pass
+    def __init__(self):
+        return
+    
+    def get(self):
+        return None # Return an empty object by default since the base class does not implement the data getting for any specific class.
 
 # Data Getter class for Maps / Levels
 class MCow_Data_Getter_Map(MCow_Data_Getter):
-    pass
+    def __init__(self):
+        super().__init__()
+        return
+    
+    def get(self):
+        # TODO : Implement
+        return None
 
 # Data Getter class for Physics entities
 class MCow_Data_Getter_PhysicsEntity(MCow_Data_Getter):
-    pass
+    def __init__(self):
+        super().__init__()
+        return
+    
+    def get(self):
+        # TODO : Implement
+        return None
 
 # endregion
