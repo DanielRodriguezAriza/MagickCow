@@ -183,8 +183,8 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
         return
     
     def make(self, make_data):
-        # TODO : Implement
-        ans = {}
+        # TODO : Finish Implementing and cleaning up with new logic and shit...
+        ans = self.make_xnb_file(self.make_level_model(generated_scene_data), shared_resources_list)
         return ans
     
     # region "Make Data" / "Format Data" Functions
@@ -1033,10 +1033,6 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
         return ans
 
     # endregion
-
-    def make_scene_data(self, generated_scene_data, shared_resources_list):
-        ans = self.make_xnb_file(self.make_level_model(generated_scene_data), shared_resources_list)
-        return ans
 
     # endregion
 
