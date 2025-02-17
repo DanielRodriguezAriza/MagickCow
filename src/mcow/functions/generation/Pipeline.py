@@ -187,6 +187,7 @@ class MCow_Data_Pipeline:
 def MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
     def __init__(self):
         super().__init__()
+        self._cache = MCow_Data_Pipeline_Cache()
         self._get = MCow_Data_Getter_Map()
         self._gen = MCow_Data_Generator_Map()
         self._mkr = MCow_Data_Maker_Map()
@@ -202,6 +203,7 @@ def MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
 def MCow_Data_Pipeline_PhysicsEntity(self):
     def __init__(self):
         super().__init__()
+        self._cache = MCow_Data_Pipeline_Cache()
         self._get = MCow_Data_Getter_PhysicsEntity()
         self._gen = MCow_Data_Generator_PhysicsEntity()
         self._mkr = MCow_Data_Maker_PhysicsEntity()
