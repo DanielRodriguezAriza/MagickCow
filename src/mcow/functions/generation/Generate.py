@@ -17,6 +17,13 @@ class MCow_Data_Generator:
 
     # region Generate
 
+    # region Generate - Main Entry point
+    
+    def generate(self):
+        return
+    
+    # endregion
+
     # region Generate - Deprecated Math
 
     def DEPRCATED_generate_matrix_data(self, transform):
@@ -478,7 +485,12 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         super().__init__()
         return
 
+    def generate(self, input_data):
+        return self.generate_scene_data(input_data)
+
     # region Bounding Box Related Operations
+
+    # TODO : Rename these methods with generate_ prefix instead
 
     # Get the bounding box from a list of points.
     # Each point is a tuple of 3 numeric values.
@@ -570,223 +582,6 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         minp1, maxp1 = self.get_bounding_box_internal(points) # Calculate the min and max points for the AABB
         minp2, maxp2 = self.get_bounding_box_with_breathing_room(minp1, maxp1, 1.5, 2000) # Calculate the min and max points of the AABB with a breathing room as margin of error
         return (minp2, maxp2)
-
-    # endregion
-
-    # region Public Methods
-
-    # This method returns the final dictionary obtained in the make stage.
-    # The method handles the entire process of generating all of the data, rotating the scene, etc...
-    def process_scene_data(self):
-        
-        # Before generating scene data, rotate the scene roots by +90 degrees around the X axis around the world origin <0,0,0> to align with Magicka's Y Up coordinate system.
-        # This way, the rest of the code does not need to perform any transformations manually, because it all gets precomputed with a C code level rotation done by Blender's
-        # underlying implementation, which is way faster and speeds up the export process by a ton (python is so slow!!! shocker!!! who would have thought???)
-        # Note that this rotation will affect the actual objects of the scene, so we must undo it later.
-        # Also, if the process ahead fails, the rotation won't get undone, so it would be wise to add a try-catch-finally block, but for now this is good enough.
-        # TODO : Replace outdated comments... because we already have the try-catch thing set up, and we also reload the whole scene on export... so yeah...
-        self.rotate_scene_old_2(-90)
-
-        # Get Scene Objects (Get Stage)
-        # Obtains the references to all of the blender objects in the scene
-        time_start = time.time()
-        self.dgen_get_scene_data()
-        time_end = time.time()
-        self.time_get = time_end - time_start
-        
-        # Generate Scene Data (Generate Stage)
-        # Generates objects that contain the data processed and translated from blender's representation to Magicka's representation
-        time_start = time.time()
-        self.dgen_generate_scene_data()
-        time_end = time.time()
-        self.time_generate = time_end - time_start
-
-        # Undo the rotation, as the data has already been generated and stored with the correct Y up coordinates.
-        # NOTE : this could have some precission errors with certain rotations, so it would be wiser to save the old rotation and restore it rather than undoing the rotation, but it's ok for now.
-        # self.rotate_scene_old_2(90)
-        
-        # Make Scene Data (Make Stage)
-        # Make the dictionary objects that will be stored within the final exported JSON file.
-        time_start = time.time()
-        self.dgen_make_scene_data()
-        time_end = time.time()
-        self.time_make = time_end - time_start
-        
-        # TODO : Get the actual answer dictionary...
-        ans = self.objects_make
-        return ans
-
-    # endregion
-
-    # region Main Entry Points
-
-    # These methods launch the processes that contain the entire logic for each stage of the scene export process.
-
-    # 24/09/2024 @ 18:33 I just fucking realised what the dgen_ prefix sounds like, holly fucking shit, how did I not think of this before??? LOL
-
-    def dgen_get_scene_data(self):
-        self.objects_get = self.get_scene_data()
-    
-    def dgen_generate_scene_data(self):
-        self.objects_generate = self.generate_scene_data(self.objects_get)
-
-    def dgen_make_scene_data(self):
-        self.objects_make = self.make_scene_data(self.objects_generate, self.make_shared_resources_list(self.dict_shared_resources))
-
-    # endregion
-    
-    # region "Get Data" / "Find Data" Functions
-
-    # If the parent is an animated level part, then we add the collision to whatever collision channel the parent corresponds to.
-    # Otherwise, we add it to the collision channel of the object itself.
-    def gsd_add_found_collision(self, found_objects_current, obj, transform, parent):
-        collision_index = 0
-        if parent is None:
-            collision_index = find_collision_material_index(obj.magickcow_collision_material)
-        else:
-            collision_index = find_collision_material_index(parent.magickcow_collision_material)
-        found_objects_current.collisions[collision_index].append((obj, transform))
-
-    # region Comment
-        # NOTE : The reason we do this process rather than actually implementing BiTreeNode support is for 3 major reasons
-        # 1) BiTree Nodes don't actually contain material data at all. Yes, their existance is literally useless, they just segment things up and don't even
-        # contain a different effect for a given part of a root node...
-        #
-        # 2) BiTreeNodes are just badly optimized in Magicka and consume more memory than they should.
-        # A BiTreeNode's purpose is literally to just assign a different material to a given part of a root node's vertex buffer than the one assigned on the root node.
-        # This assignment process goes by starting at a certain vertex index and giving a number of primitives that are contained by said node (the root node does this as well).
-        # This means that for every single island of faces that make use of a given material, there will be a new BiTreeNode generated.
-        # This is a problem, because if a mesh in Blender has 2 materials, it is not guaranteed to have only 2 nodes in the binary tree structure. If the materials are assigned on different polygon islands,
-        # then the generated binary tree structure will generate a node for the same material multiple times, since a node can only represent a material assignment for contiguous faces within the vertex buffer.
-        #
-        # 3) BiTreeNodes are just badly optimized : Episode 2:
-        # Another problem of using the BiTreeNode setup is that each node added is located on the heap, thus, there will be an increase in memory fragmentation. Root nodes are instead located within a list, so
-        # most of their data will at least be contiguous in memory.
-        # In short, BiTreeNodes in Magicka's code pointlessly increase the memory consumption, and the memory budget for a Magicka map is about 2GB at most since Magicka is 32 bits, and of the 4GB available
-        # for a 32 bit process, 2 of those have already been consumed by the game code itself and most assets, so the remaining budget is quite small, and using only root nodes reduces the memory footprint a lot.
-        #
-        # In short, this is literally the only way to get multi material mesh support in Magicka. Magicka's meshes only support one material per mesh, so the trick we do is just segment the mesh into multiple different
-        # meshes, each containing all of the polygons for a given material that was assigned in Blender to that mesh.
-    # endregion
-    def gsd_add_mesh(self, found_objects_list, obj, transform):
-        mesh = obj.data
-        num_materials = len(mesh.materials)
-        
-        if num_materials > 0:
-            found_polygons_indices = [0 for i in range(num_materials)]
-            # Check every polygon in the mesh and increase the usage count of the material index used by each polygon
-            for poly in obj.data.polygons:
-                found_polygons_indices[poly.material_index] += 1
-        else:
-            # Create a dummy list with only one entry, which has to contain any value greater than 0 so as to indicate that at least one polygon has been foud to make use of material index 0.
-            # This is because in Blender, polygons that don't have any material assigned use the material index 0 by default.
-            found_polygons_indices = [69] # In this case, I use 69 cauze lol, but the value 1 would suffice just fine.
-            # Either that or just embed the call found_objects_list.append((obj, transform, 0)) within the else block and discard the dummy list entirely.
-            # We keep it like this in case we want to add more code in the future appart from the append() call, so as to prevent code duplication...
-        
-        # Add the meshes that have been found to contain at least 1 polgyon that uses the current material
-        for idx, found in enumerate(found_polygons_indices):
-            if found > 0: # If there are no polygons in this mesh with this material assigned, discard it entirely and don't add it for processing.
-                found_objects_list.append((obj, transform, idx))
-
-    def get_scene_data_rec(self, found_objects_global, found_objects_current, objects, parent = None):
-        
-        for obj in objects:
-            
-            # Get object transform
-            transform = get_object_transform(obj, parent)
-            
-            # Ignore objects that are set to not export, as well as their children objects.
-            if not obj.magickcow_allow_export:
-                continue
-            
-            # Handle object data creation according to object type.
-            if obj.type == "MESH":
-                
-                if len(obj.data.vertices) <= 0:
-                    continue # Discard meshes with no vertices, as they are empty meshes and literally have no data worth exporting.
-
-                if obj.data.magickcow_mesh_type == "GEOMETRY":
-                    # found_objects_current.meshes.append((obj, transform))
-                    self.gsd_add_mesh(found_objects_current.meshes, obj, transform)
-                    
-                    if obj.magickcow_collision_enabled:
-                        self.gsd_add_found_collision(found_objects_current, obj, transform, parent)
-                    
-                elif obj.data.magickcow_mesh_type == "COLLISION":
-                    self.gsd_add_found_collision(found_objects_current, obj, transform, parent)
-                    
-                elif obj.data.magickcow_mesh_type == "WATER":
-                    # found_objects_current.waters.append((obj, transform))
-                    self.gsd_add_mesh(found_objects_current.waters, obj, transform)
-                
-                elif obj.data.magickcow_mesh_type == "LAVA":
-                    # found_objects_current.lavas.append((obj, transform))
-                    self.gsd_add_mesh(found_objects_current.lavas, obj, transform)
-                
-                elif obj.data.magickcow_mesh_type == "NAV":
-                    found_objects_current.nav_meshes.append((obj, transform)) # Nav meshes ignore materials, for now. In the future, they could use it as a reference for the type of navigation offered by an area.
-                
-                elif obj.data.magickcow_mesh_type == "FORCE_FIELD":
-                    # Only add it to the global scope because animated level parts cannot contain force fields.
-                    # Allows "malformed" (with a hierarchy that would not be correct in game) scenes to export successfully and work correctly in game.
-                    # found_objects_global.force_fields.append((obj, transform))
-                    self.gsd_add_mesh(found_objects_global.force_fields, obj, transform)
-            
-            elif obj.type == "LIGHT":
-                
-                # TODO : This will need to be reworked the day support for static level bitree child nodes is added... which may actually never come if there's no technical reason to support it...
-                # We would need to probably roll back to having an input bool variable in this function that says if the parent object is an animated object or not.
-                # Or we could analyse the parent's type with parent.type and check if it is an empty of "BONE" type or not. We'll see what is chosen in the future, but for now, fuck it.
-                if parent is not None:
-                    found_objects_current.lights.append((obj, transform))
-                
-                found_objects_global.lights.append((obj, transform)) # Always add it to the global scope of the static level data because lights are stored like that in Magicka's code. Animated level parts only store a reference to a light.
-            
-            elif obj.type == "EMPTY":
-                # This case does nothing because we DO want to allow using NONE type empties as a way to organize the scene, and using continue here would just skip child generation.
-                # Do note that the better and encouraged way to do things in Blender with this addon is with collections, but this is still a possibility...
-                if obj.magickcow_empty_type == "NONE":
-                    pass # This used to do continue, but now it's just a nop because we actually want to get the children objects and export those, unless manually disabled.
-                elif obj.magickcow_empty_type == "LOCATOR":
-                    found_objects_current.locators.append((obj, transform))
-                elif obj.magickcow_empty_type == "TRIGGER":
-                    found_objects_current.triggers.append((obj, transform))
-                elif obj.magickcow_empty_type == "PARTICLE":
-                    found_objects_current.particles.append((obj, transform))
-                elif obj.magickcow_empty_type == "PHYSICS_ENTITY":
-                    # We append them only to the global objects because animated level parts cannot contain this type of object.
-                    # If an animated level part contains an object of this type in the Blender scene, it will be exported as part of the static level data instead.
-                    # Allows partially "malformed" scenes to export just fine.
-                    found_objects_global.physics_entities.append((obj, transform))
-            
-            # Handle recursive call according to whether the current root object is a bone (root of an animated level part) or not.
-            if obj.type == "EMPTY" and obj.magickcow_empty_type == "BONE":
-            
-                # Ignore exporting animated level parts if animation export is disabled.
-                if not bpy.context.scene.mcow_scene_animation:
-                    continue
-                
-                found_objects_new = MCow_Map_SceneObjectsFound()
-                
-                self.get_scene_data_rec(found_objects_global, found_objects_new, obj.children, obj)
-                
-                found_objects_current.animated_parts.append((obj, transform, found_objects_new))
-            else:
-                self.get_scene_data_rec(found_objects_global, found_objects_current, obj.children, parent)
-
-    def get_scene_data(self):
-        
-        # Get the root objects from the scene
-        root_objects = get_scene_root_objects()
-        
-        # Create an instance of the found objects class. It will get passed around by the recursive calls to form a tree-like structure, adding the found objects to it and its children.
-        found_objects = MCow_Map_SceneObjectsFound()
-        
-        # Call the recursive function and start getting the data.
-        self.get_scene_data_rec(found_objects, found_objects, root_objects, None)
-        
-        return found_objects
 
     # endregion
     
