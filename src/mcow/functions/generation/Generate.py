@@ -36,33 +36,7 @@ class MCow_Data_Generator:
 
     # region Auxiliary Functions
 
-    # region Shared Resources Related Operations
-
-    def add_shared_resource(self, resource_name, resource_content):
-        if resource_name not in self.dict_shared_resources:
-            num_resources = len(self.dict_shared_resources)
-            resource_index = num_resources + 1 # Use the current count of resources as the index of each element (note that indices for shared resources in XNB files start at 1, not 0)
-            self.dict_shared_resources[resource_name] = (resource_index, resource_content) # Store the resource index and its contents
-            return resource_index
-        else:
-            idx, content = self.dict_shared_resources[resource_name]
-            return idx
-
-    def get_shared_resource_index(self, resource_name):
-        if resource_name in self.dict_shared_resources:
-            idx, content = self.dict_shared_resources[resource_name]
-            return idx
-        return 0 # Return 0 as invalid index because XNB files use index 0 for non valid resources. The first index for shared resources is 1.
-
-    # NOTE : The input has to be a dictionary
-    def make_shared_resources_list(self, shared_resources_dict):
-        ans = []
-        for key, resource in shared_resources_dict.items():
-            idx, content = resource
-            ans.append(content)
-        return ans
     
-    # endregion
 
     # region Materials / Effects Related Operations
 
