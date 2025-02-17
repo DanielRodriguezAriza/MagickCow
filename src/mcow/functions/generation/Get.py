@@ -67,6 +67,7 @@ class MCow_Data_Getter_Map(MCow_Data_Getter):
             collision_index = find_collision_material_index(parent.magickcow_collision_material)
         found_objects_current.collisions[collision_index].append((obj, transform))
 
+    # TODO : Modify this method to internally call the get_mesh_segments() method
     # region Comment - _get_scene_data_add_mesh
         # NOTE : The reason we do this process rather than actually implementing BiTreeNode support is for 3 major reasons
         # 1) BiTree Nodes don't actually contain material data at all. Yes, their existance is literally useless, they just segment things up and don't even
