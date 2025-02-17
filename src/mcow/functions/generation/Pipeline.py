@@ -32,17 +32,20 @@ class MCow_Data_Pipeline:
     # region Constructor
     
     def __init__(self):
-        pass
+        return
 
     # endregion
     
     # region Scene Processing
 
     # Main scene processing entry point method
+    # This method returns the final dictionary obtained in the make stage.
+    # The method handles the entire process of generating all of the data for the scene that is being exported.
+    # Each class that inherits from this base class implements its own version of this method.
     def process_scene_data(self):
         # NOTE : Maybe throw an exception here to denote that the base class should never be instantiated and used?
         # We could also throw in the constructor and just never call it in the derived classes.
-        pass
+        return {}
     
     # endregion
 
