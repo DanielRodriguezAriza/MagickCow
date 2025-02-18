@@ -11,6 +11,7 @@ class MCow_Data_Generator:
     # region Constructor
     
     def __init__(self):
+        self.cache = None
         return 
     
     # endregion
@@ -19,8 +20,8 @@ class MCow_Data_Generator:
 
     # region Generate - Main Entry point
     
-    def generate(self):
-        return
+    def generate(self, data, cache):
+        return None
     
     # endregion
 
@@ -485,8 +486,10 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         super().__init__()
         return
 
-    def generate(self, input_data):
-        return self.generate_scene_data(input_data)
+    def generate(self, found_objects, cache):
+        self.cache = cache
+        ans = self.generate_scene_data(found_objects)
+        return ans
 
     # region Bounding Box Related Operations
 
@@ -1266,7 +1269,8 @@ class MCow_Data_Generator_PhysicsEntity(MCow_Data_Generator):
         super().__init__()
         return
 
-    def generate(self, found_objects):
+    def generate(self, found_objects, cache):
+        self.cache = cache
         ans = self.generate_physics_entity_data(found_objects)
         return ans
 
