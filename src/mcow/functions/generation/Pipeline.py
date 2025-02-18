@@ -199,8 +199,8 @@ def MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
     def process_scene_data(self):
         self._rotate_scene()
         data_get = self._get.get()
-        data_gen = self._gen.generate()
-        data_mkr = self._mkr.make()
+        data_gen = self._gen.generate(data_get, self._cache)
+        data_mkr = self._mkr.make(data_gen, self._cache)
         return data_mkr
 
 def MCow_Data_Pipeline_PhysicsEntity(self):
@@ -215,8 +215,8 @@ def MCow_Data_Pipeline_PhysicsEntity(self):
     def process_scene_data(self):
         self._rotate_scene()
         data_get = self._get.get()
-        data_gen = self._gen.generate()
-        data_mkr = self._mkr.make()
+        data_gen = self._gen.generate(data_get, self._cache)
+        data_mkr = self._mkr.make(data_gen, self._cache)
         return data_mrk
 
 # endregion
