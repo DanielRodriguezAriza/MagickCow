@@ -7,6 +7,7 @@
 # Base Data Maker class.
 class MCow_Data_Maker:
     def __init__(self):
+        self.cache = None
         return
     
     def make(self):
@@ -182,9 +183,10 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
         super().__init__()
         return
     
-    def make(self, make_data):
+    def make(self, generated_data, cache):
         # TODO : Finish Implementing and cleaning up with new logic and shit...
-        ans = self.make_xnb_file(self.make_level_model(generated_scene_data), shared_resources_list)
+        self.cache = cache
+        ans = self.make_xnb_file(self.make_level_model(generated_data), shared_resources_list)
         return ans
     
     # region "Make Data" / "Format Data" Functions
@@ -1042,8 +1044,9 @@ class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
         super().__init__()
         return
 
-    def make(self, make_data):
-        generated_scene_data, shared_resources_data = make_data
+    def make(self, generated_data, cache):
+        # TODO : Finish implementing the whole cache stuff to get the shared resources...
+        self.cache = cache
         return self.make_xnb_file(self.make_physics_entity(generated_scene_data), self.make_shared_resources_list(shared_resources_data))
 
     def make_physics_entity(self, generated_data):
