@@ -6,11 +6,11 @@
 
 # Base Data Maker class.
 class MCow_Data_Maker:
-    def __init__(self):
-        self.cache = None
+    def __init__(self, cache):
+        self.cache = cache
         return
     
-    def make(self):
+    def make(self, generated_data):
         ans = {} # We return an empty object by default since this is the base class and it doesn't really implement any type of object data generation anyway, so yeah.
         return ans
 
@@ -196,12 +196,11 @@ class MCow_Data_Maker:
 
 # Data Maker class for Maps / Levels
 class MCow_Data_Maker_Map(MCow_Data_Maker):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, cache):
+        super().__init__(cache)
         return
     
-    def make(self, generated_data, cache):
-        self.cache = cache
+    def make(self, generated_data):
         ans = self.make_xnb_file(self.make_level_model(generated_data), self.make_shared_resources_list(self.cache))
         return ans
     
@@ -1056,12 +1055,11 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
 
 # Data Maker class for Physics entities
 class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, cache):
+        super().__init__(cache)
         return
 
-    def make(self, generated_data, cache):
-        self.cache = cache
+    def make(self, generated_data):
         return self.make_xnb_file(self.make_physics_entity(generated_scene_data), self.make_shared_resources_list(self.cache))
 
     def make_physics_entity(self, generated_data):
