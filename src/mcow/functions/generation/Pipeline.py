@@ -192,15 +192,15 @@ class MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
         super().__init__()
         self._cache = MCow_Data_Pipeline_Cache()
         self._get = MCow_Data_Getter_Map()
-        self._gen = MCow_Data_Generator_Map()
-        self._mkr = MCow_Data_Maker_Map()
+        self._gen = MCow_Data_Generator_Map(self._cache)
+        self._mkr = MCow_Data_Maker_Map(self._cache)
         return
     
     def process_scene_data(self):
         self._rotate_scene()
         data_get = self._get.get()
-        data_gen = self._gen.generate(data_get, self._cache)
-        data_mkr = self._mkr.make(data_gen, self._cache)
+        data_gen = self._gen.generate(data_get)
+        data_mkr = self._mkr.make(data_gen)
         return data_mkr
 
 class MCow_Data_Pipeline_PhysicsEntity(MCow_Data_Pipeline):
@@ -208,15 +208,15 @@ class MCow_Data_Pipeline_PhysicsEntity(MCow_Data_Pipeline):
         super().__init__()
         self._cache = MCow_Data_Pipeline_Cache()
         self._get = MCow_Data_Getter_PhysicsEntity()
-        self._gen = MCow_Data_Generator_PhysicsEntity()
-        self._mkr = MCow_Data_Maker_PhysicsEntity()
+        self._gen = MCow_Data_Generator_PhysicsEntity(self._cache)
+        self._mkr = MCow_Data_Maker_PhysicsEntity(self._cache)
         return
     
     def process_scene_data(self):
         self._rotate_scene()
         data_get = self._get.get()
-        data_gen = self._gen.generate(data_get, self._cache)
-        data_mkr = self._mkr.make(data_gen, self._cache)
+        data_gen = self._gen.generate(data_get)
+        data_mkr = self._mkr.make(data_gen)
         return data_mrk
 
 # endregion
