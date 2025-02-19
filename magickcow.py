@@ -2133,8 +2133,8 @@ class MCow_Data_Generator:
     
     # region Constructor
     
-    def __init__(self):
-        self.cache = None
+    def __init__(self, cache):
+        self.cache = cache
         return 
     
     # endregion
@@ -2143,7 +2143,7 @@ class MCow_Data_Generator:
 
     # region Generate - Main Entry point
     
-    def generate(self, data, cache):
+    def generate(self, found_objects):
         return None
     
     # endregion
@@ -2246,14 +2246,6 @@ class MCow_Data_Generator:
     def generate_quaternion(self, quat):
         ans = (quat[1], quat[2], quat[3], quat[0])
         return ans
-
-    # endregion
-
-    # region Generate - Material Effects
-
-    def generate_material_data(self, obj, material_index):
-        matname = self.cache.get_material_name(obj, material_index)
-        self.cache.create_material(matname, obj.data.magickcow_mesh_type)
 
     # endregion
 
@@ -2458,7 +2450,8 @@ class MCow_Data_Generator:
         mcow_mesh = MCow_Mesh(obj, transform)
         
         # Generate material data
-        self.generate_material_data(obj, material_index)
+        matname = self.cache.get_material_name(obj, material_index) # NOTE : This function should maybe be moved to the utility rather than cache functions?
+        self.cache.create_material(matname, obj.data.magickcow_mesh_type)
 
         # Cache vertex color layer
         if len(mcow_mesh.mesh.color_attributes) > 0:
@@ -2610,12 +2603,11 @@ class MCow_Data_Generator:
     # In short, that would add quite a bit of complexity, and it is not really worth it as of now.
 #endregion
 class MCow_Data_Generator_Map(MCow_Data_Generator):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, cache):
+        super().__init__(cache)
         return
 
-    def generate(self, found_objects, cache):
-        self.cache = cache
+    def generate(self, found_objects):
         ans = self.generate_scene_data(found_objects)
         return ans
 
@@ -3402,12 +3394,11 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
     # One of the similarities is that physics entities contain an XNB model class within it, which means that the animated level part side of the code is pretty much almost identical to what this class requires.
 # endregion
 class MCow_Data_Generator_PhysicsEntity(MCow_Data_Generator):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, cache):
+        super().__init__(cache)
         return
 
-    def generate(self, found_objects, cache):
-        self.cache = cache
+    def generate(self, found_objects):
         ans = self.generate_physics_entity_data(found_objects)
         return ans
 
@@ -3502,11 +3493,11 @@ class MCow_Data_Generator_PhysicsEntity(MCow_Data_Generator):
 
 # Base Data Maker class.
 class MCow_Data_Maker:
-    def __init__(self):
-        self.cache = None
+    def __init__(self, cache):
+        self.cache = cache
         return
     
-    def make(self):
+    def make(self, generated_data):
         ans = {} # We return an empty object by default since this is the base class and it doesn't really implement any type of object data generation anyway, so yeah.
         return ans
 
@@ -3666,23 +3657,38 @@ class MCow_Data_Maker:
         }
         return ans
 
+    # region Comment - make_effect
+    
     # This once used to be an useful function... now, it is quite an useless wrapper! :D
+    # Literally just saves us from having to invoke the get_material() method from the self.cache...
+    # Altough in the future we could modify the function to get specific resources rather than just materials?
+    
+    # endregion
     def make_effect(self, matname, fallback_type = "GEOMETRY"):
-        material_contents = self.get_material(matname, fallback_type)
+        material_contents = self.cache.get_material(matname, fallback_type)
         return material_contents
+
+    # endregion
+
+    # region Make - Other
+
+    def make_shared_resources_list(self, cache):
+        ans = []
+        for key, resource in cache._cache_shared_resources.items():
+            idx, content = resource
+            ans.append(content)
+        return ans
 
     # endregion
 
 # Data Maker class for Maps / Levels
 class MCow_Data_Maker_Map(MCow_Data_Maker):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, cache):
+        super().__init__(cache)
         return
     
-    def make(self, generated_data, cache):
-        # TODO : Finish Implementing and cleaning up with new logic and shit...
-        self.cache = cache
-        ans = self.make_xnb_file(self.make_level_model(generated_data), shared_resources_list)
+    def make(self, generated_data):
+        ans = self.make_xnb_file(self.make_level_model(generated_data), self.make_shared_resources_list(self.cache))
         return ans
     
     # region "Make Data" / "Format Data" Functions
@@ -4536,14 +4542,12 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
 
 # Data Maker class for Physics entities
 class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, cache):
+        super().__init__(cache)
         return
 
-    def make(self, generated_data, cache):
-        # TODO : Finish implementing the whole cache stuff to get the shared resources...
-        self.cache = cache
-        return self.make_xnb_file(self.make_physics_entity(generated_scene_data), self.make_shared_resources_list(shared_resources_data))
+    def make(self, generated_data):
+        return self.make_xnb_file(self.make_physics_entity(generated_scene_data), self.make_shared_resources_list(self.cache))
 
     def make_physics_entity(self, generated_data):
         # TODO : Implement all remaining data (events and advanced settings)
@@ -4872,15 +4876,15 @@ class MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
         super().__init__()
         self._cache = MCow_Data_Pipeline_Cache()
         self._get = MCow_Data_Getter_Map()
-        self._gen = MCow_Data_Generator_Map()
-        self._mkr = MCow_Data_Maker_Map()
+        self._gen = MCow_Data_Generator_Map(self._cache)
+        self._mkr = MCow_Data_Maker_Map(self._cache)
         return
     
     def process_scene_data(self):
         self._rotate_scene()
         data_get = self._get.get()
-        data_gen = self._gen.generate(data_get, self._cache)
-        data_mkr = self._mkr.make(data_gen, self._cache)
+        data_gen = self._gen.generate(data_get)
+        data_mkr = self._mkr.make(data_gen)
         return data_mkr
 
 class MCow_Data_Pipeline_PhysicsEntity(MCow_Data_Pipeline):
@@ -4888,15 +4892,15 @@ class MCow_Data_Pipeline_PhysicsEntity(MCow_Data_Pipeline):
         super().__init__()
         self._cache = MCow_Data_Pipeline_Cache()
         self._get = MCow_Data_Getter_PhysicsEntity()
-        self._gen = MCow_Data_Generator_PhysicsEntity()
-        self._mkr = MCow_Data_Maker_PhysicsEntity()
+        self._gen = MCow_Data_Generator_PhysicsEntity(self._cache)
+        self._mkr = MCow_Data_Maker_PhysicsEntity(self._cache)
         return
     
     def process_scene_data(self):
         self._rotate_scene()
         data_get = self._get.get()
-        data_gen = self._gen.generate(data_get, self._cache)
-        data_mkr = self._mkr.make(data_gen, self._cache)
+        data_gen = self._gen.generate(data_get)
+        data_mkr = self._mkr.make(data_gen)
         return data_mrk
 
 # endregion
@@ -4961,13 +4965,6 @@ class MCow_Data_Pipeline_Cache:
             idx, content = self._cache_shared_resources[resource_name]
             return idx
         return 0 # Return 0 as invalid index because XNB files use index 0 for non valid resources. The first index for shared resources is 1.
-
-    def make_shared_resources_list(self):
-        ans = []
-        for key, resource in self._cache_shared_resources.items():
-            idx, content = resource
-            ans.append(content)
-        return ans
     
     # endregion
 
@@ -5199,15 +5196,15 @@ class MCow_Data_Pipeline_Cache:
     # If the material had already been created before, it uses the previously cached result to prevent having to load the file multiple times.
     # This way, multiple disk accesses are prevented when loading the same material / effect multiple times.
     def create_material(self, material_name, fallback_type = "GEOMETRY"):
-        if material_name not in self.dict_effects:
-            self.dict_effects[material_name] = self.generate_effect_data(material_name, fallback_type)
+        if material_name not in self._cache_generated_effects:
+            self._cache_generated_effects[material_name] = self.generate_effect_data(material_name, fallback_type)
 
     # Gets the material from the materials dictionary. Used in the make stage.
     # If for some reason the material were to not have been created previously (could only happen if there were some bug in the code that would need to be fixed ASAP),
     # then it would just re-generate the default effect data based on the fallback type. That feature exists as a last measure and we should not rely on it to export working files!!! 
     def get_material(self, material_name, fallback_type = "GEOMETRY"):
-        if material_name in self.dict_effects:
-            return self.dict_effects[material_name]
+        if material_name in self._cache_generated_effects:
+            return self._cache_generated_effects[material_name]
         return self.generate_default_effect_data(fallback_type)
 
     # endregion
