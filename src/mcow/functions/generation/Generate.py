@@ -10,8 +10,8 @@ class MCow_Data_Generator:
     
     # region Constructor
     
-    def __init__(self):
-        self.cache = None
+    def __init__(self, cache):
+        self.cache = cache
         return 
     
     # endregion
@@ -20,7 +20,7 @@ class MCow_Data_Generator:
 
     # region Generate - Main Entry point
     
-    def generate(self, data, cache):
+    def generate(self, found_objects):
         return None
     
     # endregion
@@ -480,12 +480,11 @@ class MCow_Data_Generator:
     # In short, that would add quite a bit of complexity, and it is not really worth it as of now.
 #endregion
 class MCow_Data_Generator_Map(MCow_Data_Generator):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, cache):
+        super().__init__(cache)
         return
 
-    def generate(self, found_objects, cache):
-        self.cache = cache
+    def generate(self, found_objects):
         ans = self.generate_scene_data(found_objects)
         return ans
 
@@ -1272,12 +1271,11 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
     # One of the similarities is that physics entities contain an XNB model class within it, which means that the animated level part side of the code is pretty much almost identical to what this class requires.
 # endregion
 class MCow_Data_Generator_PhysicsEntity(MCow_Data_Generator):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, cache):
+        super().__init__(cache)
         return
 
-    def generate(self, found_objects, cache):
-        self.cache = cache
+    def generate(self, found_objects):
         ans = self.generate_physics_entity_data(found_objects)
         return ans
 
