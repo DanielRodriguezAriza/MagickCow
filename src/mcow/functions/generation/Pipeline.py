@@ -187,7 +187,7 @@ class MCow_Data_Pipeline:
 
     # endregion
 
-def MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
+class MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
     def __init__(self):
         super().__init__()
         self._cache = MCow_Data_Pipeline_Cache()
@@ -203,7 +203,7 @@ def MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
         data_mkr = self._mkr.make(data_gen, self._cache)
         return data_mkr
 
-def MCow_Data_Pipeline_PhysicsEntity(self):
+class MCow_Data_Pipeline_PhysicsEntity(MCow_Data_Pipeline):
     def __init__(self):
         super().__init__()
         self._cache = MCow_Data_Pipeline_Cache()
