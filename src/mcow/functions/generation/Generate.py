@@ -126,14 +126,6 @@ class MCow_Data_Generator:
 
     # endregion
 
-    # region Generate - Material Effects
-
-    def generate_material_data(self, obj, material_index):
-        matname = self.cache.get_material_name(obj, material_index)
-        self.cache.create_material(matname, obj.data.magickcow_mesh_type)
-
-    # endregion
-
     # region Generate - Mesh
 
     # region Generate - Mesh - Internal
@@ -335,7 +327,8 @@ class MCow_Data_Generator:
         mcow_mesh = MCow_Mesh(obj, transform)
         
         # Generate material data
-        self.generate_material_data(obj, material_index)
+        matname = self.cache.get_material_name(obj, material_index) # NOTE : This function should maybe be moved to the utility rather than cache functions?
+        self.cache.create_material(matname, obj.data.magickcow_mesh_type)
 
         # Cache vertex color layer
         if len(mcow_mesh.mesh.color_attributes) > 0:
