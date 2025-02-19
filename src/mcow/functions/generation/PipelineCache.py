@@ -295,15 +295,15 @@ class MCow_Data_Pipeline_Cache:
     # If the material had already been created before, it uses the previously cached result to prevent having to load the file multiple times.
     # This way, multiple disk accesses are prevented when loading the same material / effect multiple times.
     def create_material(self, material_name, fallback_type = "GEOMETRY"):
-        if material_name not in self.dict_effects:
-            self.dict_effects[material_name] = self.generate_effect_data(material_name, fallback_type)
+        if material_name not in self._cache_generated_effects:
+            self._cache_generated_effects[material_name] = self.generate_effect_data(material_name, fallback_type)
 
     # Gets the material from the materials dictionary. Used in the make stage.
     # If for some reason the material were to not have been created previously (could only happen if there were some bug in the code that would need to be fixed ASAP),
     # then it would just re-generate the default effect data based on the fallback type. That feature exists as a last measure and we should not rely on it to export working files!!! 
     def get_material(self, material_name, fallback_type = "GEOMETRY"):
-        if material_name in self.dict_effects:
-            return self.dict_effects[material_name]
+        if material_name in self._cache_generated_effects:
+            return self._cache_generated_effects[material_name]
         return self.generate_default_effect_data(fallback_type)
 
     # endregion
