@@ -170,9 +170,15 @@ class MCow_Data_Maker:
         }
         return ans
 
+    # region Comment - make_effect
+    
     # This once used to be an useful function... now, it is quite an useless wrapper! :D
+    # Literally just saves us from having to invoke the get_material() method from the self.cache...
+    # Altough in the future we could modify the function to get specific resources rather than just materials?
+    
+    # endregion
     def make_effect(self, matname, fallback_type = "GEOMETRY"):
-        material_contents = self.get_material(matname, fallback_type)
+        material_contents = self.cache.get_material(matname, fallback_type)
         return material_contents
 
     # endregion
