@@ -2134,6 +2134,7 @@ class MCow_Data_Generator:
     # region Constructor
     
     def __init__(self):
+        self.cache = None
         return 
     
     # endregion
@@ -2142,8 +2143,8 @@ class MCow_Data_Generator:
 
     # region Generate - Main Entry point
     
-    def generate(self):
-        return
+    def generate(self, data, cache):
+        return None
     
     # endregion
 
@@ -2245,6 +2246,14 @@ class MCow_Data_Generator:
     def generate_quaternion(self, quat):
         ans = (quat[1], quat[2], quat[3], quat[0])
         return ans
+
+    # endregion
+
+    # region Generate - Material Effects
+
+    def generate_material_data(self, obj, material_index):
+        matname = self.cache.get_material_name(obj, material_index)
+        self.cache.create_material(matname, obj.data.magickcow_mesh_type)
 
     # endregion
 
@@ -2449,8 +2458,7 @@ class MCow_Data_Generator:
         mcow_mesh = MCow_Mesh(obj, transform)
         
         # Generate material data
-        matname = self.get_material_name(obj, material_index)
-        self.create_material(matname, mcow_mesh.mesh.magickcow_mesh_type)
+        self.generate_material_data(obj, material_index)
 
         # Cache vertex color layer
         if len(mcow_mesh.mesh.color_attributes) > 0:
@@ -2525,7 +2533,6 @@ class MCow_Data_Generator:
 
         return (vertices, indices, matname)
 
-
     def generate_mesh_data_testing_1(self, obj, transform, uses_material = True, material_index = 0):
         # Generate mesh data
         mcow_mesh = MCow_Mesh(obj, transform)
@@ -2583,7 +2590,6 @@ class MCow_Data_Generator:
 
         return (vertices, indices, matname)
 
-
     # endregion
 
     # endregion
@@ -2608,8 +2614,10 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         super().__init__()
         return
 
-    def generate(self, input_data):
-        return self.generate_scene_data(input_data)
+    def generate(self, found_objects, cache):
+        self.cache = cache
+        ans = self.generate_scene_data(found_objects)
+        return ans
 
     # region Bounding Box Related Operations
 
@@ -2744,18 +2752,22 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         vertices, indices, matname = self.generate_mesh_data(obj, transform, True, matid)
         
         # Add the material as a shared resource and get the shared resource index
-        idx = self.add_shared_resource(matname, self.get_material(matname, mesh.magickcow_mesh_type))
+        idx = self.cache.add_shared_resource(matname, self.cache.get_material(matname, mesh.magickcow_mesh_type))
         
         # Create the matrix that will be passed to the make stage
         matrix = self.generate_matrix_data(transform)
         
         return (obj, transform, obj.name, matrix, vertices, indices, idx)
 
+    # region Comment - generate_liquid_data
+    
     # NOTE : For now, both water and lava generation are identical, so they rely on the same generate_liquid_data() function.
     # In the past, they used to have their own identical functions just in case, but I haven't really found any requirements for that yet so yeah...
     # Maybe it could be useful to add some kind of exception throwing or error checking or whatever to prevent players from exporting maps where waters have materials that
     # are not deferred liquid effects and lavas that are not lava effects?
     # NOTE : Liquids do not require any form of bounding box or sphere calculations, so they use the underlying generate_mesh_data() function rather than any of the other wrappers.
+    
+    # endregion
     def generate_liquid_data(self, obj, transform, matid):
         
         # Generate the mesh data (vertex buffer, index buffer and effect / material)
@@ -2834,10 +2846,14 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         matrix = self.generate_matrix_data(transform)
         return (name, matrix, radius)
     
+    # region Comment - generate_trigger_data
+
     # NOTE : Triggers in Magicka start on a corner point, but the representation of an empty is centered around its origin point.
     # To make it easier for users to visualize, we will be translating the data as follows:
     #  - move the trigger's position along each axis by half of the position on that axis, using the forward, right and up vectors of the object to ensure that the translation is correct.
     #  - multiply by 2 the scale of the trigger.
+    
+    # endregion
     def generate_trigger_data(self, obj, transform):
         
         name = obj.name
@@ -3106,6 +3122,7 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         return ans
 
     # region Comment
+
     # NOTE : This is basically an "inlined" version of the final collision generation functions. It does the exact same thing.
     # The only reason this test exists is because I was debugging some slow down in the collision mesh generation and I assumed it was related to the extra function calls.
     # While it is true that Python function calls are slower than the inlined version, in this case the difference is extremely small and it is negligible...
@@ -3125,6 +3142,7 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
     #             last_vertex_index += current_num_vertices
     #         generated_collisions.append((layer_vertices, layer_triangles))
     #     return generated_collisions
+    
     # endregion
 
     def generate_static_nav_meshes_data(self, found_nav_meshes):
@@ -3320,7 +3338,6 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         totalt = t1 - t0
         self.report({"INFO"}, f"navmesh = {totalt}")
     
-
     # TODO : Fully implement!
     def generate_scene_data_animated_internal(self, bone_obj, bone_transform, found_scene_objects, generated_scene_objects):
         # Generate bone data (bone info such as the name, transform, etc...)
@@ -3389,7 +3406,8 @@ class MCow_Data_Generator_PhysicsEntity(MCow_Data_Generator):
         super().__init__()
         return
 
-    def generate(self, found_objects):
+    def generate(self, found_objects, cache):
+        self.cache = cache
         ans = self.generate_physics_entity_data(found_objects)
         return ans
 
@@ -3457,7 +3475,7 @@ class MCow_Data_Generator_PhysicsEntity(MCow_Data_Generator):
     def generate_model_mesh(self, obj, transform, matid, parent_bone_index):
         name = obj.name
         vertices, indices, matname = self.generate_mesh_data(obj, transform, True, matid)
-        shared_resource_index = self.add_shared_resource(matname, self.get_material(matname))
+        shared_resource_index = self.cache.add_shared_resource(matname, self.cache.get_material(matname))
         return (name, parent_bone_index, vertices, indices, shared_resource_index)
 
     def generate_model_bones(self, bones):
@@ -3485,6 +3503,7 @@ class MCow_Data_Generator_PhysicsEntity(MCow_Data_Generator):
 # Base Data Maker class.
 class MCow_Data_Maker:
     def __init__(self):
+        self.cache = None
         return
     
     def make(self):
@@ -3660,9 +3679,10 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
         super().__init__()
         return
     
-    def make(self, make_data):
+    def make(self, generated_data, cache):
         # TODO : Finish Implementing and cleaning up with new logic and shit...
-        ans = self.make_xnb_file(self.make_level_model(generated_scene_data), shared_resources_list)
+        self.cache = cache
+        ans = self.make_xnb_file(self.make_level_model(generated_data), shared_resources_list)
         return ans
     
     # region "Make Data" / "Format Data" Functions
@@ -4520,8 +4540,9 @@ class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
         super().__init__()
         return
 
-    def make(self, make_data):
-        generated_scene_data, shared_resources_data = make_data
+    def make(self, generated_data, cache):
+        # TODO : Finish implementing the whole cache stuff to get the shared resources...
+        self.cache = cache
         return self.make_xnb_file(self.make_physics_entity(generated_scene_data), self.make_shared_resources_list(shared_resources_data))
 
     def make_physics_entity(self, generated_data):
@@ -4846,7 +4867,7 @@ class MCow_Data_Pipeline:
 
     # endregion
 
-def MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
+class MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
     def __init__(self):
         super().__init__()
         self._cache = MCow_Data_Pipeline_Cache()
@@ -4858,11 +4879,11 @@ def MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
     def process_scene_data(self):
         self._rotate_scene()
         data_get = self._get.get()
-        data_gen = self._gen.generate()
-        data_mkr = self._mkr.make()
+        data_gen = self._gen.generate(data_get, self._cache)
+        data_mkr = self._mkr.make(data_gen, self._cache)
         return data_mkr
 
-def MCow_Data_Pipeline_PhysicsEntity(self):
+class MCow_Data_Pipeline_PhysicsEntity(MCow_Data_Pipeline):
     def __init__(self):
         super().__init__()
         self._cache = MCow_Data_Pipeline_Cache()
@@ -4874,8 +4895,8 @@ def MCow_Data_Pipeline_PhysicsEntity(self):
     def process_scene_data(self):
         self._rotate_scene()
         data_get = self._get.get()
-        data_gen = self._gen.generate()
-        data_mkr = self._mkr.make()
+        data_gen = self._gen.generate(data_get, self._cache)
+        data_mkr = self._mkr.make(data_gen, self._cache)
         return data_mrk
 
 # endregion
