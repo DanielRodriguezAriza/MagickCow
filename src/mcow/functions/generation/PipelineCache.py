@@ -57,13 +57,6 @@ class MCow_Data_Pipeline_Cache:
             idx, content = self._cache_shared_resources[resource_name]
             return idx
         return 0 # Return 0 as invalid index because XNB files use index 0 for non valid resources. The first index for shared resources is 1.
-
-    def make_shared_resources_list(self):
-        ans = []
-        for key, resource in self._cache_shared_resources.items():
-            idx, content = resource
-            ans.append(content)
-        return ans
     
     # endregion
 
