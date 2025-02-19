@@ -631,11 +631,15 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         
         return (obj, transform, obj.name, matrix, vertices, indices, idx)
 
+    # region Comment - generate_liquid_data
+    
     # NOTE : For now, both water and lava generation are identical, so they rely on the same generate_liquid_data() function.
     # In the past, they used to have their own identical functions just in case, but I haven't really found any requirements for that yet so yeah...
     # Maybe it could be useful to add some kind of exception throwing or error checking or whatever to prevent players from exporting maps where waters have materials that
     # are not deferred liquid effects and lavas that are not lava effects?
     # NOTE : Liquids do not require any form of bounding box or sphere calculations, so they use the underlying generate_mesh_data() function rather than any of the other wrappers.
+    
+    # endregion
     def generate_liquid_data(self, obj, transform, matid):
         
         # Generate the mesh data (vertex buffer, index buffer and effect / material)
@@ -714,10 +718,14 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         matrix = self.generate_matrix_data(transform)
         return (name, matrix, radius)
     
+    # region Comment - generate_trigger_data
+
     # NOTE : Triggers in Magicka start on a corner point, but the representation of an empty is centered around its origin point.
     # To make it easier for users to visualize, we will be translating the data as follows:
     #  - move the trigger's position along each axis by half of the position on that axis, using the forward, right and up vectors of the object to ensure that the translation is correct.
     #  - multiply by 2 the scale of the trigger.
+    
+    # endregion
     def generate_trigger_data(self, obj, transform):
         
         name = obj.name
@@ -986,6 +994,7 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         return ans
 
     # region Comment
+
     # NOTE : This is basically an "inlined" version of the final collision generation functions. It does the exact same thing.
     # The only reason this test exists is because I was debugging some slow down in the collision mesh generation and I assumed it was related to the extra function calls.
     # While it is true that Python function calls are slower than the inlined version, in this case the difference is extremely small and it is negligible...
@@ -1005,6 +1014,7 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
     #             last_vertex_index += current_num_vertices
     #         generated_collisions.append((layer_vertices, layer_triangles))
     #     return generated_collisions
+    
     # endregion
 
     def generate_static_nav_meshes_data(self, found_nav_meshes):
@@ -1200,7 +1210,6 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         totalt = t1 - t0
         self.report({"INFO"}, f"navmesh = {totalt}")
     
-
     # TODO : Fully implement!
     def generate_scene_data_animated_internal(self, bone_obj, bone_transform, found_scene_objects, generated_scene_objects):
         # Generate bone data (bone info such as the name, transform, etc...)
