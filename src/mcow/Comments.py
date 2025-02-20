@@ -1,5 +1,11 @@
 # region Comments
 
+# NOTE : Comments lie, code doesn't...
+# A lot of the comments under "TODO" markers within this file are possibly outdated. As the codebase grows, it becomes harder and harder to maintain the comments LOL...
+# The "NOTE"s are still relevant tho. A lot of really large comments exist for the sake of explaining how some weird pieces of the code actually work.
+
+# TODO : Remove a lot of the outdated TODOs... like the one talking about encapsulating everything within classes LOL, that part's already been finished!
+
 # TODO : Possibly change a lot of this stuff by encapsulating all of the "make_" methods into actual classes? with their own "generate()", "get_object()"/"make()", etc methods... idk...
 # TODO : Rework all of the useless tuple copying by merging the JSON-style object make_ step with the generate_ step, maybe? I mean, it would be easier to keep them separate if the information was stored within proper classes and each had their make_data and generate_data functions.
 
