@@ -1060,7 +1060,7 @@ class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
         return
 
     def make(self, generated_data):
-        return self.make_xnb_file(self.make_physics_entity(generated_scene_data), self.make_shared_resources_list(self.cache))
+        return self.make_xnb_file(self.make_physics_entity(generated_data), self.make_shared_resources_list(self.cache))
 
     def make_physics_entity(self, generated_data):
         # TODO : Implement all remaining data (events and advanced settings)

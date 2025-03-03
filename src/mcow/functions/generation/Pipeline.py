@@ -217,6 +217,6 @@ class MCow_Data_Pipeline_PhysicsEntity(MCow_Data_Pipeline):
         data_get = self._get.get()
         data_gen = self._gen.generate(data_get)
         data_mkr = self._mkr.make(data_gen)
-        return data_mrk
+        return data_mkr
 
 # endregion

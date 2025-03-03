@@ -28,6 +28,12 @@
 # ../mcow/Comments.py
 # region Comments
 
+# NOTE : Comments lie, code doesn't...
+# A lot of the comments under "TODO" markers within this file are possibly outdated. As the codebase grows, it becomes harder and harder to maintain the comments LOL...
+# The "NOTE"s are still relevant tho. A lot of really large comments exist for the sake of explaining how some weird pieces of the code actually work.
+
+# TODO : Remove a lot of the outdated TODOs... like the one talking about encapsulating everything within classes LOL, that part's already been finished!
+
 # TODO : Possibly change a lot of this stuff by encapsulating all of the "make_" methods into actual classes? with their own "generate()", "get_object()"/"make()", etc methods... idk...
 # TODO : Rework all of the useless tuple copying by merging the JSON-style object make_ step with the generate_ step, maybe? I mean, it would be easier to keep them separate if the information was stored within proper classes and each had their make_data and generate_data functions.
 
@@ -4547,7 +4553,7 @@ class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
         return
 
     def make(self, generated_data):
-        return self.make_xnb_file(self.make_physics_entity(generated_scene_data), self.make_shared_resources_list(self.cache))
+        return self.make_xnb_file(self.make_physics_entity(generated_data), self.make_shared_resources_list(self.cache))
 
     def make_physics_entity(self, generated_data):
         # TODO : Implement all remaining data (events and advanced settings)
@@ -4901,7 +4907,7 @@ class MCow_Data_Pipeline_PhysicsEntity(MCow_Data_Pipeline):
         data_get = self._get.get()
         data_gen = self._gen.generate(data_get)
         data_mkr = self._mkr.make(data_gen)
-        return data_mrk
+        return data_mkr
 
 # endregion
 
