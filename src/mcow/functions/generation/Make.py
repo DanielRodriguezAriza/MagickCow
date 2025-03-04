@@ -1138,7 +1138,7 @@ class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
         meshes, bones = model
         ans = {
             "tag" : None, # Always null in Magicka...
-            "numBones" : len(bones),
+            "numBones" : len(bones) + 2, # Add 2 bones because of Root and RootNode
             "bones" : self.make_model_bones(bones),
             "numVertexDeclarations" : 1,
             "vertexDeclarations" : [self.make_vertex_declaration_default()],
@@ -1148,17 +1148,53 @@ class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
         return ans
     
     def make_model_bones(self, bones):
-        ans = [self.make_model_bone(bone) for bone in bones]
+        ans_extra = self.make_model_bones_extra()
+        ans_real = self.make_model_bones_real(bones)
+        ans = []
+        ans.extend(ans_extra)
+        ans.extend(ans_real)
         return ans
-    
-    def make_model_bone(self, bone):
+
+    def make_model_bone(self, index, name, transform, parent, children):
         ans = {
-            "index" : bone.index,
-            "name" : bone.name,
-            "transform" : self.make_matrix(bone.transform),
-            "parent" : bone.parent,
-            "children" : bone.children
+            "index" : index,
+            "name" : name,
+            "transform" : transform,
+            "parent" : parent,
+            "children" : children
         }
+        return ans
+
+    def make_model_bones_real(self, bones):
+        ans = [self.make_model_bone_real(bone) for bone in bones]
+        return ans
+
+    def make_model_bone_real(self, bone):
+        return self.make_model_bone(bone.index + 2, bone.name, self.make_matrix(bone.transform), bone.parent + 2, bone.children) # Add 2 on bone.index and bone.parent because of Root and RootNode bones
+
+    def make_model_bones_extra(self):
+        transform = {
+            "M11": 1,
+            "M12": 0,
+            "M13": 0,
+            "M14": 0,
+            "M21": 0,
+            "M22": 1,
+            "M23": 0,
+            "M24": 0,
+            "M31": 0,
+            "M32": 0,
+            "M33": 1,
+            "M34": 0,
+            "M41": 0,
+            "M42": 0,
+            "M43": 0,
+            "M44": 1
+        }
+        ans = [
+            self.make_model_bone(0, "Root", transform, -1, [1]),
+            self.make_model_bone(1, "RootNode", transform, 0, [2]),
+        ]
         return ans
 
     def make_model_meshes(self, meshes):
@@ -1169,7 +1205,7 @@ class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
         name, parent_bone_index, vertices, indices, shared_resource_index = mesh
         ans = {
             "name" : name,
-            "parentBone" : parent_bone_index,
+            "parentBone" : parent_bone_index + 2, # Add 2 because of the Root and RootNode bones
             "boundingSphere" : { # TODO : Implement customizable bounding sphere for each mesh
                 "Center" : {
                     "x" : 0,
