@@ -2074,8 +2074,9 @@ class MCow_Data_Getter_PhysicsEntity(MCow_Data_Getter):
 
                 # Process meshes for visual geometry
                 if mesh_type == "GEOMETRY":
-                    self._get_scene_data_add_mesh(found_objects, obj, transform, parent_bone_index) # TODO : Implement relative transform calculations
-                
+                    # self._get_scene_data_add_bone(found_objects, obj, transform, parent_bone_index) # Add the mesh as a bone as well, each mesh has a bone associated.
+                    self._get_scene_data_add_mesh(found_objects, obj, transform, parent_bone_index) # TODO : Implement relative transform calculations # len(found_objects.model.bones)
+
                 # Process meshes for collision geometry
                 elif mesh_type == "COLLISION":
                     found_objects.collisions.append(obj)
@@ -2085,30 +2086,8 @@ class MCow_Data_Getter_PhysicsEntity(MCow_Data_Getter):
                 
                 # Process empties for bones
                 if obj.mcow_physics_entity_empty_type == "BONE":
-                    
-                    # Throw an exception if the found bone has a name that is reserved
-                    reserved_bone_names = ["Root", "RootNode"]
-                    bone_name_lower = obj.name.lower()
-                    for name in reserved_bone_names: # NOTE : We could have used "if bone_name_lower in reserved_bone_names:" instead, but I would prefer to keep the reserved strings just as they are stored within the XNB file rather than hardcoding them in full lowercase. This is because I don't exactly remember as of now whether XNA checks for exact bone names or if it is not case sensitive. I'd need to check again, but whatever. Also, these reserved bone names are not because of XNA, they are just present in ALL physics entity files within Magicka's base game data, so it's a Magicka animation system requirement instead.
-                        if bone_name_lower == name.lower():
-                            raise MagickCowExportException(f"The bone name \"{name}\" is reserved!")
-
-                    # Add the current bone to the list of found bones
-
-                    current_bone = PE_Storage_Bone()
-                    current_bone.obj = obj
-                    current_bone.transform = transform
-                    current_bone.index = len(found_objects.model.bones) # NOTE : We don't subtract 1 because the current bone has not been added to the list yet!!!
-                    current_bone.parent = parent_bone_index
-                    current_bone.children = []
-
-                    found_objects.model.bones.append(current_bone)
-                    
-                    # Update the list of child bone indices for the parent bone
-                    found_objects.model.bones[current_bone.parent].children.append(current_bone.index)
-
-                    # Make recursive call to get all of the data of the child objects of this bone.
-                    self._get_scene_data_rec(found_objects, obj.children, current_bone.index) # NOTE : The index we pass is literally the index of the bone we just added to the found objects' bones list.
+                    # Add the found bone
+                    self._get_scene_data_add_bone(found_objects, obj, transform, parent_bone_index)
 
                 # Process empties for bounding boxes
                 elif obj.mcow_physics_entity_empty_type == "BOUNDING_BOX":
@@ -2123,6 +2102,31 @@ class MCow_Data_Getter_PhysicsEntity(MCow_Data_Getter):
         segments = self.get_mesh_segments(obj)
         ans = [(segment_obj, transform, material_index, parent_bone_index) for segment_obj, material_index in segments]
         found_objects.model.meshes.extend(ans)
+
+    def _get_scene_data_add_bone(self, found_objects, obj, transform, parent_bone_index):
+        # Throw an exception if the found bone has a name that is reserved
+        reserved_bone_names = ["Root", "RootNode"]
+        bone_name_lower = obj.name.lower()
+        for name in reserved_bone_names: # NOTE : We could have used "if bone_name_lower in reserved_bone_names:" instead, but I would prefer to keep the reserved strings just as they are stored within the XNB file rather than hardcoding them in full lowercase. This is because I don't exactly remember as of now whether XNA checks for exact bone names or if it is not case sensitive. I'd need to check again, but whatever. Also, these reserved bone names are not because of XNA, they are just present in ALL physics entity files within Magicka's base game data, so it's a Magicka animation system requirement instead.
+            if bone_name_lower == name.lower():
+                raise MagickCowExportException(f"The bone name \"{name}\" is reserved!")
+
+        # Add the current bone to the list of found bones
+        current_bone = PE_Storage_Bone()
+        current_bone.obj = obj
+        current_bone.transform = transform
+        current_bone.index = len(found_objects.model.bones) # NOTE : We don't subtract 1 because the current bone has not been added to the list yet!!!
+        current_bone.parent = parent_bone_index
+        current_bone.children = []
+
+        found_objects.model.bones.append(current_bone)
+        
+        # Update the list of child bone indices for the parent bone
+        found_objects.model.bones[current_bone.parent].children.append(current_bone.index)
+
+        # Make recursive call to get all of the data of the child objects of this bone.
+        self._get_scene_data_rec(found_objects, obj.children, current_bone.index) # NOTE : The index we pass is literally the index of the bone we just added to the found objects' bones list.
+
 
 # endregion
 
@@ -4631,7 +4635,7 @@ class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
         meshes, bones = model
         ans = {
             "tag" : None, # Always null in Magicka...
-            "numBones" : len(bones),
+            "numBones" : len(bones) + 2, # Add 2 bones because of Root and RootNode
             "bones" : self.make_model_bones(bones),
             "numVertexDeclarations" : 1,
             "vertexDeclarations" : [self.make_vertex_declaration_default()],
@@ -4641,17 +4645,53 @@ class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
         return ans
     
     def make_model_bones(self, bones):
-        ans = [self.make_model_bone(bone) for bone in bones]
+        ans_extra = self.make_model_bones_extra()
+        ans_real = self.make_model_bones_real(bones)
+        ans = []
+        ans.extend(ans_extra)
+        ans.extend(ans_real)
         return ans
-    
-    def make_model_bone(self, bone):
+
+    def make_model_bone(self, index, name, transform, parent, children):
         ans = {
-            "index" : bone.index,
-            "name" : bone.name,
-            "transform" : self.make_matrix(bone.transform),
-            "parent" : bone.parent,
-            "children" : bone.children
+            "index" : index,
+            "name" : name,
+            "transform" : transform,
+            "parent" : parent,
+            "children" : children
         }
+        return ans
+
+    def make_model_bones_real(self, bones):
+        ans = [self.make_model_bone_real(bone) for bone in bones]
+        return ans
+
+    def make_model_bone_real(self, bone):
+        return self.make_model_bone(bone.index + 2, bone.name, self.make_matrix(bone.transform), bone.parent + 2, bone.children) # Add 2 on bone.index and bone.parent because of Root and RootNode bones
+
+    def make_model_bones_extra(self):
+        transform = {
+            "M11": 1,
+            "M12": 0,
+            "M13": 0,
+            "M14": 0,
+            "M21": 0,
+            "M22": 1,
+            "M23": 0,
+            "M24": 0,
+            "M31": 0,
+            "M32": 0,
+            "M33": 1,
+            "M34": 0,
+            "M41": 0,
+            "M42": 0,
+            "M43": 0,
+            "M44": 1
+        }
+        ans = [
+            self.make_model_bone(0, "Root", transform, -1, [1]),
+            self.make_model_bone(1, "RootNode", transform, 0, [2]),
+        ]
         return ans
 
     def make_model_meshes(self, meshes):
@@ -4662,7 +4702,7 @@ class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
         name, parent_bone_index, vertices, indices, shared_resource_index = mesh
         ans = {
             "name" : name,
-            "parentBone" : parent_bone_index,
+            "parentBone" : parent_bone_index + 2, # Add 2 because of the Root and RootNode bones
             "boundingSphere" : { # TODO : Implement customizable bounding sphere for each mesh
                 "Center" : {
                     "x" : 0,
