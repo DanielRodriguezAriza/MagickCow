@@ -4,8 +4,9 @@ def register():
     # Register custom property classes
     register_properties_classes()
 
-    # Register the Export Panel
+    # Register the Import and Export Panels
     register_exporters()
+    register_importers()
 
     # Register the Object Properties and Object Properties Panel
     register_properties_object()
@@ -17,8 +18,9 @@ def unregister():
     # Register custom property classes
     unregister_properties_classes()
 
-    # Unregister the Export Panel
+    # Unregister the Import and Export Panels
     unregister_exporters()
+    unregister_importers()
 
     # Unregister the Object Properties and Object Properties Panel
     unregister_properties_object()
