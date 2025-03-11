@@ -7,15 +7,15 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
     
     # region Blender specific configuration:
     
-    bl_idname = "object.magickcow_map"
-    bl_label = "MagickCow Export Map"
-    bl_description = "MagickCow Export Map to JSON file"
-    filename_ext = ".json"
+    bl_idname = "object.magickcow_export"
+    bl_label = "MagickCow Export JSON"
+    bl_description = "MagickCow Export Blender scene to MagickaPUP JSON file"
 
     # endregion
     
     # region Exporter Panel Config
 
+    filename_ext = ".json"
     filter_glob : bpy.props.StringProperty(default = "*.json", options = {'HIDDEN'})
     
     # region Deprecated
@@ -140,15 +140,15 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
 
 # region Blender Export Panel functions, Register and Unregister functions
 
-def menu_func(self, context):
+def menu_func_export(self, context):
     self.layout.operator(MagickCowExporterOperator.bl_idname, text = "Export Scene to MagickaPUP JSON file (.json)")
 
 def register_exporters():
     bpy.utils.register_class(MagickCowExporterOperator)
-    bpy.types.TOPBAR_MT_file_export.append(menu_func)
+    bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
 
 def unregister_exporters():
     bpy.utils.unregister_class(MagickCowExporterOperator)
-    bpy.types.TOPBAR_MT_file_export.remove(menu_func)
+    bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
 
 # endregion
