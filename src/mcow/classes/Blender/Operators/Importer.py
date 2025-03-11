@@ -26,3 +26,18 @@ class MagickCowImportOperator(bpy.types.Operator, bpy_extras.io_utils.ImportHelp
     # endregion
 
 # endregion
+
+# region Blender Import Panel functions, Register and Unregister functions
+
+def menu_func_import(self, context):
+    self.layout.operator(MagickCowImportOperator.bl_idname, text = "Import Scene from MagickaPUP JSON file (.json)")
+
+def register_importers():
+    bpy.utils.register_class(MagickCowImportOperator)
+    bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
+
+def unregister_importers():
+    bpy.utils.unregister_class(MagickCowImportOperator)
+    bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
+
+# endregion
