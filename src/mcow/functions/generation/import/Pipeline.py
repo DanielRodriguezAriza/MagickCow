@@ -1,7 +1,11 @@
 # region Import Data Generation pipeline classes
 
 class MCow_ImportPipeline:
-    pass
+    def __init__(self):
+        return
+    
+    def import(self, data):
+        return
 
 class MCow_ImportPipeline_Map(ImportPipeline):
     pass
