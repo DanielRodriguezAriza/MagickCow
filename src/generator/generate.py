@@ -70,11 +70,15 @@ def main():
         "../mcow/functions/utility/Utility.py", # TODO : Further subdivide this code maybe?
 
         # Export Data Generation (The 3 stages of data transformation pipeline for export in MagickCow: Blender Data -> Get Stage -> Generate Stage -> Make Stage -> Final JSON file)
+        # TODO : Rename all of the Pipeline classes to use some "ExportPipeline" prefix or whatever...
         "../mcow/functions/generation/export/Get.py",
         "../mcow/functions/generation/export/Generate.py",
         "../mcow/functions/generation/export/Make.py",
         "../mcow/functions/generation/export/Pipeline.py",
         "../mcow/functions/generation/export/PipelineCache.py",
+        
+        # Import Data Generation
+        "../mcow/functions/generation/import/Pipeline.py"
 
         # Main entry point
         "../mcow/Main.py",
