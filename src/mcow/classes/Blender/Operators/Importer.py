@@ -21,7 +21,52 @@ class MagickCowImportOperator(bpy.types.Operator, bpy_extras.io_utils.ImportHelp
     # region Main Importer Entry Point
 
     def execute(self, context):
-        return {"FINISHED"} # TODO : Implement
+        return self.import_data(context)
+
+    # endregion
+
+    # region Aux methods
+
+    def read_file_contents(self, file_path):
+        try:
+            with open(file_path, "r") as file:
+                contents = file.read()
+                return True, contents
+        except Exception as e:
+            return False, None
+
+    def read_json_data(self, json_string):
+        try:
+            data = json.loads(json_string)
+            return True, data
+        except Exception as e:
+            return False, None
+
+    # endregion
+
+    # region Importer Implementation
+
+    def import_data(self, context):
+
+        success, json_string = self.read_file_contents(self.filepath)
+        if not success:
+            self.report({"ERROR"}, "Could not load the input file!")
+            return {"CANCELLED"}
+        
+        success, json_data = self.read_json_data(json_string)
+        if not success:
+            self.report({"ERROR"}, "The input file is not a valid JSON file!")
+            return {"CANCELLED"}
+        
+        if "XnbFileData" not in json_data or "$type" not in json_data["XnbFileData"]:
+            self.report({"ERROR"}, "The input JSON file is not a valid MagickaPUP JSON file!")
+            return {"CANCELLED"}
+
+        return {"FINISHED"}
+
+    def import_data_unknown(self, context):
+        self.report({"ERROR"}, "Cannot import scene data of unknown type!")
+        return {"CANCELLED"}
 
     # endregion
 
