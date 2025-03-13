@@ -42,6 +42,9 @@ class MagickCowImportOperator(bpy.types.Operator, bpy_extras.io_utils.ImportHelp
         except Exception as e:
             return False, None
 
+    def is_valid_mpup_json(self, json_dict):
+        return "XnbFileData" in json_data and "PrimaryObject" in json_data["XnbFileData"] and "SharedResources" in json_data["XnbFileData"] and "$type" in json_data["XnbFileData"]["PrimaryObject"]
+
     # endregion
 
     # region Importer Implementation
@@ -58,9 +61,14 @@ class MagickCowImportOperator(bpy.types.Operator, bpy_extras.io_utils.ImportHelp
             self.report({"ERROR"}, "The input file is not a valid JSON file!")
             return {"CANCELLED"}
         
-        if "XnbFileData" not in json_data or "$type" not in json_data["XnbFileData"]:
+        success = self.is_valid_mpup_json(json_data)
+        if not success:
             self.report({"ERROR"}, "The input JSON file is not a valid MagickaPUP JSON file!")
             return {"CANCELLED"}
+        
+        # TODO : Finish implementing the import logic! Also maybe rename the export pipeline objects to use the Export keyword in their names (classes, vars and functions)?
+        self.report({"ERROR"}, "Import operations are not supported yet!")
+        return {"CANCELLED"}
 
         return {"FINISHED"}
 
