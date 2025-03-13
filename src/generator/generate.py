@@ -78,7 +78,7 @@ def main():
         "../mcow/functions/generation/export/PipelineCache.py",
         
         # Import Data Generation
-        "../mcow/functions/generation/import/Pipeline.py"
+        "../mcow/functions/generation/import/Pipeline.py",
 
         # Main entry point
         "../mcow/Main.py",
