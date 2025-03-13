@@ -508,15 +508,15 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
     
     # region Blender specific configuration:
     
-    bl_idname = "object.magickcow_map"
-    bl_label = "MagickCow Export Map"
-    bl_description = "MagickCow Export Map to JSON file"
-    filename_ext = ".json"
+    bl_idname = "object.magickcow_export"
+    bl_label = "MagickCow Export JSON"
+    bl_description = "MagickCow Export Blender scene to MagickaPUP JSON file"
 
     # endregion
     
     # region Exporter Panel Config
 
+    filename_ext = ".json"
     filter_glob : bpy.props.StringProperty(default = "*.json", options = {'HIDDEN'})
     
     # region Deprecated
@@ -641,16 +641,61 @@ class MagickCowExporterOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHe
 
 # region Blender Export Panel functions, Register and Unregister functions
 
-def menu_func(self, context):
+def menu_func_export(self, context):
     self.layout.operator(MagickCowExporterOperator.bl_idname, text = "Export Scene to MagickaPUP JSON file (.json)")
 
 def register_exporters():
     bpy.utils.register_class(MagickCowExporterOperator)
-    bpy.types.TOPBAR_MT_file_export.append(menu_func)
+    bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
 
 def unregister_exporters():
     bpy.utils.unregister_class(MagickCowExporterOperator)
-    bpy.types.TOPBAR_MT_file_export.remove(menu_func)
+    bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
+
+# endregion
+
+# ../mcow/classes/Blender/Operators/Importer.py
+# region Blender Operator classes for JSON Importer.
+
+# This is the Blender Operator class for importing MagickaPUP JSON files into the scene.
+# This operator allows Blender to transform the contents of a JSON file into a set of objects laid out on the scene in a way that it is compatible with MagickCow's object properties and systems.
+class MagickCowImportOperator(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
+    # region Blender Specific Configuration
+    
+    bl_idname = "object.magickcow_import" # bl_idname has to follow the pattern: "category.custom_name", where category can be something common in Blender like "object", "mesh", "scene" or a custom text. bl_iname must also be an unique identifier for each operator, and it must also be in lowercase and snake_case.
+    bl_label = "MagickCow Import JSON"
+    bl_description = "MagickCow import MagickaPUP JSON file into Blender scene"
+
+    # endregion
+
+    # region Export Panel Configuration
+    
+    filename_ext = ".json"
+    filter_glob : bpy.props.StringProperty(default = "*.json", options = {"HIDDEN"})
+
+    # endregion
+
+    # region Main Importer Entry Point
+
+    def execute(self, context):
+        return {"FINISHED"} # TODO : Implement
+
+    # endregion
+
+# endregion
+
+# region Blender Import Panel functions, Register and Unregister functions
+
+def menu_func_import(self, context):
+    self.layout.operator(MagickCowImportOperator.bl_idname, text = "Import Scene from MagickaPUP JSON file (.json)")
+
+def register_importers():
+    bpy.utils.register_class(MagickCowImportOperator)
+    bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
+
+def unregister_importers():
+    bpy.utils.unregister_class(MagickCowImportOperator)
+    bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
 
 # endregion
 
@@ -5268,8 +5313,9 @@ def register():
     # Register custom property classes
     register_properties_classes()
 
-    # Register the Export Panel
+    # Register the Import and Export Panels
     register_exporters()
+    register_importers()
 
     # Register the Object Properties and Object Properties Panel
     register_properties_object()
@@ -5281,8 +5327,9 @@ def unregister():
     # Register custom property classes
     unregister_properties_classes()
 
-    # Unregister the Export Panel
+    # Unregister the Import and Export Panels
     unregister_exporters()
+    unregister_importers()
 
     # Unregister the Object Properties and Object Properties Panel
     unregister_properties_object()

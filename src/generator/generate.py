@@ -62,6 +62,7 @@ def main():
         # Classes - Blender
         "../mcow/classes/Blender/Data/Data.py",
         "../mcow/classes/Blender/Operators/Exporter.py",
+        "../mcow/classes/Blender/Operators/Importer.py",
         "../mcow/classes/Blender/Operators/Objects.py",
         "../mcow/classes/Blender/Operators/Scene.py",
 
