@@ -4,7 +4,7 @@ class MCow_ImportPipeline:
     def __init__(self):
         return
     
-    def import(self, data):
+    def exec(self, data):
         return
 
 class MCow_ImportPipeline_Map(ImportPipeline):
