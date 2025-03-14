@@ -43,7 +43,7 @@ class MagickCowImportOperator(bpy.types.Operator, bpy_extras.io_utils.ImportHelp
             return False, None
 
     def is_valid_mpup_json(self, json_dict):
-        return "XnbFileData" in json_data and "PrimaryObject" in json_data["XnbFileData"] and "SharedResources" in json_data["XnbFileData"] and "$type" in json_data["XnbFileData"]["PrimaryObject"]
+        return "XnbFileData" in json_dict and "PrimaryObject" in json_dict["XnbFileData"] and "SharedResources" in json_dict["XnbFileData"] and "$type" in json_dict["XnbFileData"]["PrimaryObject"]
 
     # endregion
 
