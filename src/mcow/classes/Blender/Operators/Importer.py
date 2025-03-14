@@ -51,16 +51,19 @@ class MagickCowImportOperator(bpy.types.Operator, bpy_extras.io_utils.ImportHelp
 
     def import_data(self, context):
 
+        # Load the file data into a string
         success, json_string = self.read_file_contents(self.filepath)
         if not success:
             self.report({"ERROR"}, "Could not load the input file!")
             return {"CANCELLED"}
         
+        # Parse the string into a JSON dict
         success, json_data = self.read_json_data(json_string)
         if not success:
             self.report({"ERROR"}, "The input file is not a valid JSON file!")
             return {"CANCELLED"}
         
+        # Check if the JSON is a valid MagickaPUP JSON file (checks if it contains the minimum fields required for an MPUP JSON document)
         success = self.is_valid_mpup_json(json_data)
         if not success:
             self.report({"ERROR"}, "The input JSON file is not a valid MagickaPUP JSON file!")
@@ -75,27 +78,48 @@ class MagickCowImportOperator(bpy.types.Operator, bpy_extras.io_utils.ImportHelp
         # TODO : When importing the generic export function that will call the import method of the pipeline object, make sure to wrap it all up in a try-catch for custom mcow exceptions
         # That way, if anything goes wrong, we can catch it just fine.
 
-        # Check what the $type string is for the import.
-        # If the type is known, process it.
-        # If it's not a known type, then error out and cancel the operation.
-        type_string = json_data["XnbFileData"]["PrimaryObject"]["$type"]
-        if type_string == "level_model": # TODO : Make the type strings consistent... use PascalCase rather than snake_case for consistency with the new nomenclature planned for mpup
-            # TODO : Implement level model processing
-            self.report({"ERROR"}, "Import operations for Level Model are not supported yet!")
-            return {"CANCELLED"}
-        elif type_string == "PhysicsEntity":
-            pass # TODO : Implement physics entity processing
-            self.report({"ERROR"}, "Import operations for Physics Entity are not supported yet!")
-            return {"CANCELLED"}
-        else:
-            self.report({"ERROR"}, f"Content of type \"{type_string}\" is not supported by MagickCow!")
+        # Perform import process
+        try:
+
+            type_string = json_data["XnbFileData"]["PrimaryObject"]["$type"]
+
+            # Check what the $type string is for the import.
+            # If the type is known, process it.
+            # If it's not a known type, then error out and cancel the operation.
+
+            if type_string == "level_model": # TODO : Make the type strings consistent... use PascalCase rather than snake_case for consistency with the new nomenclature planned for mpup
+                ans = self.import_data_map(json_data)
+            elif type_string == "PhysicsEntity":
+                ans = self.import_data_physics_entity(json_data)
+            else:
+                ans = self.import_data_unknown(type_string)
+
+        except MagickCowImportException as e:
+            self.report({"ERROR"}, f"Failed to import data: {e}")
             return {"CANCELLED"}
 
-        return {"FINISHED"} # What the fuck do I do with you now?
+        return ans
+    
+    def import_data_internal(self, data, importer):
+        importer.exec(data)
+    
+    def import_data_map(self, data):
+        self.import_data_internal(json_data, MCow_ImportPipeline_Map())
+        return {"FINISHED"}
 
-    def import_data_unknown(self, context):
-        self.report({"ERROR"}, "Cannot import scene data of unknown type!")
+    def import_data_physics_entity(self, data):
+        self.report({"ERROR"}, "Import operations for Physics Entity are not supported yet!")
         return {"CANCELLED"}
+    
+    def import_data_unknown(self, type_string):
+        self.report({"ERROR"}, f"Content of type \"{type_string}\" is not supported by MagickCow!")
+        return {"CANCELLED"}
+    
+    # NOTE : Reference method contents for types of assets that mcow should support but that are yet to be implemented.
+    # NOTE : Maybe in the future it would make more sense to just return {"FINISHED"} at the end of the main import function rather than ans, and use MCowNotImplemented() exceptions or whatever to signal errors? they are caught by the try-catch block up there, so yeah... maybe it's cleaner that way...
+    # def import_data_whatever(self, data):
+    #     # self.report({"ERROR"}, "Import operation for Whatever Thing is not supported yet!")
+    #     # return {"CANCELLED"}
 
     # endregion
 
