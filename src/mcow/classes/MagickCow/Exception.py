@@ -6,4 +6,8 @@
 class MagickCowExportException(Exception):
     pass
 
+# Same here, but for the Import process
+class MagickCowImportException(Exception):
+    pass
+
 # endregion
