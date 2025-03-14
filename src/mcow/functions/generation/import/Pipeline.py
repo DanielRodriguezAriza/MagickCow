@@ -7,10 +7,10 @@ class MCow_ImportPipeline:
     def exec(self, data):
         return
 
-class MCow_ImportPipeline_Map(ImportPipeline):
+class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     pass
 
-class MCow_ImportPipeline_PhysicsEntity(ImportPipeline):
+class MCow_ImportPipeline_PhysicsEntity(MCow_ImportPipeline):
     pass
 
 # endregion
