@@ -63,6 +63,7 @@ def main():
         "../mcow/classes/Blender/Data/Data.py",
         "../mcow/classes/Blender/Operators/Exporter.py",
         "../mcow/classes/Blender/Operators/Importer.py",
+        "../mcow/classes/Blender/Panels/Materials.py",
         "../mcow/classes/Blender/Panels/Objects.py",
         "../mcow/classes/Blender/Panels/Scene.py",
 
