@@ -106,10 +106,30 @@ from collections import namedtuple # TODO : Get rid of this fucker, namedtuples 
 # ../mcow/classes/MagickCow/Exception.py
 # region Exception Classes
 
-# Dummy exception class that is literally the same as the base Exception class.
-# Only exists to make it possible for the main export exception try-catch blocks to still print the line on which the error took place when a different type of exception or error takes place.
-# This way we prevent catching all of them and retain debugability to a certain degree... 
+# region Comment - Why the fuck do these exception classes exist
+
+# The exception classes here are mostly just dummy classes that inherit directly from the Exception class without adding anything else.
+# They are pretty much literally just the same as the base Python Exception class.
+# They only exist to make it possible for the export and import pipelines to communicating with the main import and export Blender operator classes through the main execution try-catch block.
+# This allows MagickCow specific errors to print a nicer Blender {"CANCELLED"} import / export error, while still allowing base Exceptions caused by errors in the code to print on the console
+# the line on which the error took place.
+# This way, different types of non-mcow errors and exceptions can be skipped in the try-catch block, which prevents catching all of the exceptions and allows us to retain debugability to a
+# certain degree...
+# In short, most of this stuff is just a fucking hack and does nothing special.
+# Just abusing the fact that in Python it is normal for control flow to be manipulated through exceptions... Stop Iteration, anyone? lmao...
+
+# endregion
+
+# Exception class for export pipeline exceptions
 class MagickCowExportException(Exception):
+    pass
+
+# Exception class for import pipeline exceptions
+class MagickCowImportException(Exception):
+    pass
+
+# Exception class for content that is not implemented yet
+class MagickCowNotImplementedException(Exception):
     pass
 
 # endregion
@@ -708,16 +728,19 @@ class MagickCowImportOperator(bpy.types.Operator, bpy_extras.io_utils.ImportHelp
 
     def import_data(self, context):
 
+        # Load the file data into a string
         success, json_string = self.read_file_contents(self.filepath)
         if not success:
             self.report({"ERROR"}, "Could not load the input file!")
             return {"CANCELLED"}
         
+        # Parse the string into a JSON dict
         success, json_data = self.read_json_data(json_string)
         if not success:
             self.report({"ERROR"}, "The input file is not a valid JSON file!")
             return {"CANCELLED"}
         
+        # Check if the JSON is a valid MagickaPUP JSON file (checks if it contains the minimum fields required for an MPUP JSON document)
         success = self.is_valid_mpup_json(json_data)
         if not success:
             self.report({"ERROR"}, "The input JSON file is not a valid MagickaPUP JSON file!")
@@ -732,27 +755,48 @@ class MagickCowImportOperator(bpy.types.Operator, bpy_extras.io_utils.ImportHelp
         # TODO : When importing the generic export function that will call the import method of the pipeline object, make sure to wrap it all up in a try-catch for custom mcow exceptions
         # That way, if anything goes wrong, we can catch it just fine.
 
-        # Check what the $type string is for the import.
-        # If the type is known, process it.
-        # If it's not a known type, then error out and cancel the operation.
-        type_string = json_data["XnbFileData"]["PrimaryObject"]["$type"]
-        if type_string == "level_model": # TODO : Make the type strings consistent... use PascalCase rather than snake_case for consistency with the new nomenclature planned for mpup
-            # TODO : Implement level model processing
-            self.report({"ERROR"}, "Import operations for Level Model are not supported yet!")
-            return {"CANCELLED"}
-        elif type_string == "PhysicsEntity":
-            pass # TODO : Implement physics entity processing
-            self.report({"ERROR"}, "Import operations for Physics Entity are not supported yet!")
-            return {"CANCELLED"}
-        else:
-            self.report({"ERROR"}, f"Content of type \"{type_string}\" is not supported by MagickCow!")
+        # Perform import process
+        try:
+
+            type_string = json_data["XnbFileData"]["PrimaryObject"]["$type"]
+
+            # Check what the $type string is for the import.
+            # If the type is known, process it.
+            # If it's not a known type, then error out and cancel the operation.
+
+            if type_string == "level_model": # TODO : Make the type strings consistent... use PascalCase rather than snake_case for consistency with the new nomenclature planned for mpup
+                ans = self.import_data_map(json_data)
+            elif type_string == "PhysicsEntity":
+                ans = self.import_data_physics_entity(json_data)
+            else:
+                ans = self.import_data_unknown(type_string)
+
+        except MagickCowImportException as e:
+            self.report({"ERROR"}, f"Failed to import data: {e}")
             return {"CANCELLED"}
 
-        return {"FINISHED"} # What the fuck do I do with you now?
+        return ans
+    
+    def import_data_internal(self, data, importer):
+        importer.exec(data)
+    
+    def import_data_map(self, data):
+        self.import_data_internal(json_data, MCow_ImportPipeline_Map())
+        return {"FINISHED"}
 
-    def import_data_unknown(self, context):
-        self.report({"ERROR"}, "Cannot import scene data of unknown type!")
+    def import_data_physics_entity(self, data):
+        self.report({"ERROR"}, "Import operations for Physics Entity are not supported yet!")
         return {"CANCELLED"}
+    
+    def import_data_unknown(self, type_string):
+        self.report({"ERROR"}, f"Content of type \"{type_string}\" is not supported by MagickCow!")
+        return {"CANCELLED"}
+    
+    # NOTE : Reference method contents for types of assets that mcow should support but that are yet to be implemented.
+    # NOTE : Maybe in the future it would make more sense to just return {"FINISHED"} at the end of the main import function rather than ans, and use MCowNotImplemented() exceptions or whatever to signal errors? they are caught by the try-catch block up there, so yeah... maybe it's cleaner that way...
+    # def import_data_whatever(self, data):
+    #     # self.report({"ERROR"}, "Import operation for Whatever Thing is not supported yet!")
+    #     # return {"CANCELLED"}
 
     # endregion
 
@@ -773,8 +817,8 @@ def unregister_importers():
 
 # endregion
 
-# ../mcow/classes/Blender/Operators/Objects.py
-# region Blender Operator classes for N-Key Panel
+# ../mcow/classes/Blender/Panels/Objects.py
+# region Blender Panel Classes for N-Key Panel
 
 # region Internal logic classes
 
@@ -1608,8 +1652,8 @@ def unregister_properties_object():
 
 # endregion
 
-# ../mcow/classes/Blender/Operators/Scene.py
-# region Blender Operator classes for Scene Panel
+# ../mcow/classes/Blender/Panels/Scene.py
+# region Blender Panel Classes for Scene Panel
 
 # This class is the one that controls the N-Key panel for global scene config.
 # region Comment
@@ -5388,13 +5432,21 @@ class MCow_ImportPipeline:
         return
     
     def exec(self, data):
-        return
+        return MagickCowImportException() # The base class should never be used because it does not implement any specific type of pipeline for any kind of object, so it literally cannot import any sort of data...
 
 class MCow_ImportPipeline_Map(MCow_ImportPipeline):
-    pass
+    def __init__(self):
+        return
+    
+    def exec(self, data):
+        raise MagickCowNotImplementedException()
 
 class MCow_ImportPipeline_PhysicsEntity(MCow_ImportPipeline):
-    pass
+    def __init__(self):
+        return
+    
+    def exec(self, data):
+        raise MagickCowNotImplementedException()
 
 # endregion
 
