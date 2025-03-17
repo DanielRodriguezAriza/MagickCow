@@ -1,4 +1,4 @@
-# region Blender Operator classes for N-Key Panel
+# region Blender Panel Classes for N-Key Panel
 
 # region Internal logic classes
 

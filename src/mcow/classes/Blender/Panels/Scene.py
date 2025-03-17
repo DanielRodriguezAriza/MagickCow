@@ -1,4 +1,4 @@
-# region Blender Operator classes for Scene Panel
+# region Blender Panel Classes for Scene Panel
 
 # This class is the one that controls the N-Key panel for global scene config.
 # region Comment
