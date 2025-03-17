@@ -59,3 +59,5 @@ def unregister():
 
 if __name__ == "__main__":
     register()
+
+# NOTE : The usage of code like this could maybe even make the pipeline cache stuff obsolete since we cannot cache meshes due to the fact that all geometry is hardcoded rather than instanced...
