@@ -63,8 +63,8 @@ def main():
         "../mcow/classes/Blender/Data/Data.py",
         "../mcow/classes/Blender/Operators/Exporter.py",
         "../mcow/classes/Blender/Operators/Importer.py",
-        "../mcow/classes/Blender/Operators/Objects.py",
-        "../mcow/classes/Blender/Operators/Scene.py",
+        "../mcow/classes/Blender/Panels/Objects.py",
+        "../mcow/classes/Blender/Panels/Scene.py",
 
         # Utility functions
         "../mcow/functions/utility/Utility.py", # TODO : Further subdivide this code maybe?
