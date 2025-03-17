@@ -31,6 +31,12 @@ class MATERIAL_PT_CustomPanel(bpy.types.Panel):
     bl_options = {"DEFAULT_CLOSED"} # The panel will be closed by default when the addon is installed
     bl_order = 0 # The panel will be added at the very top by default. The user can manually change this by dragging it down on their own, but this should make it easier to find the mcow material props.
 
+    # The poll() method controls the drawing of the panel itself under the materials panel
+    @classmethod
+    def poll(cls, context):
+        return context.material is not None # Only show the panel if the material exists. If no materials exist on a given mesh, then this check prevents the panel from being drawn (note that if it were to be drawn, it would be an empty panel with no props, as no material exists and the props themselves already take care of not drawing themselves if the material is null to prevent null dereferences)
+
+    # The draw() method controls the drawing logic for individual properties
     def draw(self, context):
         layout = self.layout
         material = context.material
