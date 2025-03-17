@@ -8,10 +8,9 @@ def register():
     register_exporters()
     register_importers()
 
-    # Register the Object Properties and Object Properties Panel
+    # Register the Material, Object and Scene Properties and Property Panels
+    register_properties_material()
     register_properties_object()
-
-    # Register the Scene Properties and Scene Properties Panel
     register_properties_scene()
 
 def unregister():
@@ -22,10 +21,9 @@ def unregister():
     unregister_exporters()
     unregister_importers()
 
-    # Unregister the Object Properties and Object Properties Panel
+    # Unregister the Material, Object and Scene Properties and Property Panels
+    unregister_properties_material()
     unregister_properties_object()
-
-    # Unregister the Scene Properties and Scene Properties Panel
     unregister_properties_scene()
 
 if __name__ == "__main__":
