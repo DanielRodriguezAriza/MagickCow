@@ -43,7 +43,7 @@ def register_properties_material_generic(material):
             ("EFFECT_LIQUID_LAVA", "Lava", "Lava material"),
             ("EFFECT_FORCE_FIELD", "Force Field", "Force Field material")
         ],
-        default = "GEOMETRY"
+        default = "EFFECT_DEFERRED"
     )
 
 def unregister_properties_material_generic(material):
@@ -55,20 +55,20 @@ def register_properties_material_geometry(material): # NOTE : Maybe this should 
         default = 0.4
     )
 
-    material.mcow_effect_deffered_sharpness = bpy.props.FloatProperty(
+    material.mcow_effect_deferred_sharpness = bpy.props.FloatProperty(
         name = "Sharpness",
         default = 1.0
     )
 
-    material.mcow_effect_deffered_vertex_color_enabled = bpy.props.BoolProperty(
+    material.mcow_effect_deferred_vertex_color_enabled = bpy.props.BoolProperty(
         name = "Vertex Color Enabled",
-        default = false
+        default = False
     )
 
 def unregister_properties_material_geometry(material):
     del material.mcow_effect_deferred_alpha
-    del material.mcow_effect_deffered_sharpness
-    del material.mcow_effect_deffered_vertex_color_enabled
+    del material.mcow_effect_deferred_sharpness
+    del material.mcow_effect_deferred_vertex_color_enabled
 
 def register_properties_material_water(material):
     pass
