@@ -33,9 +33,7 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
 
 # region Register and Unregister Functions - Internal
 
-def register_properties_material_generic():
-    material = bpy.types.Material
-
+def register_properties_material_generic(material):
     material.mcow_material_type = bpy.props.EnumProperty(
         name = "Material Type",
         description = "Determines the type of this material",
@@ -48,33 +46,31 @@ def register_properties_material_generic():
         default = "GEOMETRY"
     )
 
-def unregister_properties_material_generic():
-    material = bpy.types.Material
-
+def unregister_properties_material_generic(material):
     del material.mcow_material_type
 
-def register_properties_material_geometry(): # NOTE : Maybe this should be renamed to deferred or something? we could also add transparent mats in the future I suppose.
+def register_properties_material_geometry(material): # NOTE : Maybe this should be renamed to deferred or something? we could also add transparent mats in the future I suppose.
     pass
 
-def unregister_properties_material_geometry():
+def unregister_properties_material_geometry(material):
     pass
 
-def register_properties_material_water():
+def register_properties_material_water(material):
     pass
 
-def unregister_properties_material_water():
+def unregister_properties_material_water(material):
     pass
 
-def register_properties_material_lava():
+def register_properties_material_lava(material):
     pass
 
-def unregister_properties_material_lava():
+def unregister_properties_material_lava(material):
     pass
 
-def register_properties_material_force_field():
+def register_properties_material_force_field(material):
     pass
 
-def unregister_properties_material_force_field():
+def unregister_properties_material_force_field(material):
     pass
 
 def register_properties_panel_class_material():
@@ -88,23 +84,29 @@ def unregister_properties_panel_class_material():
 # region Register and Unregister Functions - Main
 
 def register_properties_material():
+    # Get reference to Blender material type
+    material = bpy.types.Material
+
     # Register the material properties
-    register_properties_material_generic()
-    register_properties_material_geometry()
-    register_properties_material_water()
-    register_properties_material_lava()
-    register_properties_material_force_field()
+    register_properties_material_generic(material)
+    register_properties_material_geometry(material)
+    register_properties_material_water(material)
+    register_properties_material_lava(material)
+    register_properties_material_force_field(material)
 
     # Register the material properties panel
     register_properties_panel_class_material()
 
 def unregister_custom_material_panel():
+    # Get reference to Blender material type
+    material = bpy.types.Material
+
     # Unregister the material properties
-    unregister_properties_material_generic()
-    unregister_properties_material_geometry()
-    unregister_properties_material_water()
-    unregister_properties_material_lava()
-    unregister_properties_material_force_field()
+    unregister_properties_material_generic(material)
+    unregister_properties_material_geometry(material)
+    unregister_properties_material_water(material)
+    unregister_properties_material_lava(material)
+    unregister_properties_material_force_field(material)
 
     # Unregister the material properties panel
     unregister_properties_panel_class_material()
