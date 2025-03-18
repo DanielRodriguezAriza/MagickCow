@@ -40,10 +40,10 @@ def register_properties_material_generic():
         name = "Material Type",
         description = "Determines the type of this material",
         items = [
-            ("GEOMETRY", "Geometry", "Default geometry material"),
-            ("WATER", "Water", "Water material"),
-            ("LAVA", "Lava", "Lava material"),
-            ("FORCE_FIELD", "Force Field", "Force Field material")
+            ("EFFECT_DEFERRED", "Deferred", "Default geometry material"),
+            ("EFFECT_LIQUID_WATER", "Water", "Water material"),
+            ("EFFECT_LIQUID_LAVA", "Lava", "Lava material"),
+            ("EFFECT_FORCE_FIELD", "Force Field", "Force Field material")
         ],
         default = "GEOMETRY"
     )
