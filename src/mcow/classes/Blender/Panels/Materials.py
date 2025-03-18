@@ -27,17 +27,21 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
         layout = self.layout
         material = context.material
         if material:
+            material_mode = material.mcow_effect_mode
             material_type = material.mcow_effect_type
-            layout.prop(material, "mcow_effect_type")
 
-            if material_type == "EFFECT_DEFERRED":
-                self.draw_effect_deferred(layout, material)
-            elif material_type == "EFFECT_LIQUID_WATER":
-                self.draw_effect_water(layout, material)
-            elif material_type == "EFFECT_LIQUID_LAVA":
-                self.draw_effect_lava(layout, material)
-            elif material_type == "EFFECT_FORCE_FIELD":
-                self.draw_effect_force_field(layout, material)
+            layout.prop(material, "mcow_effect_mode")
+
+            if material_mode == "MAT":
+                layout.prop(material, "mcow_effect_type")
+                if material_type == "EFFECT_DEFERRED":
+                    self.draw_effect_deferred(layout, material)
+                elif material_type == "EFFECT_LIQUID_WATER":
+                    self.draw_effect_water(layout, material)
+                elif material_type == "EFFECT_LIQUID_LAVA":
+                    self.draw_effect_lava(layout, material)
+                elif material_type == "EFFECT_FORCE_FIELD":
+                    self.draw_effect_force_field(layout, material)
     
     # From here on out, we have custom draw methods for each type of material
     def draw_effect_deferred(self, layout, material):
@@ -75,8 +79,8 @@ def register_properties_material_generic(material):
         name = "Origin Type",
         description = "Determines the type of origin for the configuration for this material",
         items = [
-            ("DOC", "JSON Document", "The configuration for this material will be obtained from the selected JSON file."),
-            ("MAT", "Blender Material", "The configuration for this material will be obtained from the material configuration as laid on the Blender panel.") # This is a sort of "inline" mode
+            ("DOC", "JSON Document", "The configuration for this material will be obtained from the selected JSON file."), # Origin : Json Document data.
+            ("MAT", "Blender Material", "The configuration for this material will be obtained from the material configuration as laid on the Blender panel.") # Origin : Blender panel data. This is a sort of "inline" mode
         ],
         default = "MAT"
     )
