@@ -71,8 +71,19 @@ def register_properties_material_generic(material):
         default = "EFFECT_DEFERRED"
     )
 
+    material.mcow_effect_mode = bpy.props.EnumProperty(
+        name = "Origin Type",
+        description = "Determines the type of origin for the configuration for this material",
+        items = [
+            ("DOC", "JSON Document", "The configuration for this material will be obtained from the selected JSON file."),
+            ("MAT", "Blender Material", "The configuration for this material will be obtained from the material configuration as laid on the Blender panel.") # This is a sort of "inline" mode
+        ],
+        default = "MAT"
+    )
+
 def unregister_properties_material_generic(material):
     del material.mcow_effect_type
+    del material.mcow_effect_mode
 
 def register_properties_material_geometry(material): # NOTE : Maybe this should be renamed to deferred or something? we could also add transparent mats in the future I suppose.
     material.mcow_effect_deferred_alpha = bpy.props.FloatProperty(
