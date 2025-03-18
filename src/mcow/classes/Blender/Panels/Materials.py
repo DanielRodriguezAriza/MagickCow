@@ -34,7 +34,7 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
 # region Register and Unregister Functions - Internal
 
 def register_properties_material_generic(material):
-    material.mcow_material_type = bpy.props.EnumProperty(
+    material.mcow_effect_type = bpy.props.EnumProperty(
         name = "Material Type",
         description = "Determines the type of this material",
         items = [
@@ -47,13 +47,28 @@ def register_properties_material_generic(material):
     )
 
 def unregister_properties_material_generic(material):
-    del material.mcow_material_type
+    del material.mcow_effect_type
 
 def register_properties_material_geometry(material): # NOTE : Maybe this should be renamed to deferred or something? we could also add transparent mats in the future I suppose.
-    pass
+    material.mcow_effect_deferred_alpha = bpy.props.FloatProperty(
+        name = "Alpha",
+        default = 0.4
+    )
+
+    material.mcow_effect_deffered_sharpness = bpy.props.FloatProperty(
+        name = "Sharpness",
+        default = 1.0
+    )
+
+    material.mcow_effect_deffered_vertex_color_enabled = bpy.props.BoolProperty(
+        name = "Vertex Color Enabled",
+        default = false
+    )
 
 def unregister_properties_material_geometry(material):
-    pass
+    del material.mcow_effect_deferred_alpha
+    del material.mcow_effect_deffered_sharpness
+    del material.mcow_effect_deffered_vertex_color_enabled
 
 def register_properties_material_water(material):
     pass
