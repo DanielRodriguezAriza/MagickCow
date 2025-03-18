@@ -476,6 +476,7 @@ def unregister_properties_map_mesh():
 
 def update_properties_map_light(self, context):
     self.type = self.magickcow_light_type # The enum literally has the same strings under the hood, so we can just assign it directly.
+    self.color = self.magickcow_light_color_diffuse
 
 def register_properties_map_light():
     light = bpy.types.Light
@@ -558,7 +559,8 @@ def register_properties_map_light():
         default = (1.0, 1.0, 1.0),
         min = 0.0,
         max = 1.0,
-        size = 3 # RGB has 3 values. Magicka lights are Vec3, so no alpha channel.
+        size = 3, # RGB has 3 values. Magicka lights are Vec3, so no alpha channel.
+        update = update_properties_map_light
     )
     
     light.magickcow_light_color_ambient = bpy.props.FloatVectorProperty(
