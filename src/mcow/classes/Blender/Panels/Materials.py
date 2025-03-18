@@ -1,5 +1,12 @@
 # region Blender Panel classes, register and unregister functions for MagickCow material properties handling
 
+# NOTE : The Water / Lava distinction does not exist on the properties for geometry but it does exist for materials
+# That is because within Magicka's code, both water and lava behave differently, but both instantiate geometry of type liquid, and the behaviour changes according to whether they use a water or lava effect (material).
+# As for materials, there needs to be a distinction because the type of the class used for the material effect is different.
+# Maybe in the future I could improve the behaviour so that less edge cases exist where users can input wrong data (eg: deffered effect / geometry material for a geometry marked as liquid, that would crash, but the UI allows it...)
+
+# region Panel Class
+
 class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
     bl_label = "MagickCow Material Properties"
     bl_idname = "MATERIAL_PT_custom_panel_mcow"
@@ -22,24 +29,72 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
         if material:
             layout.prop(material, "custom_float")
 
+# endregion
+
+# region Register and Unregister Functions - Internal
+
+def register_properties_material_generic():
+    pass
+
+def unregister_properties_material_generic():
+    pass
+
+def register_properties_material_geometry(): # NOTE : Maybe this should be renamed to deferred or something? we could also add transparent mats in the future I suppose.
+    pass
+
+def unregister_properties_material_geometry():
+    pass
+
+def register_properties_material_water():
+    pass
+
+def unregister_properties_material_water():
+    pass
+
+def register_properties_material_lava():
+    pass
+
+def unregister_properties_material_lava():
+    pass
+
+def register_properties_material_force_field():
+    pass
+
+def unregister_properties_material_force_field():
+    pass
+
+def register_properties_panel_class_material():
+    bpy.utils.register_class(MATERIAL_PT_MagickCowPanel)
+
+def unregister_properties_panel_class_material():
+    bpy.utils.unregister_class(MATERIAL_PT_MagickCowPanel)
+
+# endregion
+
+# region Register and Unregister Functions - Main
+
 def register_properties_material():
     # Register the material properties
-    bpy.types.Material.custom_float = bpy.props.FloatProperty(
-        name = "Custom Float",
-        description = "A custom material property that is a float",
-        default = 1.0,
-        min = 0.0,
-        max = 1.0
-    )
+    register_properties_material_generic()
+    register_properties_material_geometry()
+    register_properties_material_water()
+    register_properties_material_lava()
+    register_properties_material_force_field()
 
     # Register the material properties panel
-    bpy.utils.register_class(MATERIAL_PT_MagickCowPanel)
+    register_properties_panel_class_material()
 
 def unregister_custom_material_panel():
     # Unregister the material properties
-    del bpy.types.Material.custom_float
+    unregister_properties_material_generic()
+    unregister_properties_material_geometry()
+    unregister_properties_material_water()
+    unregister_properties_material_lava()
+    unregister_properties_material_force_field()
 
     # Unregister the material properties panel
-    bpy.utils.unregister_class(MATERIAL_PT_MagickCowPanel)
+    unregister_properties_panel_class_material()
+
+# endregion
 
 # endregion
