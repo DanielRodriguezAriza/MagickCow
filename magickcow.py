@@ -1469,9 +1469,14 @@ def unregister_properties_map_mesh():
 
 def update_properties_map_light(self, context):
     self.type = self.magickcow_light_type # The enum literally has the same strings under the hood, so we can just assign it directly.
+    self.color = self.magickcow_light_color_diffuse
 
 def register_properties_map_light():
     light = bpy.types.Light
+
+    # NOTE : If the values from the props synced with blender props are changed from the Blender UI panel, the sync breaks.
+    # The syncing is performed only for visual reasons "in-editor" (aka for visualization within Blender to be prettier with lights using the right color and stuff...), the real final
+    # values used should be extracted from the mcow properties, so this desync should not matter, as it is only visual, and will only last until the mcow prop is modified once more, syncing them again. 
 
     # Light type settings:
     # NOTE : The enum values are literally the same as Blender's base lights so that the update function can update the light types automatically.
@@ -1547,7 +1552,8 @@ def register_properties_map_light():
         default = (1.0, 1.0, 1.0),
         min = 0.0,
         max = 1.0,
-        size = 3 # RGB has 3 values. Magicka lights are Vec3, so no alpha channel.
+        size = 3, # RGB has 3 values. Magicka lights are Vec3, so no alpha channel.
+        update = update_properties_map_light
     )
     
     light.magickcow_light_color_ambient = bpy.props.FloatVectorProperty(
@@ -3164,7 +3170,7 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
 
         # Get Light Type (0 = point, 1 = directional, 2 = spot)
         # Returns 0 as default value. Malformed lights will have the resulting index 0, which corresponds to point lights.
-        light_type = find_light_type_index(light.type)
+        light_type = find_light_type_index(light.magickcow_light_type)
         
         # Get Light Properties
         reach = light.magickcow_light_reach # Basically the radius of the light, but it is named "reach" because the light can be a spot light and then it would be more like "max distance" or whatever...
