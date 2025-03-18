@@ -1046,6 +1046,7 @@ class MagickCowPanelObjectPropertiesMap:
     
     # Properties that must be displayed for lights
     def draw_light(self, layout, obj):
+        layout.prop(obj.data, "magickcow_light_type")
         layout.prop(obj.data, "magickcow_light_color_diffuse")
         layout.prop(obj.data, "magickcow_light_color_ambient")
         layout.prop(obj.data, "magickcow_light_variation_type")
@@ -1466,8 +1467,25 @@ def unregister_properties_map_mesh():
     # del mesh.magickcow_vertex_tangent_enabled
     # del mesh.magickcow_vertex_color_enabled
 
+def update_properties_map_light(self, context):
+    self.type = self.magickcow_light_type # The enum literally has the same strings under the hood, so we can just assign it directly.
+
 def register_properties_map_light():
     light = bpy.types.Light
+
+    # Light type settings:
+    # NOTE : The enum values are literally the same as Blender's base lights so that the update function can update the light types automatically.
+    light.magickcow_light_type = bpy.props.EnumProperty(
+        name = "",
+        description = "",
+        items = [
+            ("POINT", "Point", "This light will be treated as a point light."),
+            ("SUN", "Directional", "This light will be treated as a directional light (Sun)."),
+            ("SPOT", "Spot", "This light will be treated as a spotlight.")
+        ],
+        default = "POINT",
+        update = update_properties_map_light
+    )
 
     # Light Variation Settings:
     light.magickcow_light_variation_type = bpy.props.EnumProperty(
@@ -1578,6 +1596,7 @@ def register_properties_map_light():
 def unregister_properties_map_light():
     light = bpy.types.Light
     
+    del light.magickcow_light_type
     del light.magickcow_light_variation_type
     del light.magickcow_light_variation_speed
     del light.magickcow_light_variation_amount
