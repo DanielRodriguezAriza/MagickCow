@@ -27,7 +27,32 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
         layout = self.layout
         material = context.material
         if material:
-            layout.prop(material, "custom_float")
+            material_type = material.mcow_effect_type
+            layout.prop(material, "mcow_effect_type")
+
+            if material_type == "EFFECT_DEFERRED":
+                self.draw_effect_deferred(layout, material)
+            elif material_type == "EFFECT_LIQUID_WATER":
+                self.draw_effect_water(layout, material)
+            elif material_type == "EFFECT_LIQUID_LAVA":
+                self.draw_effect_lava(layout, material)
+            elif material_type == "EFFECT_FORCE_FIELD":
+                self.draw_effect_force_field(layout, material)
+    
+    # From here on out, we have custom draw methods for each type of material
+    def draw_effect_deferred(self, layout, material):
+        layout.prop(material, "mcow_effect_deferred_alpha")
+        layout.prop(material, "mcow_effect_deferred_sharpness")
+        layout.prop(material, "mcow_effect_deferred_vertex_color_enabled")
+    
+    def draw_effect_water(self, layout, material):
+        pass
+    
+    def draw_effect_lava(self, layout, material):
+        pass
+    
+    def draw_effect_force_field(self, layout, material):
+        pass
 
 # endregion
 
