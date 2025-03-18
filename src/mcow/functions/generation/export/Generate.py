@@ -676,7 +676,7 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
 
         # Get Light Type (0 = point, 1 = directional, 2 = spot)
         # Returns 0 as default value. Malformed lights will have the resulting index 0, which corresponds to point lights.
-        light_type = find_light_type_index(light.type)
+        light_type = find_light_type_index(light.magickcow_light_type)
         
         # Get Light Properties
         reach = light.magickcow_light_reach # Basically the radius of the light, but it is named "reach" because the light can be a spot light and then it would be more like "max distance" or whatever...
