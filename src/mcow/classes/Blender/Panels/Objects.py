@@ -480,6 +480,10 @@ def update_properties_map_light(self, context):
 def register_properties_map_light():
     light = bpy.types.Light
 
+    # NOTE : If the values from the props synced with blender props are changed from the Blender UI panel, the sync breaks.
+    # The syncing is performed only for visual reasons "in-editor" (aka for visualization within Blender to be prettier with lights using the right color and stuff...), the real final
+    # values used should be extracted from the mcow properties, so this desync should not matter, as it is only visual, and will only last until the mcow prop is modified once more, syncing them again. 
+
     # Light type settings:
     # NOTE : The enum values are literally the same as Blender's base lights so that the update function can update the light types automatically.
     light.magickcow_light_type = bpy.props.EnumProperty(
