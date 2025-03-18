@@ -34,10 +34,24 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
 # region Register and Unregister Functions - Internal
 
 def register_properties_material_generic():
-    pass
+    material = bpy.types.Material
+
+    material.mcow_material_type = bpy.props.EnumProperty(
+        name = "Material Type",
+        description = "Determines the type of this material",
+        items = [
+            ("GEOMETRY", "Geometry", "Default geometry material"),
+            ("WATER", "Water", "Water material"),
+            ("LAVA", "Lava", "Lava material"),
+            ("FORCE_FIELD", "Force Field", "Force Field material")
+        ],
+        default = "GEOMETRY"
+    )
 
 def unregister_properties_material_generic():
-    pass
+    material = bpy.types.Material
+
+    del material.mcow_material_type
 
 def register_properties_material_geometry(): # NOTE : Maybe this should be renamed to deferred or something? we could also add transparent mats in the future I suppose.
     pass
