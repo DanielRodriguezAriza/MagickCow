@@ -77,6 +77,7 @@ class MCow_Data_Pipeline_Cache:
     # Gets the full material name used on a mesh. This full name corresponds to the full path + filename of the JSON file that corresponds to the effect represented by the material's name.
     # If the mesh does not have a material assigned, it uses as material name the name "base/default"
     # endregion
+    # TODO : Get rid of this function maybe? and all of the whole material path bullshit, since we no longer use the material name as the path to the actual asset...
     def get_material_name(self, obj, material_index = 0):
         # Get mesh
         mesh = obj.data
