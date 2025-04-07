@@ -11,6 +11,17 @@ class material_utility:
     
     # region Blender Material
 
+    # If the material does not exist, then we return None (null). Otherwise, we return the reference to the blender material itself.
+    @staticmethod
+    def get_material(obj, material_index):
+        num_materials = len(obj.materials)
+        if num_materials > 0:
+            min_idx = 0
+            max_idx = num_materials - 1
+            if num_materials >= min_idx and num_materials <= max_idx:
+                return obj.materials[material_idx]
+        return None
+
     # endregion
 
     # region Material Name
