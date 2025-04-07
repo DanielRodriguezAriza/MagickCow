@@ -9,6 +9,12 @@ class material_utility:
     
     # NOTE : The mesh param here is the same as obj, NOT obj.data!!!
     
+    # region Blender Material
+
+    # endregion
+
+    # region Material Name
+
     @staticmethod
     def get_material_name(mesh, material_index):
         material_name = mesh.materials[material_index].name if len(mesh.materials) > 0 else material_utility.get_material_name_default(mesh.magickcow_mesh_type)
@@ -39,6 +45,10 @@ class material_utility:
                 return mesh.materials[material_idx].name
         return None
 
+    # endregion
+
+    # region Material Data
+
     @staticmethod
     def get_material_data(material):
         ans = {}
@@ -54,5 +64,7 @@ class material_utility:
     @staticmethod
     def get_material_data_default(material):
         pass
+
+    # endregion
 
 # endregion
