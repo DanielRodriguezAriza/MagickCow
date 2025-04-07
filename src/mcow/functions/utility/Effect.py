@@ -5,7 +5,7 @@
 # NOTE : Here I'm sort of experimenting with static classes with @staticmethod to simulate namespaces in python... we'll see how it goes...
 # Also going back to my snake_case C roots, which is more in line with PEP8. I'm just kind of tired of C#'s / Microsoft PascalCase I suppose.
 
-def class material_utility:
+class material_utility:
     
     # NOTE : The mesh param here is the same as obj, NOT obj.data!!!
     
