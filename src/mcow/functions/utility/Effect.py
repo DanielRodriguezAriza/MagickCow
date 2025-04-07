@@ -279,7 +279,7 @@ class material_utility:
     @staticmethod
     def get_material_path(material):
         ans = path_append(bpy.context.scene.mcow_scene_base_path, material.mcow_effect_path)
-        if not ans.endswith(".json")
+        if not ans.endswith(".json"):
             ans = ans + ".json"
         return ans
 
