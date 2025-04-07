@@ -2,12 +2,25 @@
 
 class MCow_Mesh:
     def __init__(self, obj, transform):
+
+        # Ensure that data is single user so that modifiers can be applied
+        # region Comment
+        # Copy the data so that we can apply modifiers, but only if the object's data has more than 1 user.
+        # Also, yes, this makes it so that the original is still sitting there in memory, but we don't care for the most part about this as of now.
+        # Maybe if someone were to work with an extremely large mesh they would then feel the impact of copying multiple GBs at a time, but that's on them for not segmenting their mesh properly...
+        # endregion
+        if obj.data.users > 1:
+            obj.data = obj.data.copy()
+        
+        # Assign values to local variables
         self.obj = obj
         self.transform = transform
         self.invtrans = transform.inverted().transposed()
         self.mesh = None
         self.bm = None
-        self._calculate_mesh_data() # Apply modifiers, triangulate mesh, generate bm, etc...
+
+        # Apply modifiers, triangulate mesh, generate bm, etc...
+        self._calculate_mesh_data()
     
     def __del__(self):
         self.bm.free()
