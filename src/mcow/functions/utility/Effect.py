@@ -20,8 +20,8 @@ class material_utility:
         if num_materials > 0:
             min_idx = 0
             max_idx = num_materials - 1
-            if num_materials >= min_idx and num_materials <= max_idx:
-                return obj.data.materials[material_idx]
+            if material_index >= min_idx and material_index <= max_idx:
+                return obj.data.materials[material_index]
         return None
 
     # endregion
