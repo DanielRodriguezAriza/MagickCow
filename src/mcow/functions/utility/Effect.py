@@ -26,11 +26,24 @@ class material_utility:
 
     # region Material Info / All Material Data (basically, get both the name and the data generated in one go with these functions)
 
+    @staticmethod
     def get_material_effect_info(obj, material_index):
-        material = get_material(obj, material_index)
-        material_name = get_material_name(material, obj.data.magickcow_mesh_type)
-        material_data = get_material_data(material, obj.data.magickcow_mesh_type)
+        material = material_utility.get_material(obj, material_index)
+        material_name = material_utility.get_material_name(material, obj.data.magickcow_mesh_type)
+        material_data = material_utility.get_material_data(material, obj.data.magickcow_mesh_type)
         return (material_name, material_data)
+
+    @staticmethod
+    def get_material_name_from_mesh(obj, material_index):
+        material = material_utility.get_material(obj, material_index)
+        material_name = material_utility.get_material_name(material, obj.data.magickcow_mesh_type)
+        return material_name
+    
+    @staticmethod
+    def get_material_data_from_mesh(obj, material_index):
+        material = material_utility.get_material(obj, material_index)
+        material_data = material_utility.get_material_data(material, obj.data.magickcow_mesh_type)
+        return material_data
 
     # endregion
 
@@ -39,9 +52,9 @@ class material_utility:
     @staticmethod
     def get_material_name(material, fallback_type = "GEOMETRY"):
         if material is not None:
-            return get_material_name_instance(material)
+            return material_utility.get_material_name_instance(material)
         else:
-            return get_material_name_default(fallback_type)
+            return material_utility.get_material_name_default(fallback_type)
 
     @staticmethod
     def get_material_name_default(fallback_type = "GEOMETRY"):
@@ -69,9 +82,9 @@ class material_utility:
     @staticmethod
     def get_material_data(material, fallback_type = "GEOMETRY"):
         if material is not None:
-            return get_material_data_instance(material)
+            return material_utility.get_material_data_instance(material)
         else:
-            return get_material_data_default(fallback_type)
+            return material_utility.get_material_data_default(fallback_type)
     
     @staticmethod
     def get_material_data_default(fallback_type = "GEOMETRY"):
@@ -242,9 +255,9 @@ class material_utility:
     @staticmethod
     def get_material_data_instance(material):
         if material.mcow_effect_mode == "DOC":
-            return get_material_data_instance_json(material)
+            return material_utility.get_material_data_instance_json(material)
         else:
-            return get_material_data_instance_blend(material)
+            return material_utility.get_material_data_instance_blend(material)
 
     @staticmethod
     def get_material_data_instance_json(material):
