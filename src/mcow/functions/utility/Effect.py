@@ -11,7 +11,7 @@ def class material_utility:
     
     @staticmethod
     def get_material_name(mesh, material_index):
-        material_name = mesh.materials[material_index].name if len(mesh.materials) > 0 else MaterialUtility.get_material_name_default(mesh.magickcow_mesh_type)
+        material_name = mesh.materials[material_index].name if len(mesh.materials) > 0 else material_utility.get_material_name_default(mesh.magickcow_mesh_type)
         return material_name
 
     @staticmethod
