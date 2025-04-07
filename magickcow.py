@@ -139,12 +139,25 @@ class MagickCowNotImplementedException(Exception):
 
 class MCow_Mesh:
     def __init__(self, obj, transform):
+
+        # Ensure that data is single user so that modifiers can be applied
+        # region Comment
+        # Copy the data so that we can apply modifiers, but only if the object's data has more than 1 user.
+        # Also, yes, this makes it so that the original is still sitting there in memory, but we don't care for the most part about this as of now.
+        # Maybe if someone were to work with an extremely large mesh they would then feel the impact of copying multiple GBs at a time, but that's on them for not segmenting their mesh properly...
+        # endregion
+        if obj.data.users > 1:
+            obj.data = obj.data.copy()
+        
+        # Assign values to local variables
         self.obj = obj
         self.transform = transform
         self.invtrans = transform.inverted().transposed()
         self.mesh = None
         self.bm = None
-        self._calculate_mesh_data() # Apply modifiers, triangulate mesh, generate bm, etc...
+
+        # Apply modifiers, triangulate mesh, generate bm, etc...
+        self._calculate_mesh_data()
     
     def __del__(self):
         self.bm.free()
@@ -2157,6 +2170,39 @@ def get_action_keyframes(action):
             for keyframe in fcurve.keyframe_points:
                 frames.add(keyframe.co[0])
     return sorted(frames)
+
+# endregion
+
+# region Material Utility Functions
+
+def utility_get_effect_name(mesh, material_index):
+    material_name = mesh.materials[material_index].name if len(mesh.materials) > 0 else utility_get_default_effect_name(mesh.magickcow_mesh_type)
+    return material_name
+
+def utility_get_effect_name_default(fallback_type = "GEOMETRY"):
+    ans = "base/default"
+
+    if fallback_type == "GEOMETRY":
+        ans = "base/default_geometry"
+    elif fallback_type == "WATER":
+        ans = "base/default_water"
+    elif fallback_type == "LAVA":
+        ans = "base/default_lava"
+    elif fallback_type == "FORCE_FIELD":
+        ans = "base/ff/default_force_field"
+
+    return ans
+
+# TODO : Implement
+def utility_get_effect_data(material):
+    ans = {}
+    if material.mcow_effect_mode == "DOC":
+        # Get material data from JSON
+        pass
+    else:
+        # Get material data from material panel
+        pass
+    return ans
 
 # endregion
 
@@ -5395,6 +5441,7 @@ class MCow_Data_Pipeline_Cache:
     # Gets the full material name used on a mesh. This full name corresponds to the full path + filename of the JSON file that corresponds to the effect represented by the material's name.
     # If the mesh does not have a material assigned, it uses as material name the name "base/default"
     # endregion
+    # TODO : Get rid of this function maybe? and all of the whole material path bullshit, since we no longer use the material name as the path to the actual asset...
     def get_material_name(self, obj, material_index = 0):
         # Get mesh
         mesh = obj.data
