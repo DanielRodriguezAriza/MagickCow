@@ -42,6 +42,8 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
                     self.draw_effect_lava(layout, material)
                 elif material_type == "EFFECT_FORCE_FIELD":
                     self.draw_effect_force_field(layout, material)
+            elif material_mode == "DOC":
+                layout.prop(material, "mcow_effect_path")
     
     # From here on out, we have custom draw methods for each type of material
     def draw_effect_deferred(self, layout, material):
