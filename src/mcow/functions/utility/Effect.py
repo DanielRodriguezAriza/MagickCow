@@ -67,7 +67,11 @@ class material_utility:
         return ans
     
     @staticmethod
-    def get_material_data_default(material):
+    def get_material_data_default(fallback_type = "GEOMETRY"):
+        pass
+    
+    @staticmethod
+    def get_material_data_instance(material):
         pass
 
     # endregion
