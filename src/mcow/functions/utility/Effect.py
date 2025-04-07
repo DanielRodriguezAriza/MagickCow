@@ -27,9 +27,9 @@ class material_utility:
     # region Material Name
 
     @staticmethod
-    def get_material_name(mesh, material_index):
-        material_name = mesh.materials[material_index].name if len(mesh.materials) > 0 else material_utility.get_material_name_default(mesh.magickcow_mesh_type)
-        return material_name
+    def get_material_name(obj, material_index):
+        material = material_utility.get_material(obj, material_index)
+        material_name = get_material_name_instance(material) if material is not None else get_material_name_default(obj.magickcow_mesh_type)
 
     @staticmethod
     def get_material_name_default(fallback_type = "GEOMETRY"):
@@ -47,14 +47,8 @@ class material_utility:
         return ans
 
     @staticmethod
-    def get_material_name_instance(mesh, material_index):
-        num_materials = len(mesh.materials)
-        if num_materials > 0:
-            min_idx = 0
-            max_idx = num_materials - 1
-            if num_materials >= min_idx and num_materials <= max_idx:
-                return mesh.materials[material_idx].name
-        return None
+    def get_material_name_instance(material):
+        return material.name
 
     # endregion
 
