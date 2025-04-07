@@ -11,7 +11,7 @@ class material_utility:
     
     # region Blender Material
 
-    # If the material does not exist, then we return None (null). Otherwise, we return the reference to the blender material itself.
+    # If the material does not exist, then we return None (null). Otherwise, we return the reference to the blender material instance itself.
     @staticmethod
     def get_material(obj, material_index):
         num_materials = len(obj.materials)
@@ -37,9 +37,11 @@ class material_utility:
     # region Material Name
 
     @staticmethod
-    def get_material_name(obj, material_index):
-        material = material_utility.get_material(obj, material_index)
-        material_name = get_material_name_instance(material) if material is not None else get_material_name_default(obj.magickcow_mesh_type)
+    def get_material_name(material, fallback_type = "GEOMETRY"):
+        if material is not None:
+            return get_material_name_instance(material)
+        else:
+            return get_material_name_default(fallback_type)
 
     @staticmethod
     def get_material_name_default(fallback_type = "GEOMETRY"):
@@ -66,17 +68,10 @@ class material_utility:
 
     @staticmethod
     def get_material_data(material, fallback_type = "GEOMETRY"):
-        ans = {}
-        material_mode = material.mcow_effect_mode
-        if material_mode == "DOC":
-            # Get material data from JSON file
-            ans = material_utility.get_material_data_instance_json(material)
-        elif material_mode == "MAT":
-            # Get material data from material panel
-            ans = material_utility.get_material_data_instance_blend(material)
-        if len(ans) <= 0:
-            ans = material_utility.get_material_data_default(fallback_type)
-        return ans
+        if material is not None:
+            return get_material_data_instance(material)
+        else:
+            return get_material_data_default(fallback_type)
     
     @staticmethod
     def get_material_data_default(fallback_type = "GEOMETRY"):
@@ -245,6 +240,13 @@ class material_utility:
         return ans
 
     @staticmethod
+    def get_material_data_instance(material):
+        if material.mcow_effect_mode == "DOC":
+            return get_material_data_instance_json(material)
+        else:
+            return get_material_data_instance_blend(material)
+
+    @staticmethod
     def get_material_data_instance_json(material):
         ans = get_json_object(material_utility.get_material_path(material))
         return ans
@@ -252,7 +254,7 @@ class material_utility:
     @staticmethod
     def get_material_data_instance_blend(material):
         # TODO : Implement for each of the material types! You'll basically just need to extract the values from the blender panel and then arrange them in a json-like python dict.
-        ans = None
+        ans = {}
         return ans
 
     # endregion
