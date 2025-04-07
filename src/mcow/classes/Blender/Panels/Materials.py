@@ -85,6 +85,12 @@ def register_properties_material_generic(material):
         default = "MAT"
     )
 
+    material.mcow_effect_file = bpy.props.StringProperty(
+        name = "File Path",
+        description = "Determines the path where the JSON file is located",
+        default = ""
+    )
+
 def unregister_properties_material_generic(material):
     del material.mcow_effect_type
     del material.mcow_effect_mode
