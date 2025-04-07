@@ -174,7 +174,7 @@ def get_action_keyframes(action):
 # region Material Utility Functions
 
 def utility_get_effect_name(mesh, material_index):
-    material_name = mesh.materials[material_index].name if len(mesh.materials) > 0 else utility_get_default_effect_name(mesh.magickcow_mesh_type)
+    material_name = mesh.materials[material_index].name if len(mesh.materials) > 0 else utility_get_effect_name_default(mesh.magickcow_mesh_type)
     return material_name
 
 def utility_get_effect_name_default(fallback_type = "GEOMETRY"):
