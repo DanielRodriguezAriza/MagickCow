@@ -303,15 +303,14 @@ class MCow_Data_Pipeline_Cache:
     # If the material has alredy been created previously, then it uses the previously cached result to prevent having to load the file multiple times.
     # This prevents performing multiple disk accesses when loading the same material effect multiple times if the material type is set to read from a JSON document.
 
-    # Input: blender object, material index, fallback type
-    # Output: generated material name
+    # Input: blender_object, material_index
+    # Output: generated_material_name
 
     # endregion
-    def add_material(self, obj, material_index, fallback_type = "GEOMETRY"):
-        material = material_utility.get_material(obj, material_index)
-        material_name = material_utility.get_material_name(material, fallback_type)
+    def add_material(self, obj, material_index):
+        material_name = material_utility.get_material_name_from_mesh(obj, material_index)
         if material_name not in self._cache_generated_effects:
-            self._cache_generated_effects[material_name] = material_utility.get_material_data(material, fallback_type)
+            self._cache_generated_effects[material_name] = material_utility.get_material_data_from_mesh(obj, material_index)
         return material_name
 
     # region Comment - get_material()
