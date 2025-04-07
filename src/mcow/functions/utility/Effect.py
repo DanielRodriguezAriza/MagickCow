@@ -7,19 +7,21 @@
 
 class material_utility:
     
-    # NOTE : The mesh param here is the same as obj, NOT obj.data!!!
+    # NOTE : The obj param is the blender Object param.
+    # NOTE : The mesh param is the mesh data, aka, obj.data.
+    # Basically, the nomenclature used here is the same as everywhere else. At some point in history it was not, but do not get confused, because now it is! Just keep that in mind or things will go south real fast...
     
     # region Blender Material
 
     # If the material does not exist, then we return None (null). Otherwise, we return the reference to the blender material instance itself.
     @staticmethod
     def get_material(obj, material_index):
-        num_materials = len(obj.materials)
+        num_materials = len(obj.data.materials)
         if num_materials > 0:
             min_idx = 0
             max_idx = num_materials - 1
             if num_materials >= min_idx and num_materials <= max_idx:
-                return obj.materials[material_idx]
+                return obj.data.materials[material_idx]
         return None
 
     # endregion
