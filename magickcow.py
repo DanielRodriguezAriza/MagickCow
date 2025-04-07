@@ -875,6 +875,8 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
                     self.draw_effect_lava(layout, material)
                 elif material_type == "EFFECT_FORCE_FIELD":
                     self.draw_effect_force_field(layout, material)
+            elif material_mode == "DOC":
+                layout.prop(material, "mcow_effect_path")
     
     # From here on out, we have custom draw methods for each type of material
     def draw_effect_deferred(self, layout, material):
@@ -918,9 +920,16 @@ def register_properties_material_generic(material):
         default = "MAT"
     )
 
+    material.mcow_effect_path = bpy.props.StringProperty(
+        name = "Path",
+        description = "Determines the path where the JSON file is located",
+        default = ""
+    )
+
 def unregister_properties_material_generic(material):
     del material.mcow_effect_type
     del material.mcow_effect_mode
+    del material.mcow_effect_path
 
 def register_properties_material_geometry(material): # NOTE : Maybe this should be renamed to deferred or something? we could also add transparent mats in the future I suppose.
     material.mcow_effect_deferred_alpha = bpy.props.FloatProperty(
@@ -2173,36 +2182,293 @@ def get_action_keyframes(action):
 
 # endregion
 
+# ../mcow/functions/utility/Effect.py
 # region Material Utility Functions
 
-def utility_get_effect_name(mesh, material_index):
-    material_name = mesh.materials[material_index].name if len(mesh.materials) > 0 else utility_get_default_effect_name(mesh.magickcow_mesh_type)
-    return material_name
+# NOTE : Magicka / XNA "Effects" are linked to Blender Materials on this Blender addon.
 
-def utility_get_effect_name_default(fallback_type = "GEOMETRY"):
-    ans = "base/default"
+# NOTE : Here I'm sort of experimenting with static classes with @staticmethod to simulate namespaces in python... we'll see how it goes...
+# Also going back to my snake_case C roots, which is more in line with PEP8. I'm just kind of tired of C#'s / Microsoft PascalCase I suppose.
 
-    if fallback_type == "GEOMETRY":
-        ans = "base/default_geometry"
-    elif fallback_type == "WATER":
-        ans = "base/default_water"
-    elif fallback_type == "LAVA":
-        ans = "base/default_lava"
-    elif fallback_type == "FORCE_FIELD":
-        ans = "base/ff/default_force_field"
+class material_utility:
+    
+    # NOTE : The mesh param here is the same as obj, NOT obj.data!!!
+    
+    # region Blender Material
 
-    return ans
+    # If the material does not exist, then we return None (null). Otherwise, we return the reference to the blender material instance itself.
+    @staticmethod
+    def get_material(obj, material_index):
+        num_materials = len(obj.materials)
+        if num_materials > 0:
+            min_idx = 0
+            max_idx = num_materials - 1
+            if num_materials >= min_idx and num_materials <= max_idx:
+                return obj.materials[material_idx]
+        return None
 
-# TODO : Implement
-def utility_get_effect_data(material):
-    ans = {}
-    if material.mcow_effect_mode == "DOC":
-        # Get material data from JSON
-        pass
-    else:
-        # Get material data from material panel
-        pass
-    return ans
+    # endregion
+
+    # region Material Info / All Material Data (basically, get both the name and the data generated in one go with these functions)
+
+    # NOTE : Basically, these are the top-level functions that you should try to use most of the time.
+
+    @staticmethod
+    def get_material_effect_info(obj, material_index):
+        material = material_utility.get_material(obj, material_index)
+        material_name = material_utility.get_material_name(material, obj.data.magickcow_mesh_type)
+        material_data = material_utility.get_material_data(material, obj.data.magickcow_mesh_type)
+        return (material_name, material_data)
+
+    @staticmethod
+    def get_material_name_from_mesh(obj, material_index):
+        material = material_utility.get_material(obj, material_index)
+        material_name = material_utility.get_material_name(material, obj.data.magickcow_mesh_type)
+        return material_name
+    
+    @staticmethod
+    def get_material_data_from_mesh(obj, material_index):
+        material = material_utility.get_material(obj, material_index)
+        material_data = material_utility.get_material_data(material, obj.data.magickcow_mesh_type)
+        return material_data
+
+    # endregion
+
+    # region Material Name
+
+    @staticmethod
+    def get_material_name(material, fallback_type = "GEOMETRY"):
+        if material is not None:
+            return material_utility.get_material_name_instance(material)
+        else:
+            return material_utility.get_material_name_default(fallback_type)
+
+    @staticmethod
+    def get_material_name_default(fallback_type = "GEOMETRY"):
+        ans = "base/default"
+
+        if fallback_type == "GEOMETRY":
+            ans = "base/default_geometry"
+        elif fallback_type == "WATER":
+            ans = "base/default_water"
+        elif fallback_type == "LAVA":
+            ans = "base/default_lava"
+        elif fallback_type == "FORCE_FIELD":
+            ans = "base/ff/default_force_field"
+
+        return ans
+
+    @staticmethod
+    def get_material_name_instance(material):
+        return material.name
+
+    # endregion
+
+    # region Material Data
+
+    @staticmethod
+    def get_material_data(material, fallback_type = "GEOMETRY"):
+        if material is not None:
+            return material_utility.get_material_data_instance(material)
+        else:
+            return material_utility.get_material_data_default(fallback_type)
+    
+    @staticmethod
+    def get_material_data_default(fallback_type = "GEOMETRY"):
+        # Default effect (for now it is the same as the one found within the "GEOMETRY" case)
+        ans = {
+            "$type": "effect_deferred",
+            "Alpha": 0.400000006,
+            "Sharpness": 1,
+            "VertexColorEnabled": False,
+            "UseMaterialTextureForReflectiveness": False,
+            "ReflectionMap": "",
+            "DiffuseTexture0AlphaDisabled": True,
+            "AlphaMask0Enabled": False,
+            "DiffuseColor0": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+            },
+            "SpecAmount0": 0,
+            "SpecPower0": 20,
+            "EmissiveAmount0": 0,
+            "NormalPower0": 1,
+            "Reflectiveness0": 0,
+            "DiffuseTexture0": "..\\Textures\\Surface\\Nature\\Ground\\grass_lush00_0",
+            "MaterialTexture0": "",
+            "NormalTexture0": "",
+            "HasSecondSet": False,
+            "DiffuseTexture1AlphaDisabled": False,
+            "AlphaMask1Enabled": False,
+            "DiffuseColor1": None,
+            "SpecAmount1": 0,
+            "SpecPower1": 0,
+            "EmissiveAmount1": 0,
+            "NormalPower1": 0,
+            "Reflectiveness1": 0,
+            "DiffuseTexture1": None,
+            "MaterialTexture1": None,
+            "NormalTexture1": None
+        }
+        if fallback_type == "GEOMETRY":
+            ans = {
+                "$type": "effect_deferred",
+                "Alpha": 0.400000006,
+                "Sharpness": 1,
+                "VertexColorEnabled": False,
+                "UseMaterialTextureForReflectiveness": False,
+                "ReflectionMap": "",
+                "DiffuseTexture0AlphaDisabled": True,
+                "AlphaMask0Enabled": False,
+                "DiffuseColor0": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "SpecAmount0": 0,
+                "SpecPower0": 20,
+                "EmissiveAmount0": 0,
+                "NormalPower0": 1,
+                "Reflectiveness0": 0,
+                "DiffuseTexture0": "..\\Textures\\Surface\\Nature\\Ground\\grass_lush00_0",
+                "MaterialTexture0": "",
+                "NormalTexture0": "",
+                "HasSecondSet": False,
+                "DiffuseTexture1AlphaDisabled": False,
+                "AlphaMask1Enabled": False,
+                "DiffuseColor1": None,
+                "SpecAmount1": 0,
+                "SpecPower1": 0,
+                "EmissiveAmount1": 0,
+                "NormalPower1": 0,
+                "Reflectiveness1": 0,
+                "DiffuseTexture1": None,
+                "MaterialTexture1": None,
+                "NormalTexture1": None
+            }
+        elif fallback_type == "WATER":
+            ans = {
+                "$type": "effect_deferred_liquid",
+                "ReflectionMap": "",
+                "WaveHeight": 1,
+                "WaveSpeed0": {
+                    "x": 0.00930232555,
+                    "y": 0.0900000036
+                },
+                "WaveSpeed1": {
+                    "x": -0.0046511637,
+                    "y": 0.0883720964
+                },
+                "WaterReflectiveness": 0.216049388,
+                "BottomColor": {
+                    "x": 0.400000006,
+                    "y": 0.400000006,
+                    "z": 0.600000024
+                },
+                "DeepBottomColor": {
+                    "x": 0.300000012,
+                    "y": 0.400000006,
+                    "z": 0.5
+                },
+                "WaterEmissiveAmount": 0.806896567,
+                "WaterSpecAmount": 0.300000012,
+                "WaterSpecPower": 24,
+                "BottomTexture": "..\\Textures\\Surface\\Nature\\Ground\\rock_0",
+                "WaterNormalMap": "..\\Textures\\Liquids\\WaterNormals_0",
+                "IceReflectiveness": 0,
+                "IceColor": {
+                    "x": 1,
+                    "y": 1,
+                    "z": 1
+                },
+                "IceEmissiveAmount": 0,
+                "IceSpecAmount": 1,
+                "IceSpecPower": 20,
+                "IceDiffuseMap": "..\\Textures\\Surface\\Nature\\Ground\\ice02_0",
+                "IceNormalMap": "..\\Textures\\Liquids\\IceNrm_0"
+            }
+        elif fallback_type == "LAVA":
+            ans = {
+                "$type" : "effect_lava",
+                "MaskDistortion" : 0.2,
+                "Speed0" : {
+                    "x" : 0.5,
+                    "y" : 0.5
+                },
+                "Speed1" : {
+                    "x" : 0.03,
+                    "y" : 0.03
+                },
+                "LavaHotEmissiveAmount" : 3.0,
+                "LavaColdEmissiveAmount" : 0.0,
+                "LavaSpecAmount" : 0.0,
+                "LavaSpecPower" : 20.0,
+                "TempFrequency" : 0.5586,
+                "ToneMap" : "..\\Textures\\Liquids\\LavaToneMap_0",
+                "TempMap" : "..\\Textures\\Liquids\\LavaBump_0",
+                "MaskMap" : "..\\Textures\\Liquids\\lavaMask_0",
+                "RockColor" : {
+                    "x" : 1,
+                    "y" : 1,
+                    "z" : 1
+                },
+                "RockEmissiveAmount" : 0.0,
+                "RockSpecAmount" : 0.0,
+                "RockSpecPower" : 20.0,
+                "RockNormalPower" : 1.0,
+                "RockTexture" : "..\\Textures\\Surface\\Nature\\Ground\\lavarock00_0",
+                "RockNormalMap" : "..\\Textures\\Surface\\Nature\\Ground\\lavarock00_NRM_0"
+            }
+        elif fallback_type == "FORCE_FIELD":
+            ans = {
+                "color" : {
+                    "x" : 0,
+                    "y" : 0,
+                    "z" : 0
+                },
+                "width" : 0.5,
+                "alphaPower": 4,
+                "alphaFalloffPower" : 2,
+                "maxRadius" : 4,
+                "rippleDistortion" : 2,
+                "mapDistortion" : 0.53103447,
+                "vertexColorEnabled": False,
+                "displacementMap": "..\\Textures\\Liquids\\WaterNormals_0",
+                "ttl": 1
+            }
+        return ans
+
+    @staticmethod
+    def get_material_data_instance(material):
+        if material.mcow_effect_mode == "DOC":
+            return material_utility.get_material_data_instance_json(material)
+        else:
+            return material_utility.get_material_data_instance_blend(material)
+
+    @staticmethod
+    def get_material_data_instance_json(material):
+        ans = get_json_object(material_utility.get_material_path(material))
+        return ans
+    
+    @staticmethod
+    def get_material_data_instance_blend(material):
+        # TODO : Implement for each of the material types! You'll basically just need to extract the values from the blender panel and then arrange them in a json-like python dict.
+        ans = {}
+        return ans
+
+    # endregion
+
+    # region Material Path
+
+    @staticmethod
+    def get_material_path(material):
+        ans = path_append(bpy.context.scene.mcow_scene_base_path, material.mcow_effect_path)
+        if not ans.endswith(".json"):
+            ans = ans + ".json"
+        return ans
+
+    # endregion
 
 # endregion
 
@@ -2867,8 +3133,7 @@ class MCow_Data_Generator:
         mcow_mesh = MCow_Mesh(obj, transform)
         
         # Generate material data
-        matname = self.cache.get_material_name(obj, material_index) # NOTE : This function should maybe be moved to the utility rather than cache functions?
-        self.cache.create_material(matname, obj.data.magickcow_mesh_type)
+        matname = self.cache.add_material(obj, material_index)
 
         # Cache vertex color layer
         if len(mcow_mesh.mesh.color_attributes) > 0:
@@ -5648,17 +5913,40 @@ class MCow_Data_Pipeline_Cache:
 
     # endregion
 
+    # NOTE : Maybe this one should be deprecated.
+    # region Comment - create_material()
     # Creates material data.
     # If the material is created for the first time, it is loaded from the JSON file containing its data, and the result is cached for future uses.
     # If the material had already been created before, it uses the previously cached result to prevent having to load the file multiple times.
     # This way, multiple disk accesses are prevented when loading the same material / effect multiple times.
+    # endregion
     def create_material(self, material_name, fallback_type = "GEOMETRY"):
         if material_name not in self._cache_generated_effects:
             self._cache_generated_effects[material_name] = self.generate_effect_data(material_name, fallback_type)
 
+    # region Comment - add_material()
+    
+    # Adds material data.
+    # If the material is created for the first time, it is loaded from either the JSON file containing its data, or the blender material panel config.
+    # The result is cached for future uses under the name of this material.
+    # If the material has alredy been created previously, then it uses the previously cached result to prevent having to load the file multiple times.
+    # This prevents performing multiple disk accesses when loading the same material effect multiple times if the material type is set to read from a JSON document.
+
+    # Input: blender_object, material_index
+    # Output: generated_material_name
+
+    # endregion
+    def add_material(self, obj, material_index):
+        material_name = material_utility.get_material_name_from_mesh(obj, material_index)
+        if material_name not in self._cache_generated_effects:
+            self._cache_generated_effects[material_name] = material_utility.get_material_data_from_mesh(obj, material_index)
+        return material_name
+
+    # region Comment - get_material()
     # Gets the material from the materials dictionary. Used in the make stage.
     # If for some reason the material were to not have been created previously (could only happen if there were some bug in the code that would need to be fixed ASAP),
     # then it would just re-generate the default effect data based on the fallback type. That feature exists as a last measure and we should not rely on it to export working files!!! 
+    # endregion
     def get_material(self, material_name, fallback_type = "GEOMETRY"):
         if material_name in self._cache_generated_effects:
             return self._cache_generated_effects[material_name]
