@@ -327,8 +327,7 @@ class MCow_Data_Generator:
         mcow_mesh = MCow_Mesh(obj, transform)
         
         # Generate material data
-        matname = self.cache.get_material_name(obj, material_index) # NOTE : This function should maybe be moved to the utility rather than cache functions?
-        self.cache.create_material(matname, obj.data.magickcow_mesh_type)
+        matname = self.cache.add_material(obj, material_index)
 
         # Cache vertex color layer
         if len(mcow_mesh.mesh.color_attributes) > 0:
