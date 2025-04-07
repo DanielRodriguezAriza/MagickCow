@@ -24,6 +24,16 @@ class material_utility:
 
     # endregion
 
+    # region Material Info / All Material Data (basically, get both the name and the data generated in one go with these functions)
+
+    def get_material_effect_info(obj, material_index):
+        material = get_material(obj, material_index)
+        material_name = get_material_name(material, obj.data.magickcow_mesh_type)
+        material_data = get_material_data(material, obj.data.magickcow_mesh_type)
+        return (material_name, material_data)
+
+    # endregion
+
     # region Material Name
 
     @staticmethod
