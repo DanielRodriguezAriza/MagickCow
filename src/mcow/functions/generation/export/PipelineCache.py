@@ -284,6 +284,7 @@ class MCow_Data_Pipeline_Cache:
 
     # endregion
 
+    # NOTE : Maybe this one should be deprecated.
     # Creates material data.
     # If the material is created for the first time, it is loaded from the JSON file containing its data, and the result is cached for future uses.
     # If the material had already been created before, it uses the previously cached result to prevent having to load the file multiple times.
@@ -292,9 +293,25 @@ class MCow_Data_Pipeline_Cache:
         if material_name not in self._cache_generated_effects:
             self._cache_generated_effects[material_name] = self.generate_effect_data(material_name, fallback_type)
 
+    # region Comment - add_material()
+    # Adds material data.
+    # If the material is created for the first time, it is loaded from either the JSON file containing its data, or the blender material panel config.
+    # The result is cached for future uses under the name of this material.
+    # If the material has alredy been created previously, then it uses the previously cached result to prevent having to load the file multiple times.
+    # This prevents performing multiple disk accesses when loading the same material effect multiple times if the material type is set to read from a JSON document.
+    # endregion
+    def add_material(self, obj, material_index, fallback_type = "GEOMETRY"):
+        material = material_utility.get_material(obj, material_index)
+        material_name = material_utility.get_material_name(material, fallback_type)
+        if material_name not in self._cache_generated_effects:
+            self._cache_generated_effects[material_name] = material_utility.get_material_data(material, fallback_type)
+        return material_name
+
+    # region Comment - get_material()
     # Gets the material from the materials dictionary. Used in the make stage.
     # If for some reason the material were to not have been created previously (could only happen if there were some bug in the code that would need to be fixed ASAP),
     # then it would just re-generate the default effect data based on the fallback type. That feature exists as a last measure and we should not rely on it to export working files!!! 
+    # endregion
     def get_material(self, material_name, fallback_type = "GEOMETRY"):
         if material_name in self._cache_generated_effects:
             return self._cache_generated_effects[material_name]
