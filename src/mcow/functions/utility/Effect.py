@@ -55,15 +55,17 @@ class material_utility:
     # region Material Data
 
     @staticmethod
-    def get_material_data(material):
+    def get_material_data(material, fallback_type = "GEOMETRY"):
         ans = {}
-        if material.mcow_effect_mode == "DOC":
-            # Get material data from JSON
-            # ans = get_json_object(material.)
-            pass
-        else:
+        material_mode = material.mcow_effect_mode
+        if material_mode == "DOC":
+            # Get material data from JSON file
+            ans = material_utility.get_material_data_instance_json(material)
+        elif material_mode == "MAT":
             # Get material data from material panel
-            pass
+            ans = material_utility.get_material_data_instance_blend(material)
+        if len(ans) <= 0:
+            ans = material_utility.get_material_data_default(fallback_type)
         return ans
     
     @staticmethod
@@ -71,8 +73,26 @@ class material_utility:
         pass
     
     @staticmethod
-    def get_material_data_instance(material):
-        pass
+    def get_material_data_instance_json(material):
+        ans = get_json_object(material_utility.get_material_path(material))
+        return ans
+    
+    @staticmethod
+    def get_material_data_instance_blend(material):
+        # TODO : Implement for each of the material types! You'll basically just need to extract the values from the blender panel and then arrange them in a json-like python dict.
+        ans = None
+        return ans
+
+    # endregion
+
+    # region Material Path
+
+    @staticmethod
+    def get_material_path(material):
+        ans = path_append(bpy.context.scene.mcow_scene_base_path, material.mcow_effect_path)
+        if not ans.endswith(".json")
+            ans = ans + ".json"
+        return ans
 
     # endregion
 
