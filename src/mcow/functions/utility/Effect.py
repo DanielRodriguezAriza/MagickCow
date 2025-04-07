@@ -30,14 +30,29 @@ class material_utility:
         return ans
 
     @staticmethod
+    def get_material_name_instance(mesh, material_index):
+        num_materials = len(mesh.materials)
+        if num_materials > 0:
+            min_idx = 0
+            max_idx = num_materials - 1
+            if num_materials >= min_idx and num_materials <= max_idx:
+                return mesh.materials[material_idx].name
+        return None
+
+    @staticmethod
     def get_material_data(material):
         ans = {}
         if material.mcow_effect_mode == "DOC":
             # Get material data from JSON
-            ans = get_json_object(material.)
+            # ans = get_json_object(material.)
+            pass
         else:
             # Get material data from material panel
             pass
         return ans
+    
+    @staticmethod
+    def get_material_data_default(material):
+        pass
 
 # endregion
