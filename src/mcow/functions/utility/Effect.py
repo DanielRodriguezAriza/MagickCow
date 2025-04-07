@@ -26,6 +26,8 @@ class material_utility:
 
     # region Material Info / All Material Data (basically, get both the name and the data generated in one go with these functions)
 
+    # NOTE : Basically, these are the top-level functions that you should try to use most of the time.
+
     @staticmethod
     def get_material_effect_info(obj, material_index):
         material = material_utility.get_material(obj, material_index)
