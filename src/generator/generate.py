@@ -69,6 +69,7 @@ def main():
 
         # Utility functions
         "../mcow/functions/utility/Utility.py", # TODO : Further subdivide this code maybe?
+        "../mcow/functions/utility/Effect.py", # Effect / Material related utility functions
 
         # Export Data Generation (The 3 stages of data transformation pipeline for export in MagickCow: Blender Data -> Get Stage -> Generate Stage -> Make Stage -> Final JSON file)
         # TODO : Rename all of the Pipeline classes to use some "ExportPipeline" prefix or whatever...
