@@ -85,8 +85,8 @@ def register_properties_material_generic(material):
         default = "MAT"
     )
 
-    material.mcow_effect_file = bpy.props.StringProperty(
-        name = "File Path",
+    material.mcow_effect_path = bpy.props.StringProperty(
+        name = "Path",
         description = "Determines the path where the JSON file is located",
         default = ""
     )
@@ -94,6 +94,7 @@ def register_properties_material_generic(material):
 def unregister_properties_material_generic(material):
     del material.mcow_effect_type
     del material.mcow_effect_mode
+    del material.mcow_effect_path
 
 def register_properties_material_geometry(material): # NOTE : Maybe this should be renamed to deferred or something? we could also add transparent mats in the future I suppose.
     material.mcow_effect_deferred_alpha = bpy.props.FloatProperty(
