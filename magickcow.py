@@ -120,16 +120,20 @@ from collections import namedtuple # TODO : Get rid of this fucker, namedtuples 
 
 # endregion
 
+# Base MagickCow exception class
+class MagickCowException(Exception):
+    pass
+
 # Exception class for export pipeline exceptions
-class MagickCowExportException(Exception):
+class MagickCowExportException(MagickCowException):
     pass
 
 # Exception class for import pipeline exceptions
-class MagickCowImportException(Exception):
+class MagickCowImportException(MagickCowException):
     pass
 
 # Exception class for content that is not implemented yet
-class MagickCowNotImplementedException(Exception):
+class MagickCowNotImplementedException(MagickCowException):
     pass
 
 # endregion
@@ -629,7 +633,7 @@ class MagickCowExportOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHelp
                 ans = self.export_data_physics_entity(context)
             else:
                 ans = self.export_data_none(context)
-        except MagickCowExportException as e:
+        except MagickCowException as e:
             self.report({"ERROR"}, f"Failed to export data: {e}")
             return {"CANCELLED"}
         finally:
@@ -784,7 +788,7 @@ class MagickCowImportOperator(bpy.types.Operator, bpy_extras.io_utils.ImportHelp
             else:
                 ans = self.import_data_unknown(type_string)
 
-        except MagickCowImportException as e:
+        except MagickCowException as e:
             self.report({"ERROR"}, f"Failed to import data: {e}")
             return {"CANCELLED"}
 
@@ -794,7 +798,7 @@ class MagickCowImportOperator(bpy.types.Operator, bpy_extras.io_utils.ImportHelp
         importer.exec(data)
     
     def import_data_map(self, data):
-        self.import_data_internal(json_data, MCow_ImportPipeline_Map())
+        self.import_data_internal(data, MCow_ImportPipeline_Map())
         return {"FINISHED"}
 
     def import_data_physics_entity(self, data):
@@ -5450,9 +5454,10 @@ class MCow_Data_Pipeline:
     # The method handles the entire process of generating all of the data for the scene that is being exported.
     # Each class that inherits from this base class implements its own version of this method.
     def process_scene_data(self):
-        # NOTE : Maybe throw an exception here to denote that the base class should never be instantiated and used?
-        # We could also throw in the constructor and just never call it in the derived classes.
-        return {}
+        # Throw an exception here to denote that the base class should never be instantiated and used.
+        # Callers should use the derived classes instead, which actually implement specific pipelines for each type of exportable object.
+        raise MagickCowExportException("Cannot execute base export pipeline!")
+        return None
     
     # endregion
 
@@ -5967,21 +5972,25 @@ class MCow_ImportPipeline:
         return
     
     def exec(self, data):
-        return MagickCowImportException() # The base class should never be used because it does not implement any specific type of pipeline for any kind of object, so it literally cannot import any sort of data...
+        # The base class should never be used because it does not implement any specific type of pipeline for any kind of object, so it literally cannot import any sort of data...
+        raise MagickCowImportException("Cannot execute base import pipeline!")
+        return None
 
 class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     def __init__(self):
+        super().__init__()
         return
     
     def exec(self, data):
-        raise MagickCowNotImplementedException()
+        raise MagickCowNotImplementedException("Import Map is not implemented yet!")
 
 class MCow_ImportPipeline_PhysicsEntity(MCow_ImportPipeline):
     def __init__(self):
+        super().__init__()
         return
     
     def exec(self, data):
-        raise MagickCowNotImplementedException()
+        raise MagickCowNotImplementedException("Import PhysicsEntity is not implemented yet!")
 
 # endregion
 
