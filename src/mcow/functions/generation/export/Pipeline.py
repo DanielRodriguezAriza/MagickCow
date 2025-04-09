@@ -43,9 +43,10 @@ class MCow_Data_Pipeline:
     # The method handles the entire process of generating all of the data for the scene that is being exported.
     # Each class that inherits from this base class implements its own version of this method.
     def process_scene_data(self):
-        # NOTE : Maybe throw an exception here to denote that the base class should never be instantiated and used?
-        # We could also throw in the constructor and just never call it in the derived classes.
-        return {}
+        # Throw an exception here to denote that the base class should never be instantiated and used.
+        # Callers should use the derived classes instead, which actually implement specific pipelines for each type of exportable object.
+        raise MagickCowExportException("Cannot execute base export pipeline!")
+        return None
     
     # endregion
 
