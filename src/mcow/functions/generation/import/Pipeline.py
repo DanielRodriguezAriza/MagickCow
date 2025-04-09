@@ -8,6 +8,14 @@ class MCow_ImportPipeline:
         # The base class should never be used because it does not implement any specific type of pipeline for any kind of object, so it literally cannot import any sort of data...
         raise MagickCowImportException("Cannot execute base import pipeline!")
         return None
+    
+    def read_vector_3(self, vec3):
+        ans = (vec3["x"], vec3["y"], vec3["z"])
+        return ans
+    
+    def read_vector_4(self, vec4):
+        ans = (vec4["x"], vec4["y"], vec4["z"], vec4["w"])
+        return ans
 
 # TODO : Implement all import functions...
 class MCow_ImportPipeline_Map(MCow_ImportPipeline):
