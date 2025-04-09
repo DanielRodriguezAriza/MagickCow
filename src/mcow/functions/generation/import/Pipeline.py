@@ -48,6 +48,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         self.import_locators(locators)
         self.import_nav_mesh(nav_mesh)
 
+    # region Import Methods - Top Level
+
     def import_model_mesh(self, model):
         pass
     
@@ -55,6 +57,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         pass
     
     def import_lights(self, lights):
+
         pass
     
     def import_effects(self, effects):
@@ -83,6 +86,19 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     
     def import_nav_mesh(self, nav_mesh):
         pass
+    
+    # endregion
+
+    # region Import Methods - Internal
+
+    def import_light(self, light):
+        name = light["LightName"]
+        position = light["Position"]
+        direction = light["Direction"]
+
+        # TODO : Finish implementing
+
+    # endregion
 
 class MCow_ImportPipeline_PhysicsEntity(MCow_ImportPipeline):
     def __init__(self):
