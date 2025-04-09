@@ -126,8 +126,13 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Create the light data and modify its properties
         light_data = bpy.data.lights.new(name=name, type=light_type)
 
-        # Create the light object and add it to the scene
+        # Create the light object
         light_object = bpy.data.objects.new(name=name, object_data=light_data)
+
+        # Add the light object to the scene (link object to collection)
+        bpy.context.collection.objects.link(light_object)
+
+        # Modify light object properties
         light_object.location = position
 
 
