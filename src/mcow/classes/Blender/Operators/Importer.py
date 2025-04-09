@@ -104,7 +104,7 @@ class MagickCowImportOperator(bpy.types.Operator, bpy_extras.io_utils.ImportHelp
         importer.exec(data)
     
     def import_data_map(self, data):
-        self.import_data_internal(json_data, MCow_ImportPipeline_Map())
+        self.import_data_internal(data, MCow_ImportPipeline_Map())
         return {"FINISHED"}
 
     def import_data_physics_entity(self, data):
