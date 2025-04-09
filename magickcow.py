@@ -2063,8 +2063,16 @@ def find_element_index(elements_list, element, return_on_error = -1):
             return i
     return return_on_error
 
+def find_element(elements_list, index, return_on_error = 0):
+    if index >= 0 and index < len(elements_list):
+        return elements_list[index]
+    return elements_list[return_on_error]
+
 def find_light_type_index(light):
     return find_element_index(["POINT", "SUN", "SPOT"], light, 0)
+
+def find_light_type_name(light):
+    return find_element(["POINT", "SUN", "SPOT"], light, 0)
 
 def find_collision_material_index(material):
     return find_element_index(["GENERIC", "GRAVEL", "GRASS", "WOOD", "SNOW", "STONE", "MUD", "REFLECT", "WATER", "LAVA"], material, 0)
@@ -5975,6 +5983,16 @@ class MCow_ImportPipeline:
         # The base class should never be used because it does not implement any specific type of pipeline for any kind of object, so it literally cannot import any sort of data...
         raise MagickCowImportException("Cannot execute base import pipeline!")
         return None
+    
+    def read_vector_3(self, vec3):
+        ans = (vec3["x"], vec3["y"], vec3["z"])
+        return ans
+    
+    def read_vector_4(self, vec4):
+        ans = (vec4["x"], vec4["y"], vec4["z"], vec4["w"])
+        return ans
+    
+    # TODO : Add option to handle reading vectors as Y up or Z up... maybe add a bool or a different method that specifies if we want to perform Y up to Z up conversion.
 
 # TODO : Implement all import functions...
 class MCow_ImportPipeline_Map(MCow_ImportPipeline):
@@ -6015,6 +6033,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         self.import_locators(locators)
         self.import_nav_mesh(nav_mesh)
 
+    # region Import Methods - Top Level
+
     def import_model_mesh(self, model):
         pass
     
@@ -6022,7 +6042,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         pass
     
     def import_lights(self, lights):
-        pass
+        for light in lights:
+            self.import_light(light)
     
     def import_effects(self, effects):
         pass
@@ -6050,6 +6071,47 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     
     def import_nav_mesh(self, nav_mesh):
         pass
+    
+    # endregion
+
+    # region Import Methods - Internal
+
+    # TODO : Finish implementing (what's left as of now is modifying the properties of the spawned in light so that it uses the values that it has read from the JSON data)
+    # TODO : Handle translating vectors from Y up to Z up...
+    def import_light(self, light):
+        # Read the light data
+        # TODO : Maybe in the future, encapsulate this into a read method, so that we can read this automatically in any other place or something...
+        name = light["LightName"]
+        position = self.read_vector_3(light["Position"])
+        direction = self.read_vector_3(light["Direction"])
+        light_type = find_light_type_name(light["LightType"])
+        variation_type = light["LightVariationType"]
+        reach = light["Reach"]
+        use_attenuation = light["UseAttenuation"]
+        cutoff_angle = light["CutoffAngle"]
+        sharpness = light["Sharpness"]
+        color_diffuse = light["DiffuseColor"]
+        color_ambient = light["AmbientColor"]
+        specular = light["SpecularAmount"]
+        variation_speed = light["VariationSpeed"]
+        variation_amount = light["VariationAmount"]
+        shadow_map_size = light["ShadowMapSize"]
+        casts_shadows = light["CastsShadows"]
+
+        # Create the light data and modify its properties
+        light_data = bpy.data.lights.new(name=name, type=light_type)
+
+        # Create the light object
+        light_object = bpy.data.objects.new(name=name, object_data=light_data)
+
+        # Add the light object to the scene (link object to collection)
+        bpy.context.collection.objects.link(light_object)
+
+        # Modify light object properties
+        light_object.location = position
+
+
+    # endregion
 
 class MCow_ImportPipeline_PhysicsEntity(MCow_ImportPipeline):
     def __init__(self):
