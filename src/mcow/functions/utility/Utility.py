@@ -56,6 +56,9 @@ def find_element(elements_list, index, return_on_error = 0):
 def find_light_type_index(light):
     return find_element_index(["POINT", "SUN", "SPOT"], light, 0)
 
+def find_light_type_name(light):
+    return find_element(["POINT", "SUN", "SPOT"], light, 0)
+
 def find_collision_material_index(material):
     return find_element_index(["GENERIC", "GRAVEL", "GRASS", "WOOD", "SNOW", "STONE", "MUD", "REFLECT", "WATER", "LAVA"], material, 0)
 
