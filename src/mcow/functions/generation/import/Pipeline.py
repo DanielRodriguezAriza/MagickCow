@@ -99,11 +99,14 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
     # region Import Methods - Internal
 
+    # TODO : Finish implementing (what's left as of now is modifying the properties of the spawned in light so that it uses the values that it has read from the JSON data)
     def import_light(self, light):
+        # Read the light data
+        # TODO : Maybe in the future, encapsulate this into a read method, so that we can read this automatically in any other place or something...
         name = light["LightName"]
         position = self.read_vector_3(light["Position"])
         direction = self.read_vector_3(light["Direction"])
-        light_type = light["LightType"]
+        light_type = find_light_type_name(light["LightType"])
         variation_type = light["LightVariationType"]
         reach = light["Reach"]
         use_attenuation = light["UseAttenuation"]
@@ -116,7 +119,14 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         variation_amount = light["VariationAmount"]
         shadow_map_size = light["ShadowMapSize"]
         casts_shadows = light["CastsShadows"]
-        # TODO : Finish implementing
+
+        # Create the light data and modify its properties
+        light_data = bpy.data.lights.new(name=name, type=light_type)
+
+        # Create the light object and add it to the scene
+        light_object = bpy.data.objects.new(name=name, object_data=light_data)
+        light_object.location = position
+
 
     # endregion
 
