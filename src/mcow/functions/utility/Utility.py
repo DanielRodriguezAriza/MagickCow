@@ -178,3 +178,15 @@ def get_action_keyframes(action):
     return sorted(frames)
 
 # endregion
+
+# region Vector Utility Functions
+
+def vec3_point_to_y_up(vec3):
+    ans = (vec3[0], vec3[2], -vec3[1])
+    return ans
+
+def vec3_point_to_z_up(vec3):
+    ans = (vec3[0], -vec3[2], vec3[1])
+    return ans
+
+# endregion
