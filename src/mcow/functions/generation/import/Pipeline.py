@@ -16,10 +16,37 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         return
     
     def exec(self, data):
-        raise MagickCowNotImplementedException("Import Map is not implemented yet!")
+        level_model = data["XnbFileData"]["PrimaryObject"]
+        self.import_level_model(level_model)
     
     def import_leve_model(self, level_model):
-        pass
+        # Get the data entries from the level model JSON dict object.
+        model_mesh = level_model["model"]
+        animated_parts = level_model["animatedParts"]
+        lights = level_model["lights"]
+        effects = level_model["effects"]
+        physics_entities = level_model["physicsEntities"]
+        liquids = level_model["liquids"]
+        force_fields = level_model["forceFields"]
+        model_collision = level_model["collisionDataLevel"]
+        camera_collision = level_model["collisionDataCamera"]
+        triggers = level_model["triggers"]
+        locators = level_model["locators"]
+        nav_mesh = level_model["navMesh"]
+        
+        # Execute the import functions for each of the types of data found within the level model JSON dict.
+        self.import_model_mesh(model_mesh)
+        self.import_animated_parts(animated_parts)
+        self.import_lights(lights)
+        self.import_effects(effects)
+        self.import_physics_entities(physics_entities)
+        self.import_liquids(liquids)
+        self.import_force_fields(force_fields)
+        self.import_model_collision(model_collision)
+        self.import_camera_collision(camera_collision)
+        self.import_triggers(triggers)
+        self.import_locators(locators)
+        self.import_nav_mesh(nav_mesh)
 
     def import_model_mesh(self, model):
         pass
