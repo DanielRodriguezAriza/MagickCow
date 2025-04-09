@@ -101,9 +101,21 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
     def import_light(self, light):
         name = light["LightName"]
-        position = light["Position"]
-        direction = light["Direction"]
-
+        position = self.read_vector_3(light["Position"])
+        direction = self.read_vector_3(light["Direction"])
+        light_type = light["LightType"]
+        variation_type = light["LightVariationType"]
+        reach = light["Reach"]
+        use_attenuation = light["UseAttenuation"]
+        cutoff_angle = light["CutoffAngle"]
+        sharpness = light["Sharpness"]
+        color_diffuse = light["DiffuseColor"]
+        color_ambient = light["AmbientColor"]
+        specular = light["SpecularAmount"]
+        variation_speed = light["VariationSpeed"]
+        variation_amount = light["VariationAmount"]
+        shadow_map_size = light["ShadowMapSize"]
+        casts_shadows = light["CastsShadows"]
         # TODO : Finish implementing
 
     # endregion
