@@ -94,7 +94,7 @@ class MagickCowImportOperator(bpy.types.Operator, bpy_extras.io_utils.ImportHelp
             else:
                 ans = self.import_data_unknown(type_string)
 
-        except MagickCowImportException as e:
+        except MagickCowException as e:
             self.report({"ERROR"}, f"Failed to import data: {e}")
             return {"CANCELLED"}
 

@@ -95,7 +95,7 @@ class MagickCowExportOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHelp
                 ans = self.export_data_physics_entity(context)
             else:
                 ans = self.export_data_none(context)
-        except MagickCowExportException as e:
+        except MagickCowException as e:
             self.report({"ERROR"}, f"Failed to export data: {e}")
             return {"CANCELLED"}
         finally:
