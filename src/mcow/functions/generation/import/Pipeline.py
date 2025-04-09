@@ -57,8 +57,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         pass
     
     def import_lights(self, lights):
-
-        pass
+        for light in lights:
+            import_light(light)
     
     def import_effects(self, effects):
         pass
