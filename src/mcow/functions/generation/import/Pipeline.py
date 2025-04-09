@@ -19,7 +19,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         level_model = data["XnbFileData"]["PrimaryObject"]
         self.import_level_model(level_model)
     
-    def import_leve_model(self, level_model):
+    def import_level_model(self, level_model):
         # Get the data entries from the level model JSON dict object.
         model_mesh = level_model["model"]
         animated_parts = level_model["animatedParts"]
