@@ -14,16 +14,20 @@
 
 # endregion
 
+# Base MagickCow exception class
+class MagickCowException(Exception):
+    pass
+
 # Exception class for export pipeline exceptions
-class MagickCowExportException(Exception):
+class MagickCowExportException(MagickCowException):
     pass
 
 # Exception class for import pipeline exceptions
-class MagickCowImportException(Exception):
+class MagickCowImportException(MagickCowException):
     pass
 
 # Exception class for content that is not implemented yet
-class MagickCowNotImplementedException(Exception):
+class MagickCowNotImplementedException(MagickCowException):
     pass
 
 # endregion
