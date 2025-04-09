@@ -2194,6 +2194,18 @@ def get_action_keyframes(action):
 
 # endregion
 
+# region Vector Utility Functions
+
+def vec3_point_to_y_up(vec3):
+    ans = (vec3[0], vec3[2], -vec3[1])
+    return ans
+
+def vec3_point_to_z_up(vec3):
+    ans = (vec3[0], -vec3[2], vec3[1])
+    return ans
+
+# endregion
+
 # ../mcow/functions/utility/Effect.py
 # region Material Utility Functions
 
@@ -6082,8 +6094,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Read the light data
         # TODO : Maybe in the future, encapsulate this into a read method, so that we can read this automatically in any other place or something...
         name = light["LightName"]
-        position = self.read_vector_3(light["Position"])
-        direction = self.read_vector_3(light["Direction"])
+        position = vec3_point_to_z_up(self.read_vector_3(light["Position"]))
+        direction = self.read_vector_3(light["Direction"]) # TODO : Handle direction transform from Y up to Z up.
         light_type = find_light_type_name(light["LightType"])
         variation_type = light["LightVariationType"]
         reach = light["Reach"]
