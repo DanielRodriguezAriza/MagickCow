@@ -15,7 +15,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         return
     
     def exec(self, data):
-        raise MagickCowNotImplementedException()
+        raise MagickCowNotImplementedException("Import Map is not implemented yet!")
 
 class MCow_ImportPipeline_PhysicsEntity(MCow_ImportPipeline):
     def __init__(self):
@@ -23,6 +23,6 @@ class MCow_ImportPipeline_PhysicsEntity(MCow_ImportPipeline):
         return
     
     def exec(self, data):
-        raise MagickCowNotImplementedException()
+        raise MagickCowNotImplementedException("Import PhysicsEntity is not implemented yet!")
 
 # endregion
