@@ -11,6 +11,7 @@ class MCow_ImportPipeline:
 
 class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     def __init__(self):
+        super().__init__()
         return
     
     def exec(self, data):
@@ -18,6 +19,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
 class MCow_ImportPipeline_PhysicsEntity(MCow_ImportPipeline):
     def __init__(self):
+        super().__init__()
         return
     
     def exec(self, data):
