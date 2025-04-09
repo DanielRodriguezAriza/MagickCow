@@ -48,6 +48,11 @@ def find_element_index(elements_list, element, return_on_error = -1):
             return i
     return return_on_error
 
+def find_element(elements_list, index, return_on_error = 0):
+    if index >= 0 and index < len(elements_list):
+        return elements_list[index]
+    return elements_list[return_on_error]
+
 def find_light_type_index(light):
     return find_element_index(["POINT", "SUN", "SPOT"], light, 0)
 
