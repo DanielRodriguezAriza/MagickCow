@@ -16,6 +16,8 @@ class MCow_ImportPipeline:
     def read_vector_4(self, vec4):
         ans = (vec4["x"], vec4["y"], vec4["z"], vec4["w"])
         return ans
+    
+    # TODO : Add option to handle reading vectors as Y up or Z up... maybe add a bool or a different method that specifies if we want to perform Y up to Z up conversion.
 
 # TODO : Implement all import functions...
 class MCow_ImportPipeline_Map(MCow_ImportPipeline):
@@ -66,7 +68,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     
     def import_lights(self, lights):
         for light in lights:
-            import_light(light)
+            self.import_light(light)
     
     def import_effects(self, effects):
         pass
@@ -100,6 +102,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     # region Import Methods - Internal
 
     # TODO : Finish implementing (what's left as of now is modifying the properties of the spawned in light so that it uses the values that it has read from the JSON data)
+    # TODO : Handle translating vectors from Y up to Z up...
     def import_light(self, light):
         # Read the light data
         # TODO : Maybe in the future, encapsulate this into a read method, so that we can read this automatically in any other place or something...
