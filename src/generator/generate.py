@@ -80,7 +80,10 @@ def main():
         "../mcow/functions/generation/export/PipelineCache.py",
         
         # Import Data Generation
-        "../mcow/functions/generation/import/Pipeline.py",
+        # TODO : Rename all of the pipleine classes and files to use the "ImportPipeline" prefix or something like that...
+        "../mcow/functions/generation/import/Pipeline.py", # ImportPipeline Base
+        "../mcow/functions/generation/import/derived/Map.py", # LevelModel ImportPipeline
+        "../mcow/functions/generation/import/derived/PhysicsEntity.py", # PhysicsEntity ImportPipeline
 
         # Main entry point
         "../mcow/Main.py",
