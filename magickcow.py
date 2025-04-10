@@ -2204,6 +2204,28 @@ def vec3_point_to_z_up(vec3):
     ans = (vec3[0], -vec3[2], vec3[1])
     return ans
 
+# NOTE : Maybe it would be better to not use this function since mathutils.Matrix already has the .transposed() method, which is probably faster... 
+def mat4x4_mat_tranpose(m):
+    transposed = [list(row) for row in zip(*m)]
+    return transposed
+
+# region Comment - mat4x4_buf2mat_rm2cm_yu2zu()
+# Matrix 4x4 -> Matrix 4x4 
+# linear buffer -> matrix
+# row-major -> column-major
+# Y-Up -> Z-Up
+# endregion
+def mat4x4_buf2mat_rm2cm_yu2zu(m):
+    # NOTE : This code actually translates a row-major 4x4 matrix from Y up to Z up.
+    # The objective is to be a bit more generic, so the function should transform asuming the input is in column major maybe?
+    ans = [
+        [ m[ 0], -m[ 8],  m[ 4],  m[12]],
+        [-m[ 2],  m[10], -m[ 6], -m[14]],
+        [ m[ 1], -m[ 9],  m[ 5],  m[13]],
+        [ m[ 3], -m[11],  m[ 7],  m[15]]
+    ]
+    return ans
+
 # endregion
 
 # ../mcow/functions/utility/Effect.py
@@ -6010,6 +6032,57 @@ class MCow_ImportPipeline:
         ans = (vec4["x"], vec4["y"], vec4["z"], vec4["w"])
         return ans
     
+    # Read a 4 by 4 matrix as a linear buffer
+    def read_mat4x4_buf_raw(self, mat4x4):
+        m11 = mat4x4["M11"]
+        m12 = mat4x4["M12"]
+        m13 = mat4x4["M13"]
+        m14 = mat4x4["M14"]
+        m21 = mat4x4["M21"]
+        m22 = mat4x4["M22"]
+        m23 = mat4x4["M23"]
+        m24 = mat4x4["M24"]
+        m31 = mat4x4["M31"]
+        m32 = mat4x4["M32"]
+        m33 = mat4x4["M33"]
+        m34 = mat4x4["M34"]
+        m41 = mat4x4["M41"]
+        m42 = mat4x4["M42"]
+        m43 = mat4x4["M43"]
+        m44 = mat4x4["M44"]
+
+        mat = [m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44]
+
+        return mat
+
+    # Read a 4 by 4 matrix as a matrix (list of lists)
+    def read_mat4x4_mat_raw(self, mat4x4):
+        m11 = mat4x4["M11"]
+        m12 = mat4x4["M12"]
+        m13 = mat4x4["M13"]
+        m14 = mat4x4["M14"]
+        m21 = mat4x4["M21"]
+        m22 = mat4x4["M22"]
+        m23 = mat4x4["M23"]
+        m24 = mat4x4["M24"]
+        m31 = mat4x4["M31"]
+        m32 = mat4x4["M32"]
+        m33 = mat4x4["M33"]
+        m34 = mat4x4["M34"]
+        m41 = mat4x4["M41"]
+        m42 = mat4x4["M42"]
+        m43 = mat4x4["M43"]
+        m44 = mat4x4["M44"]
+
+        mat = [
+            [m11, m12, m13, m14],
+            [m21, m22, m23, m24],
+            [m31, m32, m33, m34],
+            [m41, m42, m43, m44]
+        ]
+
+        return mat
+
     # endregion
 
     # region Read Methods - Transform Y up to Z up
@@ -6022,6 +6095,10 @@ class MCow_ImportPipeline:
         # TODO : Implement
         return None
     
+    def read_mat4x4(self, mat4x4):
+        mat = mathutils.Matrix(mat4x4_buf2mat_rm2cm_yu2zu(self.read_mat4x4_buf_raw(mat4x4)))
+        return mat
+
     # endregion
 
 # endregion
@@ -6168,13 +6245,20 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         mesh.update()
 
     def import_locator(self, locator):
+        # Get the properties of the locator from the json data
         name = locator["Name"]
-        # transform = etc...
+        transform = self.read_mat4x4(locator["Transform"])
         radius = locator["Radius"]
 
+        # region Comment - empty display explanation
+        # NOTE : The display type is updated automatically when we change the property empty.magickcow_empty_type, since it is linked to an update function,
+        # so we don't need to call this ourselves by hand. I'm leaving this code behind so that you can remember why we don't do it.
+        # empty.empty_display_type = "PLAIN_AXES"
+        # endregion
+        # Spawn empty object and add it to the scene and modify its properties
         empty = bpy.data.objects.new(name=name, object_data = None)
-        empty.empty_display_type = "PLAIN_AXES" # TODO : Update this automatically somehow so that we can get the proper display type, like when we change between empty object types on mcow's panel, such as locator, trigger, etc...
-        empty.location = (0, 0, 0) # TODO : Implement transform reading so that we can extract the position, rotation, scale, etc...
+        empty.matrix_world = transform
+        # empty.location = (0, 0, 0) # TODO : Implement transform reading so that we can extract the position, rotation, scale, etc...
 
         bpy.context.collection.objects.link(empty)
 
