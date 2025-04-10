@@ -2226,6 +2226,34 @@ def mat4x4_buf2mat_rm2cm_yu2zu(m):
     ]
     return ans
 
+# Input: (x, y, z) in Y-Up
+# Output: (x, y, z) in Z-Up
+def point_to_z_up(p):
+    return mathutils.Vector([p[0], -p[2], p[1]])
+
+# Input: (x, y, z, w) in Y-Up
+# Output: (w, x, y, z) in Z-Up
+def quat_to_z_up(q):
+    return mathutils.Quaternion([q[3], q[0], -q[2], q[1]])
+
+# Input: (x, y, z) in Y-Up
+# Output: (x, y, z) in Z-Up
+def scale_to_z_up(s):
+    return mathutils.Vector([s[0], s[2], s[1]])
+
+# TODO : Implement these functions and change the exporter code to use this instead of the whole -X rotation bullshit.
+# This change, when applied in a future update, will prevent the exporter from exporting wrong values when dealing with certain hierarchies.
+# It will also completely get rid of the small margin of floating point precision error there exists when using a rotation matrix (float multiplications and divisions)
+# rather than just swapping values and flipping signs, which preserve the same exact float values without any issues or precision errors when changing from z up to y up and viceversa.
+# def point_to_y_up(p):
+#     return None
+# 
+# def quat_to_y_up(q):
+#     return None
+# 
+# def scale_to_y_up(s):
+#     return None
+
 # endregion
 
 # ../mcow/functions/utility/Effect.py
@@ -6087,14 +6115,21 @@ class MCow_ImportPipeline:
 
     # region Read Methods - Transform Y up to Z up
     
-    def read_vec3_point(self, point):
-        ans = vec3_point_to_z_up(self.read_vec3_raw(point))
+    def read_point(self, point):
+        point_data = (point["x"], point["y"], point["z"])
+        ans = point_to_z_up(point_data)
         return ans
-    
-    def read_vec3_direction(self, direction):
-        # TODO : Implement
-        return None
-    
+
+    def read_quat(self, q):
+        quat_data = (q["x"], q["y"], q["z"], q["w"])
+        ans = quat_to_z_up(quat_data)
+        return ans
+
+    def read_scale(self, scale):
+        scale_data = (scale["x"], scale["y"], scale["z"])
+        ans = scale_to_z_up(scale_data)
+        return ans
+
     def read_mat4x4(self, mat4x4):
         mat = mathutils.Matrix(mat4x4_buf2mat_rm2cm_yu2zu(self.read_mat4x4_buf_raw(mat4x4)))
         return mat
@@ -6177,7 +6212,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         self.import_collision_channel("collision_mesh_camera", collision_data)
     
     def import_triggers(self, triggers):
-        pass
+        for trigger in triggers:
+            self.import_trigger(trigger)
     
     def import_locators(self, locators):
         for locator in locators:
@@ -6196,7 +6232,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Read the light data
         # TODO : Maybe in the future, encapsulate this into a read method, so that we can read this automatically in any other place or something...
         name = light["LightName"]
-        position = self.read_vec3_point(light["Position"])
+        position = self.read_point(light["Position"])
         direction = self.read_vec3_raw(light["Direction"]) # TODO : Handle direction transform from Y up to Z up.
         light_type = find_light_type_name(light["LightType"])
         variation_type = light["LightVariationType"]
@@ -6233,7 +6269,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         json_vertices = collision["vertices"]
         json_triangles = collision["triangles"]
 
-        mesh_vertices = [self.read_vec3_point(vert) for vert in json_vertices]
+        mesh_vertices = [self.read_point(vert) for vert in json_vertices]
         mesh_triangles = [(tri["index0"], tri["index1"], tri["index2"]) for tri in json_triangles]
 
         mesh = bpy.data.meshes.new(name=name)
@@ -6256,7 +6292,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # empty.empty_display_type = "PLAIN_AXES"
         # endregion
         # Spawn empty object and add it to the scene and modify its properties
-        empty = bpy.data.objects.new(name=name, object_data = None)
+        empty = bpy.data.objects.new(name = name, object_data = None)
         empty.matrix_world = transform
         # empty.location = (0, 0, 0) # TODO : Implement transform reading so that we can extract the position, rotation, scale, etc...
 
@@ -6265,6 +6301,20 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         empty.magickcow_empty_type = "LOCATOR"
         empty.magickcow_locator_radius = radius
 
+    def import_trigger(self, trigger):
+        name = trigger["Name"]
+        position = self.read_point(trigger["Position"])
+        scale = self.read_scale(trigger["SideLengths"])
+        rotation = self.read_quat(trigger["Rotation"])
+
+        empty = bpy.data.objects.new(name = name, object_data = None)
+        empty.location = position
+        empty.rotation_quaternion = rotation
+        empty.scale = scale
+
+        bpy.context.collection.objects.link(empty)
+
+        empty.magickcow_empty_type = "TRIGGER"
 
     # endregion
 
