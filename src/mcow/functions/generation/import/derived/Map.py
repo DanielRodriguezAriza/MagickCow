@@ -71,7 +71,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         self.import_collision_channel("collision_mesh_camera", collision_data)
     
     def import_triggers(self, triggers):
-        pass
+        for trigger in triggers:
+            self.import_trigger(trigger)
     
     def import_locators(self, locators):
         for locator in locators:
@@ -90,7 +91,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Read the light data
         # TODO : Maybe in the future, encapsulate this into a read method, so that we can read this automatically in any other place or something...
         name = light["LightName"]
-        position = self.read_vec3_point(light["Position"])
+        position = self.read_point(light["Position"])
         direction = self.read_vec3_raw(light["Direction"]) # TODO : Handle direction transform from Y up to Z up.
         light_type = find_light_type_name(light["LightType"])
         variation_type = light["LightVariationType"]
@@ -127,7 +128,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         json_vertices = collision["vertices"]
         json_triangles = collision["triangles"]
 
-        mesh_vertices = [self.read_vec3_point(vert) for vert in json_vertices]
+        mesh_vertices = [self.read_point(vert) for vert in json_vertices]
         mesh_triangles = [(tri["index0"], tri["index1"], tri["index2"]) for tri in json_triangles]
 
         mesh = bpy.data.meshes.new(name=name)
@@ -150,7 +151,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # empty.empty_display_type = "PLAIN_AXES"
         # endregion
         # Spawn empty object and add it to the scene and modify its properties
-        empty = bpy.data.objects.new(name=name, object_data = None)
+        empty = bpy.data.objects.new(name = name, object_data = None)
         empty.matrix_world = transform
         # empty.location = (0, 0, 0) # TODO : Implement transform reading so that we can extract the position, rotation, scale, etc...
 
@@ -159,6 +160,20 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         empty.magickcow_empty_type = "LOCATOR"
         empty.magickcow_locator_radius = radius
 
+    def import_trigger(self, trigger):
+        name = trigger["Name"]
+        position = self.read_point(trigger["Position"])
+        scale = self.read_scale(trigger["SideLengths"])
+        rotation = self.read_quat(trigger["Rotation"])
+
+        empty = bpy.data.objects.new(name = name, object_data = None)
+        empty.location = position
+        empty.rotation_quaternion = rotation
+        empty.scale = scale
+
+        bpy.context.collection.objects.link(empty)
+
+        empty.magickcow_empty_type = "TRIGGER"
 
     # endregion
 
