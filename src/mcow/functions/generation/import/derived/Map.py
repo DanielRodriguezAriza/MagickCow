@@ -74,7 +74,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         pass
     
     def import_locators(self, locators):
-        pass
+        for locator in locators:
+            self.import_locator(locator)
     
     def import_nav_mesh(self, nav_mesh):
         pass
@@ -84,7 +85,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     # region Import Methods - Internal
 
     # TODO : Finish implementing (what's left as of now is modifying the properties of the spawned in light so that it uses the values that it has read from the JSON data)
-    # TODO : Handle translating vectors from Y up to Z up...
+    # TODO : Handle translating ALL vectors from Y up to Z up...
     def import_light(self, light):
         # Read the light data
         # TODO : Maybe in the future, encapsulate this into a read method, so that we can read this automatically in any other place or something...
@@ -136,6 +137,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         mesh.from_pydata(mesh_vertices, [], mesh_triangles)
         mesh.update()
+
+    def import_locator(self, locator):
+        pass
 
     # endregion
 
