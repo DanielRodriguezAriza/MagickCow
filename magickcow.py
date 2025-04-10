@@ -5985,7 +5985,7 @@ class MCow_Data_Pipeline_Cache:
 # endregion
 
 # ../mcow/functions/generation/import/Pipeline.py
-# region Import Data Generation pipeline classes
+# region Import Data Pipeline class - Base class
 
 class MCow_ImportPipeline:
     def __init__(self):
@@ -6005,6 +6005,11 @@ class MCow_ImportPipeline:
         return ans
     
     # TODO : Add option to handle reading vectors as Y up or Z up... maybe add a bool or a different method that specifies if we want to perform Y up to Z up conversion.
+
+# endregion
+
+# ../mcow/functions/generation/import/derived/Map.py
+# region Import Data Pipeline class - LevelModel / Map
 
 # TODO : Implement all import functions...
 class MCow_ImportPipeline_Map(MCow_ImportPipeline):
@@ -6124,6 +6129,11 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
 
     # endregion
+
+# endregion
+
+# ../mcow/functions/generation/import/derived/PhysicsEntity.py
+# region Import Data Pipeline class - PhysicsEntity
 
 class MCow_ImportPipeline_PhysicsEntity(MCow_ImportPipeline):
     def __init__(self):
