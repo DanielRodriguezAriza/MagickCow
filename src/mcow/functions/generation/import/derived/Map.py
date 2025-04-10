@@ -141,7 +141,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     def import_locator(self, locator):
         # Get the properties of the locator from the json data
         name = locator["Name"]
-        # transform = etc...
+        transform = self.read_mat4x4(locator["Transform"])
         radius = locator["Radius"]
 
         # region Comment - empty display explanation
@@ -151,7 +151,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # endregion
         # Spawn empty object and add it to the scene and modify its properties
         empty = bpy.data.objects.new(name=name, object_data = None)
-        empty.location = (0, 0, 0) # TODO : Implement transform reading so that we can extract the position, rotation, scale, etc...
+        empty.matrix_world = transform
+        # empty.location = (0, 0, 0) # TODO : Implement transform reading so that we can extract the position, rotation, scale, etc...
 
         bpy.context.collection.objects.link(empty)
 
