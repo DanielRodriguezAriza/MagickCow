@@ -5996,15 +5996,33 @@ class MCow_ImportPipeline:
         raise MagickCowImportException("Cannot execute base import pipeline!")
         return None
     
-    def read_vector_3(self, vec3):
+    # region Read Methods - Raw
+
+    def read_vec2_raw(self, vec2):
+        ans = (vec2["x"], vec2["y"])
+        return ans
+
+    def read_vec3_raw(self, vec3):
         ans = (vec3["x"], vec3["y"], vec3["z"])
         return ans
     
-    def read_vector_4(self, vec4):
+    def read_vec4_raw(self, vec4):
         ans = (vec4["x"], vec4["y"], vec4["z"], vec4["w"])
         return ans
     
-    # TODO : Add option to handle reading vectors as Y up or Z up... maybe add a bool or a different method that specifies if we want to perform Y up to Z up conversion.
+    # endregion
+
+    # region Read Methods - Transform Y up to Z up
+    
+    def read_vec3_point(self, point):
+        ans = vec3_point_to_z_up(self.read_vec3_raw(point))
+        return ans
+    
+    def read_vec3_direction(self, direction):
+        # TODO : Implement
+        return None
+    
+    # endregion
 
 # endregion
 
@@ -6085,7 +6103,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         pass
     
     def import_locators(self, locators):
-        pass
+        for locator in locators:
+            self.import_locator(locator)
     
     def import_nav_mesh(self, nav_mesh):
         pass
@@ -6095,13 +6114,13 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     # region Import Methods - Internal
 
     # TODO : Finish implementing (what's left as of now is modifying the properties of the spawned in light so that it uses the values that it has read from the JSON data)
-    # TODO : Handle translating vectors from Y up to Z up...
+    # TODO : Handle translating ALL vectors from Y up to Z up...
     def import_light(self, light):
         # Read the light data
         # TODO : Maybe in the future, encapsulate this into a read method, so that we can read this automatically in any other place or something...
         name = light["LightName"]
-        position = vec3_point_to_z_up(self.read_vector_3(light["Position"]))
-        direction = self.read_vector_3(light["Direction"]) # TODO : Handle direction transform from Y up to Z up.
+        position = self.read_vec3_point(light["Position"])
+        direction = self.read_vec3_raw(light["Direction"]) # TODO : Handle direction transform from Y up to Z up.
         light_type = find_light_type_name(light["LightType"])
         variation_type = light["LightVariationType"]
         reach = light["Reach"]
@@ -6137,7 +6156,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         json_vertices = collision["vertices"]
         json_triangles = collision["triangles"]
 
-        mesh_vertices = [vec3_point_to_z_up(self.read_vector_3(vert)) for vert in json_vertices]
+        mesh_vertices = [self.read_vec3_point(vert) for vert in json_vertices]
         mesh_triangles = [(tri["index0"], tri["index1"], tri["index2"]) for tri in json_triangles]
 
         mesh = bpy.data.meshes.new(name=name)
@@ -6147,6 +6166,21 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         mesh.from_pydata(mesh_vertices, [], mesh_triangles)
         mesh.update()
+
+    def import_locator(self, locator):
+        name = locator["Name"]
+        # transform = etc...
+        radius = locator["Radius"]
+
+        empty = bpy.data.objects.new(name=name, object_data = None)
+        empty.empty_display_type = "PLAIN_AXES" # TODO : Update this automatically somehow so that we can get the proper display type, like when we change between empty object types on mcow's panel, such as locator, trigger, etc...
+        empty.location = (0, 0, 0) # TODO : Implement transform reading so that we can extract the position, rotation, scale, etc...
+
+        bpy.context.collection.objects.link(empty)
+
+        empty.magickcow_empty_type = "LOCATOR"
+        empty.magickcow_locator_radius = radius
+
 
     # endregion
 
