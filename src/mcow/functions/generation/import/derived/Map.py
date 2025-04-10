@@ -63,11 +63,12 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     def import_force_fields(self, force_fields):
         pass
     
-    def import_model_collision(self, collision):
-        pass
+    def import_model_collision(self, collision_data): # TODO : Add support to specify the type of collision channel that we're importing, as of now we're only going to be importing the mesh and that's it.
+        for collision_channel in collision_data:
+            self.import_collision_channel(collision_channel)
     
-    def import_camera_collision(self, collision):
-        pass
+    def import_camera_collision(self, collision_data):
+        self.import_collision_channel(collision_data)
     
     def import_triggers(self, triggers):
         pass
