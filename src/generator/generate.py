@@ -9,6 +9,71 @@
 
 # endregion
 
+# region Imports
+
+import os
+
+# endregion
+
+# region Extra
+
+class cli_ansi:
+    class color:
+    
+        end = "\033[0m"
+
+        class fg:
+            # Base colors
+            black          = "\033[30m"
+            red            = "\033[31m"
+            green          = "\033[32m"
+            yellow         = "\033[33m"
+            blue           = "\033[34m"
+            magenta        = "\033[35m"
+            cyan           = "\033[36m"
+            white          = "\033[37m"
+
+            # Bright colors
+            bright_black   = "\033[90m"
+            bright_red     = "\033[91m"
+            bright_green   = "\033[92m"
+            bright_yellow  = "\033[93m"
+            bright_blue    = "\033[94m"
+            bright_magenta = "\033[95m"
+            bright_cyan    = "\033[96m"
+            bright_white   = "\033[97m"
+    
+        class bg:
+            # Base colors
+            black          = "\033[40m"
+            red            = "\033[41m"
+            green          = "\033[42m"
+            yellow         = "\033[43m"
+            blue           = "\033[44m"
+            magenta        = "\033[45m"
+            cyan           = "\033[46m"
+            white          = "\033[47m"
+
+            # Bright colors
+            bright_black   = "\033[100m"
+            bright_red     = "\033[101m"
+            bright_green   = "\033[102m"
+            bright_yellow  = "\033[103m"
+            bright_blue    = "\033[104m"
+            bright_magenta = "\033[105m"
+            bright_cyan    = "\033[106m"
+            bright_white   = "\033[107m"
+
+    @staticmethod
+    def init():
+        if os.name == "nt":
+            os.system("chcp 65001 > nul")
+
+
+# endregion
+
+# region Generator
+
 def mcow_file_get_size(file):
     current = file.tell()
     file.seek(0, 2)
@@ -35,12 +100,13 @@ def mcow_file_generate(out_filename, in_filenames):
             for filename in in_filenames:
                 mcow_file_append(file, filename)
             size = mcow_file_get_size(file)
-        mcow_debug_log("Data successfully generated!")
+        mcow_debug_log(f"{cli_ansi.color.fg.green}Data successfully generated!{cli_ansi.color.end}")
         mcow_debug_log(f"Generated File : ( name = \"{out_filename}\", size = {size} bytes )")
     except Exception as e:
-        mcow_debug_log(f"There was an error generating the output file: {e}")
+        mcow_debug_log(f"{cli_ansi.color.fg.bright_red}There was an error generating the output file: {e}{cli_ansi.color.end}")
 
 def main():
+    cli_ansi.init()
     ofilename = "../../magickcow.py"
     ifilenames = [
         # Top
@@ -92,3 +158,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# endregion
