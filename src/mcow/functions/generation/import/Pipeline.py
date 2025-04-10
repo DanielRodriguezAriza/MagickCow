@@ -78,14 +78,21 @@ class MCow_ImportPipeline:
 
     # region Read Methods - Transform Y up to Z up
     
-    def read_vec3_point(self, point):
-        ans = vec3_point_to_z_up(self.read_vec3_raw(point))
+    def read_point(self, point):
+        point_data = (point["x"], point["y"], point["z"])
+        ans = point_to_z_up(point_data)
         return ans
-    
-    def read_vec3_direction(self, direction):
-        # TODO : Implement
-        return None
-    
+
+    def read_quat(self, q):
+        quat_data = (q["x"], q["y"], q["z"], q["w"])
+        ans = quat_to_z_up(quat_data)
+        return ans
+
+    def read_scale(self, scale):
+        scale_data = (scale["x"], scale["y"], scale["z"])
+        ans = scale_to_z_up(scale_data)
+        return ans
+
     def read_mat4x4(self, mat4x4):
         mat = mathutils.Matrix(mat4x4_buf2mat_rm2cm_yu2zu(self.read_mat4x4_buf_raw(mat4x4)))
         return mat
