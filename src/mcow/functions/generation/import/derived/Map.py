@@ -139,7 +139,16 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         mesh.update()
 
     def import_locator(self, locator):
-        pass
+        name = locator["Name"]
+        # transform = etc...
+        radius = locator["Radius"]
+
+        empty = bpy.data.objects.new(name=name, object_data = None)
+        empty.empty_display_type = "PLAIN_AXES" # TODO : Update this automatically somehow so that we can get the proper display type, like when we change between empty object types on mcow's panel, such as locator, trigger, etc...
+        empty.location = (0, 0, 0) # TODO : Implement transform reading so that we can extract the position, rotation, scale, etc...
+
+        bpy.context.collection.objects.link(empty)
+
 
     # endregion
 
