@@ -87,7 +87,7 @@ class MCow_ImportPipeline:
         return None
     
     def read_mat4x4(self, mat4x4):
-        mat = mathutils.Matrix(mat4x4_buf2mat_rm2cm_yu2zu(read_mat4x4_buf_raw(mat4x4)))
+        mat = mathutils.Matrix(mat4x4_buf2mat_rm2cm_yu2zu(self.read_mat4x4_buf_raw(mat4x4)))
         return mat
 
     # endregion
