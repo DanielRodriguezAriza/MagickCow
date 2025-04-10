@@ -116,6 +116,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Modify light object properties
         light_object.location = position
 
+    def import_collision_channel(self, collision):
+        pass
 
     # endregion
 
