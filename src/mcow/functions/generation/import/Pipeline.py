@@ -29,7 +29,7 @@ class MCow_ImportPipeline:
     
     def read_vec3_point(self, point):
         ans = vec3_point_to_z_up(self.read_vec3_raw(point))
-        return
+        return ans
     
     def read_vec3_direction(self, direction):
         # TODO : Implement
