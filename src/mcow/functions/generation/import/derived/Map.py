@@ -89,8 +89,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Read the light data
         # TODO : Maybe in the future, encapsulate this into a read method, so that we can read this automatically in any other place or something...
         name = light["LightName"]
-        position = vec3_point_to_z_up(self.read_vector_3(light["Position"]))
-        direction = self.read_vector_3(light["Direction"]) # TODO : Handle direction transform from Y up to Z up.
+        position = self.read_vec3_point(light["Position"])
+        direction = self.read_vec3_raw(light["Direction"]) # TODO : Handle direction transform from Y up to Z up.
         light_type = find_light_type_name(light["LightType"])
         variation_type = light["LightVariationType"]
         reach = light["Reach"]
@@ -126,7 +126,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         json_vertices = collision["vertices"]
         json_triangles = collision["triangles"]
 
-        mesh_vertices = [vec3_point_to_z_up(self.read_vector_3(vert)) for vert in json_vertices]
+        mesh_vertices = [self.read_vec3_point(vert) for vert in json_vertices]
         mesh_triangles = [(tri["index0"], tri["index1"], tri["index2"]) for tri in json_triangles]
 
         mesh = bpy.data.meshes.new(name=name)
