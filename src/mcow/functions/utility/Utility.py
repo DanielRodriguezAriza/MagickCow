@@ -189,4 +189,8 @@ def vec3_point_to_z_up(vec3):
     ans = (vec3[0], -vec3[2], vec3[1])
     return ans
 
+def mat4x4_tranpose(m):
+    transposed = [list(row) for row in zip(*m)]
+    return transposed
+
 # endregion
