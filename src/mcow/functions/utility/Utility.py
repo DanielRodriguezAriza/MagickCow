@@ -211,4 +211,32 @@ def mat4x4_buf2mat_rm2cm_yu2zu(m):
     ]
     return ans
 
+# Input: (x, y, z) in Y-Up
+# Output: (x, y, z) in Z-Up
+def point_to_z_up(p):
+    return mathutils.Vector([p[0], -p[2], p[1]])
+
+# Input: (x, y, z, w) in Y-Up
+# Output: (w, x, y, z) in Z-Up
+def quat_to_z_up(q):
+    return mathutils.Quaternion([q[3], q[0], -q[2], q[1]])
+
+# Input: (x, y, z) in Y-Up
+# Output: (x, y, z) in Z-Up
+def scale_to_z_up(s):
+    return mathutils.Vector([s[0], s[2], s[1]])
+
+# TODO : Implement these functions and change the exporter code to use this instead of the whole -X rotation bullshit.
+# This change, when applied in a future update, will prevent the exporter from exporting wrong values when dealing with certain hierarchies.
+# It will also completely get rid of the small margin of floating point precision error there exists when using a rotation matrix (float multiplications and divisions)
+# rather than just swapping values and flipping signs, which preserve the same exact float values without any issues or precision errors when changing from z up to y up and viceversa.
+# def point_to_y_up(p):
+#     return None
+# 
+# def quat_to_y_up(q):
+#     return None
+# 
+# def scale_to_y_up(s):
+#     return None
+
 # endregion
