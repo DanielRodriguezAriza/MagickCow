@@ -23,7 +23,31 @@ class MCow_ImportPipeline:
         ans = (vec4["x"], vec4["y"], vec4["z"], vec4["w"])
         return ans
     
-    def read_mat4x4_raw(self, mat4x4):
+    # Read a 4 by 4 matrix as a linear buffer
+    def read_mat4x4_buf_raw(self, mat4x4):
+        m11 = mat4x4["M11"]
+        m12 = mat4x4["M12"]
+        m13 = mat4x4["M13"]
+        m14 = mat4x4["M14"]
+        m21 = mat4x4["M21"]
+        m22 = mat4x4["M22"]
+        m23 = mat4x4["M23"]
+        m24 = mat4x4["M24"]
+        m31 = mat4x4["M31"]
+        m32 = mat4x4["M32"]
+        m33 = mat4x4["M33"]
+        m34 = mat4x4["M34"]
+        m41 = mat4x4["M41"]
+        m42 = mat4x4["M42"]
+        m43 = mat4x4["M43"]
+        m44 = mat4x4["M44"]
+
+        mat = [m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44]
+
+        return mat
+
+    # Read a 4 by 4 matrix as a matrix (list of lists)
+    def read_mat4x4_mat_raw(self, mat4x4):
         m11 = mat4x4["M11"]
         m12 = mat4x4["M12"]
         m13 = mat4x4["M13"]
@@ -62,6 +86,10 @@ class MCow_ImportPipeline:
         # TODO : Implement
         return None
     
+    def read_mat4x4(self, mat4x4):
+        mat = mathutils.Matrix(mat4x4_buf2mat_rm2cm_yu2zu(read_mat4x4_buf_raw(mat4x4)))
+        return mat
+
     # endregion
 
 # endregion
