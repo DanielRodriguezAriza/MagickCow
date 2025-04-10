@@ -130,8 +130,12 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         mesh_triangles = (tri["index0"], tri["index1"], tri["index2"]) for tri in json_triangles
 
         mesh = bpy.data.meshes.new(name=name)
+        obj = bpy.data.objects.new(name=name, object_data=mesh)
 
-        # TODO : Implement mesh creation and linkage
+        bpy.context.collection.objects.link(obj)
+
+        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
+        mesh.update()
 
     # endregion
 
