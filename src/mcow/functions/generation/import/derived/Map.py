@@ -126,8 +126,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         json_vertices = collision["vertices"]
         json_triangles = collision["triangles"]
 
-        mesh_vertices = vec3_point_to_z_up(self.read_vector_3(vert)) for vert in json_vertices
-        mesh_triangles = (tri["index0"], tri["index1"], tri["index2"]) for tri in json_triangles
+        mesh_vertices = [vec3_point_to_z_up(self.read_vector_3(vert)) for vert in json_vertices]
+        mesh_triangles = [(tri["index0"], tri["index1"], tri["index2"]) for tri in json_triangles]
 
         mesh = bpy.data.meshes.new(name=name)
         obj = bpy.data.objects.new(name=name, object_data=mesh)
