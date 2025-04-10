@@ -6074,11 +6074,12 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     def import_force_fields(self, force_fields):
         pass
     
-    def import_model_collision(self, collision):
-        pass
+    def import_model_collision(self, collision_data): # TODO : Add support to specify the type of collision channel that we're importing, as of now we're only going to be importing the mesh and that's it.
+        for idx, collision_channel in enumerate(collision_data):
+            self.import_collision_channel(f"collision_mesh_model_{idx}", collision_channel) # This would need an extra param to specify the collision channel index, but what happens then to the import camera collision function? those are the details we need to polish.
     
-    def import_camera_collision(self, collision):
-        pass
+    def import_camera_collision(self, collision_data):
+        self.import_collision_channel("collision_mesh_camera", collision_data)
     
     def import_triggers(self, triggers):
         pass
@@ -6127,6 +6128,25 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Modify light object properties
         light_object.location = position
 
+    def import_collision_channel(self, name, collision):
+        has_collision = collision["hasCollision"]
+
+        if not has_collision:
+            return
+        
+        json_vertices = collision["vertices"]
+        json_triangles = collision["triangles"]
+
+        mesh_vertices = [vec3_point_to_z_up(self.read_vector_3(vert)) for vert in json_vertices]
+        mesh_triangles = [(tri["index0"], tri["index1"], tri["index2"]) for tri in json_triangles]
+
+        mesh = bpy.data.meshes.new(name=name)
+        obj = bpy.data.objects.new(name=name, object_data=mesh)
+
+        bpy.context.collection.objects.link(obj)
+
+        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
+        mesh.update()
 
     # endregion
 
