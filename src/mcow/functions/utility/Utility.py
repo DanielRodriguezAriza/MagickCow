@@ -189,8 +189,26 @@ def vec3_point_to_z_up(vec3):
     ans = (vec3[0], -vec3[2], vec3[1])
     return ans
 
-def mat4x4_tranpose(m):
+# NOTE : Maybe it would be better to not use this function since mathutils.Matrix already has the .transposed() method, which is probably faster... 
+def mat4x4_mat_tranpose(m):
     transposed = [list(row) for row in zip(*m)]
     return transposed
+
+# region Comment - mat4x4_buf2mat_rm2cm_yu2zu()
+# Matrix 4x4 -> Matrix 4x4 
+# linear buffer -> matrix
+# row-major -> column-major
+# Y-Up -> Z-Up
+# endregion
+def mat4x4_buf2mat_rm2cm_yu2zu(m):
+    # NOTE : This code actually translates a row-major 4x4 matrix from Y up to Z up.
+    # The objective is to be a bit more generic, so the function should transform asuming the input is in column major maybe?
+    ans = [
+        [ m[ 0], -m[ 8],  m[ 4],  m[12]],
+        [-m[ 2],  m[10], -m[ 6], -m[14]],
+        [ m[ 1], -m[ 9],  m[ 5],  m[13]],
+        [ m[ 3], -m[11],  m[ 7],  m[15]]
+    ]
+    return ans
 
 # endregion
