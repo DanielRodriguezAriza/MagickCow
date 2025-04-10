@@ -6302,18 +6302,36 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         empty.magickcow_locator_radius = radius
 
     def import_trigger(self, trigger):
+        # Extract the data from the json object
         name = trigger["Name"]
         position = self.read_point(trigger["Position"])
-        scale = self.read_scale(trigger["SideLengths"])
+        scale = self.read_scale(trigger["SideLengths"]) * 0.5 # Divide by half the side of the trigger because the trigger origin in Magicka is on a corner, but in Blender is on the center of the trigger's volume.
         rotation = self.read_quat(trigger["Rotation"])
 
+        # Create the empty object trigger on the Blender scene and assign the properties
+        # NOTE : These values that we just assigned are the ones used by Magicka's engine in-game.
+        # After this, we apply some corrections so that the values are exactly the ones that Blender needs to use.
         empty = bpy.data.objects.new(name = name, object_data = None)
         empty.location = position
         empty.rotation_quaternion = rotation
         empty.scale = scale
+        
+        # Get the relative transform vectors (forward vector, up vector and right vector) of the object on the Blender scene.
+        # These will be used to apply some relative translations.
+        x_vec = empty.matrix_world.col[0].xyz.normalized()
+        y_vec = empty.matrix_world.col[1].xyz.normalized()
+        z_vec = empty.matrix_world.col[2].xyz.normalized()
 
+        # Apply a relative transform by half of the in-game scale (which is 100% of the in-Blender scale)
+        # so that the origin point is now aligned with the center of the trigger's volume rather than the corner of the trigger's volume.
+        empty.location += x_vec * scale
+        empty.location += y_vec * scale
+        empty.location += z_vec * scale
+
+        # Link the object to the scene
         bpy.context.collection.objects.link(empty)
 
+        # Change the mcow empty type. This also updates the empty display type automatically.
         empty.magickcow_empty_type = "TRIGGER"
 
     # endregion
