@@ -139,15 +139,24 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         mesh.update()
 
     def import_locator(self, locator):
+        # Get the properties of the locator from the json data
         name = locator["Name"]
         # transform = etc...
         radius = locator["Radius"]
 
+        # region Comment - empty display explanation
+        # NOTE : The display type is updated automatically when we change the property empty.magickcow_empty_type, since it is linked to an update function,
+        # so we don't need to call this ourselves by hand. I'm leaving this code behind so that you can remember why we don't do it.
+        # empty.empty_display_type = "PLAIN_AXES"
+        # endregion
+        # Spawn empty object and add it to the scene and modify its properties
         empty = bpy.data.objects.new(name=name, object_data = None)
-        empty.empty_display_type = "PLAIN_AXES" # TODO : Update this automatically somehow so that we can get the proper display type, like when we change between empty object types on mcow's panel, such as locator, trigger, etc...
         empty.location = (0, 0, 0) # TODO : Implement transform reading so that we can extract the position, rotation, scale, etc...
 
         bpy.context.collection.objects.link(empty)
+
+        empty.magickcow_empty_type = "LOCATOR"
+        empty.magickcow_locator_radius = radius
 
 
     # endregion
