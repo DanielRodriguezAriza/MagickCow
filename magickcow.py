@@ -6220,6 +6220,10 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             self.import_locator(locator)
     
     def import_nav_mesh(self, nav_mesh):
+        # NOTE : The generated nav mesh has inverted normals, and I have no idea as of now if that has any negative impact on the AI's behaviour.
+        # So for now, this is ok I suppose, since I have not seen anything within Magicka's code that would point to the face orientation of the nav mesh
+        # being taken into account... so this should be ok, but it would be ideal to solve this issue so that people who import maps don't have to deal with the ugly
+        # inverted normals, or maybe it's ok, idk.
         name = "nav_mesh_static"
 
         json_vertices = nav_mesh["Vertices"]
@@ -6244,10 +6248,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     # TODO : Handle translating ALL vectors from Y up to Z up...
     def import_light(self, light):
         # Read the light data
-        # TODO : Maybe in the future, encapsulate this into a read method, so that we can read this automatically in any other place or something...
         name = light["LightName"]
         position = self.read_point(light["Position"])
-        direction = self.read_vec3_raw(light["Direction"]) # TODO : Handle direction transform from Y up to Z up.
+        direction = self.read_point(light["Direction"]) # We use the read_point function, but that's because the translation for any spatial 3D vector, both those that represent points and directions, is the same when transforming from Z-up to Y-up and viceversa.
         light_type = find_light_type_name(light["LightType"])
         variation_type = light["LightVariationType"]
         reach = light["Reach"]
@@ -6273,6 +6276,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         # Modify light object properties
         light_object.location = position
+        light_object.rotation_quaternion = mathutils.Vector((0, 0, 1)).rotation_difference(direction)
 
     def import_collision_channel(self, name, collision):
         has_collision = collision["hasCollision"]

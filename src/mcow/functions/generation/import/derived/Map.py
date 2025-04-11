@@ -135,6 +135,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         # Modify light object properties
         light_object.location = position
+        light_object.rotation_quaternion = mathutils.Vector((0, 0, 1)).rotation_difference(direction)
 
     def import_collision_channel(self, name, collision):
         has_collision = collision["hasCollision"]
