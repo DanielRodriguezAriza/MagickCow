@@ -138,6 +138,23 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         light_object.rotation_mode = "QUATERNION" # Set rotation mode to quaternion for the light object.
         light_object.rotation_quaternion = mathutils.Vector((0, 0, -1)).rotation_difference(direction)
 
+        # Modify light mcow properties
+        light_data.magickcow_light_type = light_type
+        light_data.magickcow_light_variation_type = variation_type
+        light_data.magickcow_light_variation_speed = variation_speed
+        light_data.magickcow_light_variation_amount = variation_amount
+        light_data.magickcow_light_reach = reach
+        light_data.magickcow_light_use_attenuation = use_attenuation
+        light_data.magickcow_light_cutoffangle = cutoff_angle
+        light_data.magickcow_light_sharpness = sharpness
+        light_data.magickcow_light_color_diffuse = color_diffuse
+        light_data.magickcow_light_color_ambient = color_ambient
+        light_data.magickcow_light_intensity_specular = specular
+        light_data.magickcow_light_intensity_diffuse = 0 # TODO : Implement
+        light_data.magickcow_light_intensity_ambient = 0 # TODO : Implement
+        light_data.magickcow_light_shadow_map_size = shadow_map_size
+        light_data.magickcow_light_casts_shadows = casts_shadows
+
     def import_collision_channel(self, name, collision):
         has_collision = collision["hasCollision"]
 
