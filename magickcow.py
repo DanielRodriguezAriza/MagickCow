@@ -1251,6 +1251,13 @@ class OBJECT_PT_MagickCowPropertiesPanel(bpy.types.Panel):
 # If the names are different, the function will not properly allow objects to be modified.
 def update_properties_map_empty(self, context):
     
+    # Only update the display if the display sync is enabled.
+    if not bpy.context.scene.mcow_scene_display_sync:
+        return
+
+    show_tags_true = bpy.context.scene.mcow_scene_display_tags
+    show_tags_false = False
+
     if self.magickcow_empty_original_setting_must_update:
         # Restore the original settings and mark as updated / restored
         self.magickcow_empty_original_setting_must_update = False
@@ -1269,23 +1276,23 @@ def update_properties_map_empty(self, context):
         # Perform the corresponding updates for each empty type
         if self.magickcow_empty_type == "LOCATOR":
             self.empty_display_type = "PLAIN_AXES"
-            self.show_name = True
+            self.show_name = show_tags_true
                 
         elif self.magickcow_empty_type == "TRIGGER":
             self.empty_display_type = "CUBE"
-            self.show_name = True
+            self.show_name = show_tags_true
         
         elif self.magickcow_empty_type == "PARTICLE":
             self.empty_display_type = "SPHERE"
-            self.show_name = False
+            self.show_name = show_tags_false
         
         elif self.magickcow_empty_type == "BONE":
             self.empty_display_type = "PLAIN_AXES"
-            self.show_name = True
+            self.show_name = show_tags_true
         
         elif self.magickcow_empty_type == "PHYSICS_ENTITY":
             self.empty_display_type = "ARROWS"
-            self.show_name = False
+            self.show_name = show_tags_false
 
 def register_properties_map_empty():
     empty = bpy.types.Object
@@ -1494,6 +1501,11 @@ def unregister_properties_map_mesh():
     # del mesh.magickcow_vertex_color_enabled
 
 def update_properties_map_light(self, context):
+    
+    # Only update the display if the display sync is enabled.
+    if not bpy.context.scene.mcow_scene_display_sync:
+        return
+    
     self.type = self.magickcow_light_type # The enum literally has the same strings under the hood, so we can just assign it directly.
     self.color = self.magickcow_light_color_diffuse # The color is normalized, so they are identical values.
     
@@ -1675,6 +1687,13 @@ def unregister_properties_map():
 
 def update_properties_physics_entity_empty(self, context):
     
+    # Only update the display if the display sync is enabled.
+    if not bpy.context.scene.mcow_scene_display_sync:
+        return
+
+    show_tags_true = bpy.context.scene.mcow_scene_display_tags
+    show_tags_false = False
+
     if self.magickcow_empty_original_setting_must_update:
         # Restore the original settings and mark as updated / restored
         self.magickcow_empty_original_setting_must_update = False
@@ -1693,15 +1712,15 @@ def update_properties_physics_entity_empty(self, context):
         # Perform the corresponding updates for each empty type
         if self.mcow_physics_entity_empty_type == "BONE":
             self.empty_display_type = "PLAIN_AXES"
-            self.show_name = True
+            self.show_name = show_tags_true
         
         elif self.mcow_physics_entity_empty_type == "ROOT":
             self.empty_display_type = "SPHERE"
-            self.show_name = False
+            self.show_name = show_tags_false
         
         elif self.mcow_physics_entity_empty_type == "BOUNDING_BOX":
             self.empty_display_type = "CUBE"
-            self.show_name = True
+            self.show_name = show_tags_true
 
 def register_properties_physics_entity_empty():
     
@@ -1907,6 +1926,10 @@ class MagickCowScenePanel(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
 
+        layout.label(text="Scene Display Settings")
+        layout.prop(scene, "mcow_scene_display_tags")
+        layout.prop(scene, "mcow_scene_display_sync")
+
         layout.label(text="Scene Export Settings")
         layout.prop(scene, "mcow_scene_mode")
         layout.prop(scene, "mcow_scene_base_path")
@@ -2005,6 +2028,20 @@ def register_properties_scene():
         default = False
     )
 
+    bpy.types.Scene.mcow_scene_display_tags = bpy.props.BoolProperty(
+        name = "Display Object Tags",
+        description = "Display name tags for point data objects such as locators and triggers.",
+        default = True,
+        update = update_properties_scene
+    )
+
+    bpy.types.Scene.mcow_scene_display_sync = bpy.props.BoolProperty(
+        name = "Synchronize Displayed State",
+        description = "Synchronize the displayed state with the internal state of MagickCow object configuration. Useful for visualization purposes.",
+        default = True,
+        update = update_properties_scene
+    )
+
     # Register the scene panel itself
     bpy.utils.register_class(MagickCowScenePanel)
 
@@ -2016,6 +2053,8 @@ def unregister_properties_scene():
     del bpy.types.Scene.mcow_scene_json_indent
     del bpy.types.Scene.mcow_scene_base_path
     del bpy.types.Scene.mcow_scene_animation
+    del bpy.types.Scene.mcow_scene_display_tags
+    del bpy.types.Scene.mcow_scene_display_sync
 
     # Unregister the scene panel
     bpy.utils.unregister_class(MagickCowScenePanel)
