@@ -6252,7 +6252,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             self.import_light(light)
     
     def import_effects(self, effects):
-        pass
+        for effect in effects:
+            self.import_effect(effect)
     
     def import_physics_entities(self, physics_entities):
         pass
@@ -6452,6 +6453,26 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         # Change the mcow empty type. This also updates the empty display type automatically.
         empty.magickcow_empty_type = "TRIGGER"
+
+    def import_effect(self, effect):
+        effect_name = effect["id"]
+        effect_position = self.read_point(effect["vector1"])
+        effect_orientation = self.read_point(effect["vector2"])
+        effect_range = effect["range"]
+        effect_name = effect["name"]
+
+        obj = bpy.data.objects.new(name = effect_name, object_data = None)
+        
+        obj.location = effect_position
+        obj.rotation_mode = "QUATERNION"
+        obj.rotation_quaternion = mathutils.Vector((0, -1, 0)).rotation_difference(effect_orientation)
+
+        bpy.context.collection.objects.link(obj)
+
+        obj.magickcow_empty_type = "PARTICLE"
+        obj.magickcow_particle_name = effect_name
+        obj.magickcow_particle_range = effect_range
+
 
     # endregion
 
