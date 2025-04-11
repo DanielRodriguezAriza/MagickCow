@@ -6256,7 +6256,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             self.import_effect(effect)
     
     def import_physics_entities(self, physics_entities):
-        pass
+        for idx, physics_entity in enumerate(physics_entities):
+            self.import_physics_entity(idx, physics_entity)
     
     def import_liquids(self, liquids):
         pass
@@ -6473,6 +6474,18 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         obj.magickcow_particle_name = effect_name
         obj.magickcow_particle_range = effect_range
 
+    def import_physics_entity(self, idx, physics_entity):
+        template = physics_entity["template"]
+        transform = self.read_mat4x4(physics_entity["transform"])
+
+        obj = bpy.data.objects.new(name=f"physics_entity_{idx}", object_data = None)
+
+        obj.matrix_world = transform
+
+        bpy.context.collection.objects.link(obj)
+
+        obj.magickcow_empty_type = "PHYSICS_ENTITY"
+        obj.magickcow_physics_entity_name = template
 
     # endregion
 
