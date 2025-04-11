@@ -79,7 +79,25 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             self.import_locator(locator)
     
     def import_nav_mesh(self, nav_mesh):
-        pass
+        # NOTE : The generated nav mesh has inverted normals, and I have no idea as of now if that has any negative impact on the AI's behaviour.
+        # So for now, this is ok I suppose, since I have not seen anything within Magicka's code that would point to the face orientation of the nav mesh
+        # being taken into account... so this should be ok, but it would be ideal to solve this issue so that people who import maps don't have to deal with the ugly
+        # inverted normals, or maybe it's ok, idk.
+        name = "nav_mesh_static"
+
+        json_vertices = nav_mesh["Vertices"]
+        json_triangles = nav_mesh["Triangles"]
+
+        mesh_vertices = [self.read_point(vert) for vert in json_vertices]
+        mesh_triangles = [(tri["VertexA"], tri["VertexB"], tri["VertexC"]) for tri in json_triangles]
+
+        mesh = bpy.data.meshes.new(name = name)
+        obj = bpy.data.objects.new(name = name, object_data = mesh)
+
+        bpy.context.collection.objects.link(obj)
+
+        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
+        mesh.update()
     
     # endregion
 

@@ -6220,7 +6220,21 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             self.import_locator(locator)
     
     def import_nav_mesh(self, nav_mesh):
-        pass
+        name = "nav_mesh_static"
+
+        json_vertices = nav_mesh["Vertices"]
+        json_triangles = nav_mesh["Triangles"]
+
+        mesh_vertices = [self.read_point(vert) for vert in json_vertices]
+        mesh_triangles = [(tri["VertexA"], tri["VertexB"], tri["VertexC"]) for tri in json_triangles]
+
+        mesh = bpy.data.meshes.new(name = name)
+        obj = bpy.data.objects.new(name = name, object_data = mesh)
+
+        bpy.context.collection.objects.link(obj)
+
+        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
+        mesh.update()
     
     # endregion
 
