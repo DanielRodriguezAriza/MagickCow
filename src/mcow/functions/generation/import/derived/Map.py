@@ -111,7 +111,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         position = self.read_point(light["Position"])
         direction = self.read_point(light["Direction"]) # We use the read_point function, but that's because the translation for any spatial 3D vector, both those that represent points and directions, is the same when transforming from Z-up to Y-up and viceversa.
         light_type = find_light_type_name(light["LightType"])
-        variation_type = light["LightVariationType"]
+        variation_type = find_light_variation_type_name(light["LightVariationType"])
         reach = light["Reach"]
         use_attenuation = light["UseAttenuation"]
         cutoff_angle = light["CutoffAngle"]
