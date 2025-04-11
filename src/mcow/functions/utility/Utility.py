@@ -65,6 +65,9 @@ def find_collision_material_index(material):
 def find_light_variation_type_index(light_variation):
     return find_element_index(["NONE", "SINE", "FLICKER", "CANDLE", "STROBE"], light_variation, 0)
 
+def find_light_variation_type_name(light_variation):
+    return find_element(["NONE", "SINE", "FLICKER", "CANDLE", "STROBE"], light_variation, 0)
+
 # Scene object getters functions. They return objects according to the type of query made.
 def get_all_objects():
     objs = bpy.data.objects
