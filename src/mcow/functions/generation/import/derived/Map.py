@@ -135,6 +135,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         # Modify light object properties
         light_object.location = position
+        light_object.rotation_mode = "QUATERNION" # Set rotation mode to quaternion for the light object.
         light_object.rotation_quaternion = mathutils.Vector((0, 0, 1)).rotation_difference(direction)
 
     def import_collision_channel(self, name, collision):
@@ -186,10 +187,13 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         rotation = self.read_quat(trigger["Rotation"])
 
         # Create the empty object trigger on the Blender scene and assign the properties
-        # NOTE : These values that we just assigned are the ones used by Magicka's engine in-game.
-        # After this, we apply some corrections so that the values are exactly the ones that Blender needs to use.
         empty = bpy.data.objects.new(name = name, object_data = None)
+        
+        # Assign the properties to the created empty object
+        # NOTE : These values that we are assigning here are the ones used by Magicka's engine in-game.
+        # After this, we apply some corrections so that the values are exactly the ones that Blender needs to use.
         empty.location = position
+        empty.rotation_mode = "QUATERNION" # Change the rotation mode to quaternion so that we can apply quaternion rotations. Yes, in blender, if you don't change the rotation mode from "XYZ" to "QUATERNION", the rotation_quaternion property will literally do fucking nothing at all...
         empty.rotation_quaternion = rotation
         empty.scale = scale
         
@@ -199,6 +203,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         y_vec = empty.matrix_world.col[1].xyz.normalized()
         z_vec = empty.matrix_world.col[2].xyz.normalized()
 
+        # Apply corrections to trigger location.
         # Apply a relative transform by half of the in-game scale (which is 100% of the in-Blender scale)
         # so that the origin point is now aligned with the center of the trigger's volume rather than the corner of the trigger's volume.
         empty.location += x_vec * scale
