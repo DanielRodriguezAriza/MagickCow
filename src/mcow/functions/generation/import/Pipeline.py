@@ -99,4 +99,11 @@ class MCow_ImportPipeline:
 
     # endregion
 
+    # region Read Methods - Other
+
+    def read_color_rgb(self, color):
+        return mathutils.Vector((color["x"], color["y"], color["z"]))
+
+    # endregion
+
 # endregion
