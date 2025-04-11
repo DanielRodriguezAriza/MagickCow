@@ -1495,7 +1495,12 @@ def unregister_properties_map_mesh():
 
 def update_properties_map_light(self, context):
     self.type = self.magickcow_light_type # The enum literally has the same strings under the hood, so we can just assign it directly.
-    self.color = self.magickcow_light_color_diffuse
+    self.color = self.magickcow_light_color_diffuse # The color is normalized, so they are identical values.
+    
+    # Approximation for light radius and intensity because there is no way in modern Blender to set exact light radius for some reason.
+    self.energy = 10 if self.type == "SUN" else self.magickcow_light_reach * 100 * self.magickcow_light_intensity_diffuse
+    self.use_custom_distance = True
+    self.cutoff_distance = self.magickcow_light_reach
 
 def register_properties_map_light():
     light = bpy.types.Light
@@ -1548,7 +1553,8 @@ def register_properties_map_light():
     light.magickcow_light_reach = bpy.props.FloatProperty(
         name = "Reach",
         description = "The \"distance\" or \"radius\" of effect of the light.\n - For point lights, it defines the radius.\n - For spot lights, it defines the length of the light.\n - For directional lights, it is ignored.",
-        default = 5.0
+        default = 5.0,
+        update = update_properties_map_light
     )
     
     # Light attenuation and cutoff settings
@@ -1602,7 +1608,8 @@ def register_properties_map_light():
     light.magickcow_light_intensity_diffuse = bpy.props.FloatProperty(
         name = "Diffuse Intensity",
         description = "Intensity of the light's diffuse color emission. Acts as a multiplier over the diffuse color value. The result is NOT clamped to the [0,1] interval.",
-        default = 1.0
+        default = 1.0,
+        update = update_properties_map_light
     )
     
     light.magickcow_light_intensity_ambient = bpy.props.FloatProperty(
