@@ -6136,6 +6136,13 @@ class MCow_ImportPipeline:
 
     # endregion
 
+    # region Read Methods - Other
+
+    def read_color_rgb(self, color):
+        return mathutils.Vector((color["x"], color["y"], color["z"]))
+
+    # endregion
+
 # endregion
 
 # ../mcow/functions/generation/import/derived/Map.py
@@ -6257,13 +6264,27 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         use_attenuation = light["UseAttenuation"]
         cutoff_angle = light["CutoffAngle"]
         sharpness = light["Sharpness"]
-        color_diffuse = light["DiffuseColor"]
-        color_ambient = light["AmbientColor"]
+        color_diffuse_raw = self.read_color_rgb(light["DiffuseColor"])
+        color_ambient_raw = self.read_color_rgb(light["AmbientColor"])
         specular = light["SpecularAmount"]
         variation_speed = light["VariationSpeed"]
         variation_amount = light["VariationAmount"]
         shadow_map_size = light["ShadowMapSize"]
         casts_shadows = light["CastsShadows"]
+
+        # Calculate normalized color RGB values
+        color_diffuse = color_diffuse_raw.normalized()
+        color_ambient = color_ambient_raw.normalized()
+        
+        # Calculate light intensity values for the new normalized RGB values
+        # region Comment - intensity value calculation
+        # NOTE : The results obtained may not be 100% correct. This is the best approximation I could come up with. An input color may have an intensity of a different magnitude for each of the color channels.
+        # This code is built on the assumption that the intensity is assumed to be the same multiplier for all channels, even tho it can be manually set to anything by hand. Obviously this assumption is made
+        # Because of the intensity property found on the leftover fbx map file within the Magicka game files, which points to the direction that devs deliberatedly made all maps to respect this constraint.
+        # Users could edit this by hand if they wanted tho. The best solution in the future would be to actually add support for individual intensity values for each channel. 
+        # endregion
+        color_diffuse_intensity = color_diffuse_raw.length
+        color_ambient_intensity = color_ambient_raw.length
 
         # Create the light data and modify its properties
         light_data = bpy.data.lights.new(name=name, type=light_type)
@@ -6278,6 +6299,23 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         light_object.location = position
         light_object.rotation_mode = "QUATERNION" # Set rotation mode to quaternion for the light object.
         light_object.rotation_quaternion = mathutils.Vector((0, 0, -1)).rotation_difference(direction)
+
+        # Modify light mcow properties
+        light_data.magickcow_light_type = light_type
+        light_data.magickcow_light_variation_type = variation_type
+        light_data.magickcow_light_variation_speed = variation_speed
+        light_data.magickcow_light_variation_amount = variation_amount
+        light_data.magickcow_light_reach = reach
+        light_data.magickcow_light_use_attenuation = use_attenuation
+        light_data.magickcow_light_cutoffangle = cutoff_angle
+        light_data.magickcow_light_sharpness = sharpness
+        light_data.magickcow_light_color_diffuse = color_diffuse
+        light_data.magickcow_light_color_ambient = color_ambient
+        light_data.magickcow_light_intensity_specular = specular
+        light_data.magickcow_light_intensity_diffuse = color_diffuse_intensity
+        light_data.magickcow_light_intensity_ambient = color_ambient_intensity
+        light_data.magickcow_light_shadow_map_size = shadow_map_size
+        light_data.magickcow_light_casts_shadows = casts_shadows
 
     def import_collision_channel(self, name, collision):
         has_collision = collision["hasCollision"]
@@ -6310,13 +6348,14 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # so we don't need to call this ourselves by hand. I'm leaving this code behind so that you can remember why we don't do it.
         # empty.empty_display_type = "PLAIN_AXES"
         # endregion
-        # Spawn empty object and add it to the scene and modify its properties
+        # Create empty object and add it to the scene and modify its properties
         empty = bpy.data.objects.new(name = name, object_data = None)
         empty.matrix_world = transform
-        # empty.location = (0, 0, 0) # TODO : Implement transform reading so that we can extract the position, rotation, scale, etc...
 
+        # Link the object to the current scene collection
         bpy.context.collection.objects.link(empty)
 
+        # Update the mcow properties
         empty.magickcow_empty_type = "LOCATOR"
         empty.magickcow_locator_radius = radius
 
