@@ -1498,9 +1498,12 @@ def update_properties_map_light(self, context):
     self.color = self.magickcow_light_color_diffuse # The color is normalized, so they are identical values.
     
     # Approximation for light radius and intensity because there is no way in modern Blender to set exact light radius for some reason.
-    self.energy = 10 if self.type == "SUN" else self.magickcow_light_reach * 100 * self.magickcow_light_intensity_diffuse
-    self.use_custom_distance = True
-    self.cutoff_distance = self.magickcow_light_reach
+    if self.type == "SUN":
+        self.energy = 10 * self.magickcow_light_intensity_diffuse
+    else:
+        self.energy = 100 * self.magickcow_light_intensity_diffuse * self.magickcow_light_reach
+        self.use_custom_distance = True
+        self.cutoff_distance = self.magickcow_light_reach
 
 def register_properties_map_light():
     light = bpy.types.Light
