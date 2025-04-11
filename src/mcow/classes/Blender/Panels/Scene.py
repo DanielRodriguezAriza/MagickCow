@@ -18,6 +18,10 @@ class MagickCowScenePanel(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
 
+        layout.label(text="Scene Display Settings")
+        layout.prop(scene, "mcow_scene_display_tags")
+        layout.prop(scene, "mcow_scene_display_sync")
+
         layout.label(text="Scene Export Settings")
         layout.prop(scene, "mcow_scene_mode")
         layout.prop(scene, "mcow_scene_base_path")
@@ -116,6 +120,20 @@ def register_properties_scene():
         default = False
     )
 
+    bpy.types.Scene.mcow_scene_display_tags = bpy.props.BoolProperty(
+        name = "Display Object Tags",
+        description = "Display name tags for point data objects such as locators and triggers.",
+        default = True,
+        update = update_properties_scene
+    )
+
+    bpy.types.Scene.mcow_scene_display_sync = bpy.props.BoolProperty(
+        name = "Synchronize Displayed State",
+        description = "Synchronize the displayed state with the internal state of MagickCow object configuration. Useful for visualization purposes.",
+        default = True,
+        update = update_properties_scene
+    )
+
     # Register the scene panel itself
     bpy.utils.register_class(MagickCowScenePanel)
 
@@ -127,6 +145,8 @@ def unregister_properties_scene():
     del bpy.types.Scene.mcow_scene_json_indent
     del bpy.types.Scene.mcow_scene_base_path
     del bpy.types.Scene.mcow_scene_animation
+    del bpy.types.Scene.mcow_scene_display_tags
+    del bpy.types.Scene.mcow_scene_display_sync
 
     # Unregister the scene panel
     bpy.utils.unregister_class(MagickCowScenePanel)
