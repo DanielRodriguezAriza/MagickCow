@@ -6324,19 +6324,27 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Extract the data from the json object
         name = trigger["Name"]
         position = self.read_point(trigger["Position"])
-        scale = self.read_scale(trigger["SideLengths"]) * 0.5 # Divide by half the side of the trigger because the trigger origin in Magicka is on a corner, but in Blender is on the center of the trigger's volume.
+        scale = self.read_scale(trigger["SideLengths"])
         rotation = self.read_quat(trigger["Rotation"])
 
         # Create the empty object trigger on the Blender scene and assign the properties
         empty = bpy.data.objects.new(name = name, object_data = None)
         
+        # Link the object to the scene
+        bpy.context.collection.objects.link(empty)
+
         # Assign the properties to the created empty object
         # NOTE : These values that we are assigning here are the ones used by Magicka's engine in-game.
         # After this, we apply some corrections so that the values are exactly the ones that Blender needs to use.
         empty.location = position
         empty.rotation_mode = "QUATERNION" # Change the rotation mode to quaternion so that we can apply quaternion rotations. Yes, in blender, if you don't change the rotation mode from "XYZ" to "QUATERNION", the rotation_quaternion property will literally do fucking nothing at all...
         empty.rotation_quaternion = rotation
-        empty.scale = scale
+        empty.scale = scale / 2.0 # Set the scale to half of the side of the in-game trigger side lengths because the trigger origin in Magicka is on a corner, but in Blender it's on the center of the trigger's volume.
+
+        # Update the context view layer after changing the location, rotation and scale, so that we can access the most updated values for the transform matrix.
+        # Blender does not update this value until it finishes evaluating everything for the next frame, which means that we need to force blender to perform an extra evaluation here
+        # so that accessing obj.matrix_world returns the expected value rather than an outdated value.
+        bpy.context.view_layer.update()
         
         # Get the relative transform vectors (forward vector, up vector and right vector) of the object on the Blender scene.
         # These will be used to apply some relative translations.
@@ -6345,14 +6353,11 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         z_vec = empty.matrix_world.col[2].xyz.normalized()
 
         # Apply corrections to trigger location.
-        # Apply a relative transform by half of the in-game scale (which is 100% of the in-Blender scale)
+        # Apply a relative transform by half of the in-game scale (which is 100% of the in-Blender scale, since we already divided the scale by half in a previous step)
         # so that the origin point is now aligned with the center of the trigger's volume rather than the corner of the trigger's volume.
-        empty.location += x_vec * scale
-        empty.location += y_vec * scale
-        empty.location += z_vec * scale
-
-        # Link the object to the scene
-        bpy.context.collection.objects.link(empty)
+        empty.location += x_vec * empty.scale[0]
+        empty.location -= y_vec * empty.scale[1]
+        empty.location += z_vec * empty.scale[2]
 
         # Change the mcow empty type. This also updates the empty display type automatically.
         empty.magickcow_empty_type = "TRIGGER"
