@@ -169,13 +169,14 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # so we don't need to call this ourselves by hand. I'm leaving this code behind so that you can remember why we don't do it.
         # empty.empty_display_type = "PLAIN_AXES"
         # endregion
-        # Spawn empty object and add it to the scene and modify its properties
+        # Create empty object and add it to the scene and modify its properties
         empty = bpy.data.objects.new(name = name, object_data = None)
         empty.matrix_world = transform
-        # empty.location = (0, 0, 0) # TODO : Implement transform reading so that we can extract the position, rotation, scale, etc...
 
+        # Link the object to the current scene collection
         bpy.context.collection.objects.link(empty)
 
+        # Update the mcow properties
         empty.magickcow_empty_type = "LOCATOR"
         empty.magickcow_locator_radius = radius
 
