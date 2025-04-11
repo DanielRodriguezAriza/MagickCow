@@ -107,10 +107,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     # TODO : Handle translating ALL vectors from Y up to Z up...
     def import_light(self, light):
         # Read the light data
-        # TODO : Maybe in the future, encapsulate this into a read method, so that we can read this automatically in any other place or something...
         name = light["LightName"]
         position = self.read_point(light["Position"])
-        direction = self.read_vec3_raw(light["Direction"]) # TODO : Handle direction transform from Y up to Z up.
+        direction = self.read_point(light["Direction"]) # We use the read_point function, but that's because the translation for any spatial 3D vector, both those that represent points and directions, is the same when transforming from Z-up to Y-up and viceversa.
         light_type = find_light_type_name(light["LightType"])
         variation_type = light["LightVariationType"]
         reach = light["Reach"]
