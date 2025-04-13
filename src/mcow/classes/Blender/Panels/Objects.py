@@ -88,6 +88,10 @@ class MagickCowPanelObjectPropertiesMap:
         return
     
     def draw_mesh_geometry(self, layout, obj):
+
+        layout.prop(obj.data, "magickcow_mesh_is_visible")
+        layout.prop(obj.data, "magickcow_mesh_casts_shadows")
+
         layout.prop(obj, "magickcow_collision_enabled")
         if(obj.magickcow_collision_enabled):
             layout.prop(obj, "magickcow_collision_material") # 1
@@ -504,6 +508,24 @@ def register_properties_map_mesh():
         name = "Ground Level",
         description = "Set the value of the \"GroundLevel\" property of the Deferred Effect instance used by this mesh.",
         default = -10.0 # NOTE : We used to hard code this to -10 on the make stage, and it has worked pretty well as a default value for a long time up until now, so that's literally the only reason why -10 is the default value now that ground level is an editable property, because it's battle tested, and because of legacy reasons, lol... in short: It's -10 because history, no other objective reason. The first value I saw on the first map I decompiled was something close to this, so I just rounded the value and called it a day, and it's been like that ever since. Literally just that.
+    )
+
+    # endregion
+
+    # region Mesh Visual Properties
+
+    mesh.magickcow_mesh_is_visible = bpy.props.BoolProperty(
+        name = "Is Visible",
+        description = "Determine whether this mesh should be visible in-game or not",
+        default = True
+        # update = update_properties_map_mesh
+    )
+
+    mesh.magickcow_mesh_casts_shadows = bpy.props.BoolProperty(
+        name = "Casts Shadows",
+        description = "Determine whether this mesh should cast shadows over other meshes in-game or not",
+        default = True
+        # update = update_properties_map_mesh
     )
 
     # endregion
