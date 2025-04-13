@@ -402,7 +402,13 @@ def update_properties_map_mesh(self, context):
     if not bpy.context.scene.mcow_scene_display_sync:
         return
     
-    self.visible_shadow = self.magickcow_mesh_casts_shadows
+    # Find all of the objects that are users of this mesh data block
+    # Literally a fucking hack... I HATE this workaround to Blender's fucking bullshit hierarchy system that works like ass when doing stuff like this...
+    users = [obj for obj in bpy.data.objects if obj.type == "MESH" and obj.data == self]
+    
+    # Update all of the properties that are object related but stored on the mesh data block
+    for user in users:
+        user.visible_shadow = self.magickcow_mesh_casts_shadows
 
 def register_properties_map_mesh():
     mesh = bpy.types.Mesh
