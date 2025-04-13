@@ -525,14 +525,14 @@ def register_properties_map_mesh():
     mesh.magickcow_mesh_is_visible = bpy.props.BoolProperty(
         name = "Is Visible",
         description = "Determine whether this mesh should be visible in-game or not",
-        default = True
+        default = True,
         update = update_properties_map_mesh
     )
 
     mesh.magickcow_mesh_casts_shadows = bpy.props.BoolProperty(
         name = "Casts Shadows",
         description = "Determine whether this mesh should cast shadows over other meshes in-game or not",
-        default = True
+        default = True,
         update = update_properties_map_mesh
     )
 
