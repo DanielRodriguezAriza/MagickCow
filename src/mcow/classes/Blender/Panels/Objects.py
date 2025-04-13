@@ -396,6 +396,14 @@ def unregister_properties_map_empty():
     del empty.magickcow_collision_material
     del empty.magickcow_physics_entity_name
 
+def update_properties_map_mesh(self, context):
+    
+    # Early return if the display sync is not enabled.
+    if not bpy.context.scene.mcow_scene_display_sync:
+        return
+    
+    self.visible_shadow = self.magickcow_mesh_casts_shadows
+
 def register_properties_map_mesh():
     mesh = bpy.types.Mesh
     
@@ -518,14 +526,14 @@ def register_properties_map_mesh():
         name = "Is Visible",
         description = "Determine whether this mesh should be visible in-game or not",
         default = True
-        # update = update_properties_map_mesh
+        update = update_properties_map_mesh
     )
 
     mesh.magickcow_mesh_casts_shadows = bpy.props.BoolProperty(
         name = "Casts Shadows",
         description = "Determine whether this mesh should cast shadows over other meshes in-game or not",
         default = True
-        # update = update_properties_map_mesh
+        update = update_properties_map_mesh
     )
 
     # endregion
