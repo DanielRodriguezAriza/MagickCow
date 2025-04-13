@@ -610,9 +610,14 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         aabb = self.generate_aabb_data(vertices)
 
         # Generate static mesh root node specific data
-        sway = obj.data.magickcow_mesh_sway
-        entity_influence = obj.data.magickcow_mesh_entity_influence
-        ground_level = obj.data.magickcow_mesh_ground_level
+        if obj.data.magickcow_mesh_advanced_settings_enabled:
+            sway = obj.data.magickcow_mesh_sway
+            entity_influence = obj.data.magickcow_mesh_entity_influence
+            ground_level = obj.data.magickcow_mesh_ground_level
+        else:
+            sway = bpy.types.Mesh.bl_rna.properties["magickcow_mesh_sway"].default
+            entity_influence = bpy.types.Mesh.bl_rna.properties["magickcow_mesh_entity_influence"].default
+            ground_level = bpy.types.Mesh.bl_rna.properties["magickcow_mesh_ground_level"].default
 
         return (obj, transform, obj.name, vertices, indices, matname, aabb, sway, entity_influence, ground_level)
 
