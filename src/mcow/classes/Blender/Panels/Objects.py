@@ -534,6 +534,7 @@ def update_properties_map_light(self, context):
     
     self.type = self.magickcow_light_type # The enum literally has the same strings under the hood, so we can just assign it directly.
     self.color = self.magickcow_light_color_diffuse # The color is normalized, so they are identical values.
+    self.use_shadow = self.magickcow_light_casts_shadows # Update the use shadows property to match with the mcow config for visualization purposes.
     
     # Approximation for light radius and intensity because there is no way in modern Blender to set exact light radius for some reason.
     if self.type == "SUN":
@@ -669,8 +670,9 @@ def register_properties_map_light():
     
     light.magickcow_light_casts_shadows = bpy.props.BoolProperty(
         name = "Casts Shadows",
-        description = "Determine whether the light should cast shadows or not",
-        default = True
+        description = "Determine whether this light source should cast shadows or not",
+        default = True,
+        update = update_properties_map_light
     )
 
 def unregister_properties_map_light():
