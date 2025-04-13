@@ -106,4 +106,48 @@ class MCow_ImportPipeline:
 
     # endregion
 
+    # region Read Methods - Vertex Buffer, Index Buffer, Vertex Declaration
+
+    def read_mesh_buffer_data(self, vertex_declaration, vertex_buffer, index_buffer):
+
+        vertices = []
+        indices = []
+
+        # NOTE : If any of these offset values is negative, then that means that the value was not found, so we cannot add that information to our newly generated Blender mesh data.
+        vertex_offset_position = -1
+        vertex_offset_normal = -1
+        vertex_offset_tangent = -1
+        vertex_offset_color = -1
+
+        vertex_declaration_entries = vertex_declaration["entries"]
+        for idx, entry in enumerate(vertex_declaration_entries):
+            # NOTE : Commented out lines are data from the entry that we do not need to compose a mesh in Blender / that we do not use yet.
+            # stream = entry["stream"]
+            offset = entry["offset"]
+            element_format = entry["elementFormat"]
+            # element_method = entry["elementMethod"]
+            element_usage = entry["elementUsage"]
+            # usage_index = entry["usageIndex"]
+            
+            # Offset - Position
+            if element_usage == 0:
+                vertex_offset_position = offset
+            
+            # Offset - Normal
+            elif element_usage == 3:
+                vertex_offset_normal = offset
+            
+            # Offset - Tangent
+            elif element_usage == 6:
+                vertex_offset_tangent = offset
+            
+            # Offset - Color
+            elif element_usage == 10:
+                vertex_offset_color = offset
+
+
+        
+
+        return vertices, indices
+
 # endregion
