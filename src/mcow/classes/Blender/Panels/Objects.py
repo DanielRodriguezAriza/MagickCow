@@ -92,9 +92,11 @@ class MagickCowPanelObjectPropertiesMap:
         if(obj.magickcow_collision_enabled):
             layout.prop(obj, "magickcow_collision_material") # 1
         
-        layout.prop(obj.data, "magickcow_mesh_sway")
-        layout.prop(obj.data, "magickcow_mesh_entity_influence")
-        layout.prop(obj.data, "magickcow_mesh_ground_level")
+        layout.prop(obj.data, "magickcow_mesh_advanced_settings_enabled")
+        if(obj.data.magickcow_mesh_advanced_settings_enabled):
+            layout.prop(obj.data, "magickcow_mesh_sway")
+            layout.prop(obj.data, "magickcow_mesh_entity_influence")
+            layout.prop(obj.data, "magickcow_mesh_ground_level")
     
     def draw_mesh_liquid(self, layout, obj):
         layout.prop(obj.data, "magickcow_mesh_can_drown")
@@ -471,7 +473,13 @@ def register_properties_map_mesh():
     """
     # endregion
 
-    # region Extra Deferred Effect Instance Properties
+    # region Extra Deferred Effect Instance Properties / Advanced Mesh Settings
+
+    mesh.magickcow_mesh_advanced_settings_enabled = bpy.props.BoolProperty(
+        name = "Enable Advanced Settings",
+        description = "Enable advanced mesh render settings related to the way the Deferred Effect instance will be rendered in-game.",
+        default = False
+    )
 
     # NOTE : These values properties describe values that correspond to parameters of the deferred effect's shader.
     # These values are ONLY applied by Magicka to static root node mesh parts of the level model, and they are applied to the RenderDeferredEffect instance (keyword INSTANCE!!!) used by said mesh part, which means
