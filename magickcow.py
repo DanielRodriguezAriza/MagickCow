@@ -1034,7 +1034,6 @@ class MagickCowPanelObjectPropertiesGeneric:
         layout.prop(obj, "magickcow_allow_export")
         return
 
-
 class MagickCowPanelObjectPropertiesMap:
     
     # Base draw function. Calls the specific drawing functions based on the type of the selected object.
@@ -1111,6 +1110,10 @@ class MagickCowPanelObjectPropertiesMap:
         layout.prop(obj, "magickcow_collision_enabled")
         if(obj.magickcow_collision_enabled):
             layout.prop(obj, "magickcow_collision_material") # 1
+        
+        layout.prop(obj.data, "magickcow_mesh_sway")
+        layout.prop(obj.data, "magickcow_mesh_entity_influence")
+        layout.prop(obj.data, "magickcow_mesh_ground_level")
     
     def draw_mesh_liquid(self, layout, obj):
         layout.prop(obj.data, "magickcow_mesh_can_drown")
@@ -1485,6 +1488,35 @@ def register_properties_map_mesh():
         default = True
     )
     """
+    # endregion
+
+    # region Extra Deferred Effect Instance Properties
+
+    # NOTE : These values properties describe values that correspond to parameters of the deferred effect's shader.
+    # These values are ONLY applied by Magicka to static root node mesh parts of the level model, and they are applied to the RenderDeferredEffect instance (keyword INSTANCE!!!) used by said mesh part, which means
+    # that this is a property that is not stored on the effect "material" file, but rather applied during runtime to specific instances of the material, and altough theoretically one could inject these values
+    # into memory on effect instances that are assigned to animated level parts, these properties are actually only loaded by the game when reading them from root nodes, so they can only be used on static level parts.
+    # The reader code for render deferred effects does NOT read these properties directly, so that means that the only way to modify them in vanilla Magicka executables is through the BiTreeRootNode's properties, which
+    # set these values and then apply them to their material / effect instance.
+
+    mesh.magickcow_mesh_sway = bpy.props.FloatProperty(
+        name = "Sway",
+        description = "Set the value of the \"sway\" property of the Deferred Effect instance used by this mesh. Determines how much sway the vertices of this mesh will have. Used to simulate swaying motions such as that of plants like grass and leaves.",
+        default = 0.0
+    )
+
+    mesh.magickcow_mesh_entity_influence = bpy.props.FloatProperty(
+        name = "Entity Influence",
+        description = "Set the value of the \"EntityInfluence\" property of the Deferred Effect instance used by this mesh.",
+        default = 0.0
+    )
+
+    mesh.magickcow_mesh_ground_level = bpy.props.FloatProperty(
+        name = "Ground Level",
+        description = "Set the value of the \"GroundLevel\" property of the Deferred Effect instance used by this mesh.",
+        default = -10.0 # NOTE : We used to hard code this to -10 on the make stage, and it has worked pretty well as a default value for a long time up until now, so that's literally the only reason why -10 is the default value now that ground level is an editable property, because it's battle tested, and because of legacy reasons, lol... in short: It's -10 because history, no other objective reason. The first value I saw on the first map I decompiled was something close to this, so I just rounded the value and called it a day, and it's been like that ever since. Literally just that.
+    )
+
     # endregion
 
 def unregister_properties_map_mesh():
@@ -3543,7 +3575,12 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         # Generate AABB data
         aabb = self.generate_aabb_data(vertices)
 
-        return (obj, transform, obj.name, vertices, indices, matname, aabb)
+        # Generate static mesh root node specific data
+        sway = obj.data.magickcow_mesh_sway
+        entity_influence = obj.data.magickcow_mesh_entity_influence
+        ground_level = obj.data.magickcow_mesh_ground_level
+
+        return (obj, transform, obj.name, vertices, indices, matname, aabb, sway, entity_influence, ground_level)
 
     def generate_animated_mesh_data(self, obj, transform, matid):
         # NOTE : The animated mesh calculation is a bit simpler because it does not require computing the AABB, as it uses an user defined radius for a bounding sphere.
@@ -4531,14 +4568,14 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
     # region Make - Meshes (Root Nodes, Effects / Materials, Vertex Buffers, Index Buffers, Vertex Declarations, etc...)
 
     def make_root_node(self, mesh):
-        obj, transform, name, vertices, indices, matname, aabb = mesh
+        obj, transform, name, vertices, indices, matname, aabb, sway, entity_influence, ground_level = mesh
         primitives = int(len(indices) / 3) # Magicka's primitives are always triangles, and the mesh was triangulated, so this calculation is assumed to always be correct.
         ans = {
             "isVisible" : True,
             "castsShadows" : True,
-            "sway" : 0,
-            "entityInfluence" : 0,
-            "groundLevel" : -10,
+            "sway" : sway,
+            "entityInfluence" : entity_influence,
+            "groundLevel" : ground_level,
             "numVertices" : len(vertices),
             "vertexStride" : self.make_vertex_stride_default(),
             "vertexDeclaration" : self.make_vertex_declaration_default(),
@@ -6242,7 +6279,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     # region Import Methods - Top Level
 
     def import_model_mesh(self, model):
-        pass
+        root_nodes = model["RootNodes"]
+        for root_node in root_nodes:
+            self.import_root_node(root_node)
     
     def import_animated_parts(self, animated_parts):
         pass
@@ -6486,6 +6525,28 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         obj.magickcow_empty_type = "PHYSICS_ENTITY"
         obj.magickcow_physics_entity_name = template
+
+    def import_root_node(self, root_node):
+        # Read root node properties
+        is_visible = ["isVisible"] # Ignored for now because we don't want meshes to be hidden on the scene on import. We'll maybe have an option that says "hide meshes that are set to invisible" or whatever on the mcow scene panel or some shit like that. Or maybe just import and hide the object and call it a day. Users can easily look for hidden objects and that's it.
+        casts_shadows = ["castsShadows"]
+        sway = ["sway"] # Not supported yet because we don't know wtf sway is yet...
+        entity_influence = ["entityInfluence"] # Not supported yet because we don't know wtf this does yet...
+        ground_level = ["groundLevel"] # Not supported yet because the exporter hardcodes this anyway, and we don't really know wtf this is yet so yeah...
+        vertex_stride = ["vertexStride"]
+        vertex_declaration = ["vertexDeclaration"]
+        vertex_buffer = ["vertexBuffer"]
+        index_buffer = ["indexBuffer"]
+        effect = ["effect"]
+        primitive_count = ["primitiveCount"]
+        start_index = ["startIndex"]
+        bounding_box = ["boundingBox"]
+        has_child_a = ["hasChildA"]
+        has_child_b = ["hasChildB"]
+        child_a = ["childA"]
+        child_b = ["childB"]
+
+        # TODO : Implement actual import code for meshes LOL
 
     # endregion
 
