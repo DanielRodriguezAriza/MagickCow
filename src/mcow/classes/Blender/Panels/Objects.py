@@ -15,7 +15,6 @@ class MagickCowPanelObjectPropertiesGeneric:
         layout.prop(obj, "magickcow_allow_export")
         return
 
-
 class MagickCowPanelObjectPropertiesMap:
     
     # Base draw function. Calls the specific drawing functions based on the type of the selected object.
@@ -92,6 +91,10 @@ class MagickCowPanelObjectPropertiesMap:
         layout.prop(obj, "magickcow_collision_enabled")
         if(obj.magickcow_collision_enabled):
             layout.prop(obj, "magickcow_collision_material") # 1
+        
+        layout.prop(obj.data, "magickcow_mesh_sway")
+        layout.prop(obj.data, "magickcow_mesh_entity_influence")
+        layout.prop(obj.data, "magickcow_mesh_ground_level")
     
     def draw_mesh_liquid(self, layout, obj):
         layout.prop(obj.data, "magickcow_mesh_can_drown")
@@ -466,6 +469,35 @@ def register_properties_map_mesh():
         default = True
     )
     """
+    # endregion
+
+    # region Extra Deferred Effect Instance Properties
+
+    # NOTE : These values properties describe values that correspond to parameters of the deferred effect's shader.
+    # These values are ONLY applied by Magicka to static root node mesh parts of the level model, and they are applied to the RenderDeferredEffect instance (keyword INSTANCE!!!) used by said mesh part, which means
+    # that this is a property that is not stored on the effect "material" file, but rather applied during runtime to specific instances of the material, and altough theoretically one could inject these values
+    # into memory on effect instances that are assigned to animated level parts, these properties are actually only loaded by the game when reading them from root nodes, so they can only be used on static level parts.
+    # The reader code for render deferred effects does NOT read these properties directly, so that means that the only way to modify them in vanilla Magicka executables is through the BiTreeRootNode's properties, which
+    # set these values and then apply them to their material / effect instance.
+
+    mesh.magickcow_mesh_sway = bpy.props.FloatProperty(
+        name = "Sway",
+        description = "Set the value of the \"sway\" property of the Deferred Effect instance used by this mesh. Determines how much sway the vertices of this mesh will have. Used to simulate swaying motions such as that of plants like grass and leaves.",
+        default = 0.0
+    )
+
+    mesh.magickcow_mesh_entity_influence = bpy.props.FloatProperty(
+        name = "Entity Influence",
+        description = "Set the value of the \"EntityInfluence\" property of the Deferred Effect instance used by this mesh.",
+        default = 0.0
+    )
+
+    mesh.magickcow_mesh_ground_level = bpy.props.FloatProperty(
+        name = "Ground Level",
+        description = "Set the value of the \"GroundLevel\" property of the Deferred Effect instance used by this mesh.",
+        default = -10.0 # NOTE : We used to hard code this to -10 on the make stage, and it has worked pretty well as a default value for a long time up until now, so that's literally the only reason why -10 is the default value now that ground level is an editable property, because it's battle tested, and because of legacy reasons, lol... in short: It's -10 because history, no other objective reason. The first value I saw on the first map I decompiled was something close to this, so I just rounded the value and called it a day, and it's been like that ever since. Literally just that.
+    )
+
     # endregion
 
 def unregister_properties_map_mesh():
