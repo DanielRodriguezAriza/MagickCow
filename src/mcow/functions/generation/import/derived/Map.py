@@ -43,8 +43,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
     def import_model_mesh(self, model):
         root_nodes = model["RootNodes"]
-        for root_node in root_nodes:
-            self.import_root_node(root_node)
+        for idx, root_node in enumerate(root_nodes):
+            self.import_root_node(f"mesh_{idx}", root_node)
     
     def import_animated_parts(self, animated_parts):
         pass
@@ -289,7 +289,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         obj.magickcow_empty_type = "PHYSICS_ENTITY"
         obj.magickcow_physics_entity_name = template
 
-    def import_root_node(self, root_node):
+    def import_root_node(self, name, root_node):
         # Read root node properties
         is_visible = ["isVisible"] # Ignored for now because we don't want meshes to be hidden on the scene on import. We'll maybe have an option that says "hide meshes that are set to invisible" or whatever on the mcow scene panel or some shit like that. Or maybe just import and hide the object and call it a day. Users can easily look for hidden objects and that's it.
         casts_shadows = ["castsShadows"]
@@ -306,10 +306,23 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         bounding_box = ["boundingBox"]
         has_child_a = ["hasChildA"]
         has_child_b = ["hasChildB"]
-        child_a = ["childA"]
+        child_a = ["childA"] # TODO : Implement child handling... note that mcow blender exported meshes, as of now (and for the planned forseeable future), does NOT make use of child nodes. All meshes are their own root nodes.
         child_b = ["childB"]
 
         # TODO : Implement actual import code for meshes LOL
+
+        # TODO : Implement mesh vertices and triangles construction...
+        mesh_vertices = []
+        mesh_triangles = []
+
+        # Create mesh data and mesh object
+        mesh = bpy.data.meshes.new(name=name)
+        obj = bpy.data.objects.new(name=name, object_data=mesh)
+
+        bpy.context.collection.objects.link(obj)
+
+        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
+        mesh.update()
 
     # endregion
 
