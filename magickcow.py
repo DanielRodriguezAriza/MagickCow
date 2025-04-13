@@ -1107,6 +1107,10 @@ class MagickCowPanelObjectPropertiesMap:
         return
     
     def draw_mesh_geometry(self, layout, obj):
+
+        layout.prop(obj.data, "magickcow_mesh_is_visible")
+        layout.prop(obj.data, "magickcow_mesh_casts_shadows")
+
         layout.prop(obj, "magickcow_collision_enabled")
         if(obj.magickcow_collision_enabled):
             layout.prop(obj, "magickcow_collision_material") # 1
@@ -1411,6 +1415,20 @@ def unregister_properties_map_empty():
     del empty.magickcow_collision_material
     del empty.magickcow_physics_entity_name
 
+def update_properties_map_mesh(self, context):
+    
+    # Early return if the display sync is not enabled.
+    if not bpy.context.scene.mcow_scene_display_sync:
+        return
+    
+    # Find all of the objects that are users of this mesh data block
+    # Literally a fucking hack... I HATE this workaround to Blender's fucking bullshit hierarchy system that works like ass when doing stuff like this...
+    users = [obj for obj in bpy.data.objects if obj.type == "MESH" and obj.data == self]
+    
+    # Update all of the properties that are object related but stored on the mesh data block
+    for user in users:
+        user.visible_shadow = self.magickcow_mesh_casts_shadows
+
 def register_properties_map_mesh():
     mesh = bpy.types.Mesh
     
@@ -1527,6 +1545,24 @@ def register_properties_map_mesh():
 
     # endregion
 
+    # region Mesh Visual Properties
+
+    mesh.magickcow_mesh_is_visible = bpy.props.BoolProperty(
+        name = "Is Visible",
+        description = "Determine whether this mesh should be visible in-game or not",
+        default = True,
+        update = update_properties_map_mesh
+    )
+
+    mesh.magickcow_mesh_casts_shadows = bpy.props.BoolProperty(
+        name = "Casts Shadows",
+        description = "Determine whether this mesh should cast shadows over other meshes in-game or not",
+        default = True,
+        update = update_properties_map_mesh
+    )
+
+    # endregion
+
 def unregister_properties_map_mesh():
     mesh = bpy.types.Mesh
     
@@ -1540,6 +1576,14 @@ def unregister_properties_map_mesh():
     # del mesh.magickcow_vertex_tangent_enabled
     # del mesh.magickcow_vertex_color_enabled
 
+    del mesh.magickcow_mesh_advanced_settings_enabled
+    del mesh.magickcow_mesh_sway
+    del mesh.magickcow_mesh_entity_influence
+    del mesh.magickcow_mesh_ground_level
+
+    del mesh.magickcow_mesh_is_visible
+    del mesh.magickcow_mesh_casts_shadows
+
 def update_properties_map_light(self, context):
     
     # Only update the display if the display sync is enabled.
@@ -1548,6 +1592,7 @@ def update_properties_map_light(self, context):
     
     self.type = self.magickcow_light_type # The enum literally has the same strings under the hood, so we can just assign it directly.
     self.color = self.magickcow_light_color_diffuse # The color is normalized, so they are identical values.
+    self.use_shadow = self.magickcow_light_casts_shadows # Update the use shadows property to match with the mcow config for visualization purposes.
     
     # Approximation for light radius and intensity because there is no way in modern Blender to set exact light radius for some reason.
     if self.type == "SUN":
@@ -1683,8 +1728,9 @@ def register_properties_map_light():
     
     light.magickcow_light_casts_shadows = bpy.props.BoolProperty(
         name = "Casts Shadows",
-        description = "Determine whether the light should cast shadows or not",
-        default = True
+        description = "Determine whether this light source should cast shadows or not",
+        default = True,
+        update = update_properties_map_light
     )
 
 def unregister_properties_map_light():
@@ -1986,26 +2032,45 @@ class MagickCowScenePanel(bpy.types.Panel):
 
 # region Blender Scene Panel functions, Register and Unregister functions
 
-def update_properties_scene_empty(self, context):
-    # NOTE : This is an aux function whose purpose is to restore all of the empties to their saved state
-    self.show_name = self.magickcow_empty_original_setting_display_name
-    self.empty_display_type = self.magickcow_empty_original_setting_display_type
+def update_properties_scene_none(self, context):
+    # NOTE : This is an aux function whose purpose is to restore all of the empties to their saved state when setting the scene mode to None (aka neither Map nor PhysicsEntity export mode)
+    empties = [obj for obj in bpy.data.objects if obj.type == "EMPTY"]
+    for empty in empties:
+        empty.show_name = empty.magickcow_empty_original_setting_display_name
+        empty.empty_display_type = empty.magickcow_empty_original_setting_display_type
 
-def update_properties_scene(self, context):
-    
-    # NOTE : The "self" parameter is simply ignored in this case, we just want to iterate over all of the objects of type empty in the scene and call their respective update methods.
-    if context.scene.mcow_scene_mode == "MAP":
-        fn = update_properties_map_empty
-    
-    elif context.scene.mcow_scene_mode == "PHYSICS_ENTITY":
-        fn = update_properties_physics_entity_empty
-    
-    else:
-        fn = update_properties_scene_empty
+def update_properties_scene_map(self, context):
     
     empties = [obj for obj in bpy.data.objects if obj.type == "EMPTY"]
     for empty in empties:
-        fn(empty, context)
+        update_properties_map_empty(empty, context)
+    
+    lights = [obj for obj in bpy.data.objects if obj.type == "LIGHT"]
+    for light in lights:
+        update_properties_map_light(light, context)
+    
+    meshes = [obj for obj in bpy.data.objects if obj.type == "MESH"]
+    for mesh in meshes:
+        update_properties_map_mesh(mesh, context)
+
+def update_properties_scene_physics_entity(self, context):
+    empties = [obj for obj in bpy.data.objects if obj.type == "EMPTY"]
+    for empty in empties:
+        update_properties_physics_entity_empty(empty, context)
+
+def update_properties_scene(self, context):
+    
+    # NOTE : The "self" parameter is simply ignored in this case.
+    # We just want to iterate over all of the objects of a given set of types in the scene and call their respective update methods if required to keep the visualization up to date.
+
+    if context.scene.mcow_scene_mode == "MAP":
+        update_properties_scene_map(self, context)
+    
+    elif context.scene.mcow_scene_mode == "PHYSICS_ENTITY":
+        update_properties_scene_physics_entity(self, context)
+    
+    else:
+        update_properties_scene_none(self, context)
 
 def register_properties_scene():
 
