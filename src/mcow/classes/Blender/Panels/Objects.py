@@ -548,6 +548,9 @@ def unregister_properties_map_mesh():
     del mesh.magickcow_mesh_entity_influence
     del mesh.magickcow_mesh_ground_level
 
+    del mesh.magickcow_mesh_is_visible
+    del mesh.magickcow_mesh_casts_shadows
+
 def update_properties_map_light(self, context):
     
     # Only update the display if the display sync is enabled.
