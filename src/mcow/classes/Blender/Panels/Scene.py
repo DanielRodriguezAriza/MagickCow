@@ -38,26 +38,45 @@ class MagickCowScenePanel(bpy.types.Panel):
 
 # region Blender Scene Panel functions, Register and Unregister functions
 
-def update_properties_scene_empty(self, context):
-    # NOTE : This is an aux function whose purpose is to restore all of the empties to their saved state
-    self.show_name = self.magickcow_empty_original_setting_display_name
-    self.empty_display_type = self.magickcow_empty_original_setting_display_type
+def update_properties_scene_none(self, context):
+    # NOTE : This is an aux function whose purpose is to restore all of the empties to their saved state when setting the scene mode to None (aka neither Map nor PhysicsEntity export mode)
+    empties = [obj for obj in bpy.data.objects if obj.type == "EMPTY"]
+    for empty in empties:
+        empty.show_name = empty.magickcow_empty_original_setting_display_name
+        empty.empty_display_type = empty.magickcow_empty_original_setting_display_type
 
-def update_properties_scene(self, context):
-    
-    # NOTE : The "self" parameter is simply ignored in this case, we just want to iterate over all of the objects of type empty in the scene and call their respective update methods.
-    if context.scene.mcow_scene_mode == "MAP":
-        fn = update_properties_map_empty
-    
-    elif context.scene.mcow_scene_mode == "PHYSICS_ENTITY":
-        fn = update_properties_physics_entity_empty
-    
-    else:
-        fn = update_properties_scene_empty
+def update_properties_scene_map(self, context):
     
     empties = [obj for obj in bpy.data.objects if obj.type == "EMPTY"]
     for empty in empties:
-        fn(empty, context)
+        update_properties_map_empty(empty, context)
+    
+    lights = [obj for obj in bpy.data.objects if obj.type == "LIGHT"]
+    for light in lights:
+        update_properties_map_light(light, context)
+    
+    meshes = [obj for obj in bpy.data.objects if obj.type == "MESH"]
+    for mesh in meshes:
+        update_properties_map_mesh(mesh, context)
+
+def update_properties_scene_physics_entity(self, context):
+    empties = [obj for obj in bpy.data.objects if obj.type == "EMPTY"]
+    for empty in empties:
+        update_properties_physics_entity_empty(empty, context)
+
+def update_properties_scene(self, context):
+    
+    # NOTE : The "self" parameter is simply ignored in this case.
+    # We just want to iterate over all of the objects of a given set of types in the scene and call their respective update methods if required to keep the visualization up to date.
+
+    if context.scene.mcow_scene_mode == "MAP":
+        update_properties_scene_map(self, context)
+    
+    elif context.scene.mcow_scene_mode == "PHYSICS_ENTITY":
+        update_properties_scene_physics_entity(self, context)
+    
+    else:
+        update_properties_scene_none(self, context)
 
 def register_properties_scene():
 
