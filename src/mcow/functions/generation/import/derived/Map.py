@@ -42,7 +42,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     # region Import Methods - Top Level
 
     def import_model_mesh(self, model):
-        pass
+        root_nodes = model["RootNodes"]
+        for root_node in root_nodes:
+            self.import_root_node(root_node)
     
     def import_animated_parts(self, animated_parts):
         pass
@@ -286,6 +288,28 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         obj.magickcow_empty_type = "PHYSICS_ENTITY"
         obj.magickcow_physics_entity_name = template
+
+    def import_root_node(self, root_node):
+        # Read root node properties
+        is_visible = ["isVisible"] # Ignored for now because we don't want meshes to be hidden on the scene on import. We'll maybe have an option that says "hide meshes that are set to invisible" or whatever on the mcow scene panel or some shit like that. Or maybe just import and hide the object and call it a day. Users can easily look for hidden objects and that's it.
+        casts_shadows = ["castsShadows"]
+        sway = ["sway"] # Not supported yet because we don't know wtf sway is yet...
+        entity_influence = ["entityInfluence"] # Not supported yet because we don't know wtf this does yet...
+        ground_level = ["groundLevel"] # Not supported yet because the exporter hardcodes this anyway, and we don't really know wtf this is yet so yeah...
+        vertex_stride = ["vertexStride"]
+        vertex_declaration = ["vertexDeclaration"]
+        vertex_buffer = ["vertexBuffer"]
+        index_buffer = ["indexBuffer"]
+        effect = ["effect"]
+        primitive_count = ["primitiveCount"]
+        start_index = ["startIndex"]
+        bounding_box = ["boundingBox"]
+        has_child_a = ["hasChildA"]
+        has_child_b = ["hasChildB"]
+        child_a = ["childA"]
+        child_b = ["childB"]
+
+        # TODO : Implement actual import code for meshes LOL
 
     # endregion
 
