@@ -521,6 +521,11 @@ def unregister_properties_map_mesh():
     # del mesh.magickcow_vertex_tangent_enabled
     # del mesh.magickcow_vertex_color_enabled
 
+    del mesh.magickcow_mesh_advanced_settings_enabled
+    del mesh.magickcow_mesh_sway
+    del mesh.magickcow_mesh_entity_influence
+    del mesh.magickcow_mesh_ground_level
+
 def update_properties_map_light(self, context):
     
     # Only update the display if the display sync is enabled.
