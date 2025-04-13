@@ -234,14 +234,14 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
     # region Make - Meshes (Root Nodes, Effects / Materials, Vertex Buffers, Index Buffers, Vertex Declarations, etc...)
 
     def make_root_node(self, mesh):
-        obj, transform, name, vertices, indices, matname, aabb = mesh
+        obj, transform, name, vertices, indices, matname, aabb, sway, entity_influence, ground_level = mesh
         primitives = int(len(indices) / 3) # Magicka's primitives are always triangles, and the mesh was triangulated, so this calculation is assumed to always be correct.
         ans = {
             "isVisible" : True,
             "castsShadows" : True,
-            "sway" : 0,
-            "entityInfluence" : 0,
-            "groundLevel" : -10,
+            "sway" : sway,
+            "entityInfluence" : entity_influence,
+            "groundLevel" : ground_level,
             "numVertices" : len(vertices),
             "vertexStride" : self.make_vertex_stride_default(),
             "vertexDeclaration" : self.make_vertex_declaration_default(),

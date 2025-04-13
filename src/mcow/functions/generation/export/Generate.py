@@ -609,7 +609,12 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         # Generate AABB data
         aabb = self.generate_aabb_data(vertices)
 
-        return (obj, transform, obj.name, vertices, indices, matname, aabb)
+        # Generate static mesh root node specific data
+        sway = obj.data.magickcow_mesh_sway
+        entity_influence = obj.data.magickcow_mesh_entity_influence
+        ground_level = obj.data.magickcow_mesh_ground_level
+
+        return (obj, transform, obj.name, vertices, indices, matname, aabb, sway, entity_influence, ground_level)
 
     def generate_animated_mesh_data(self, obj, transform, matid):
         # NOTE : The animated mesh calculation is a bit simpler because it does not require computing the AABB, as it uses an user defined radius for a bounding sphere.
