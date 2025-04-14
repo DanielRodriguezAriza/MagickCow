@@ -302,8 +302,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         index_buffer = root_node["indexBuffer"]
         effect = root_node["effect"]
         primitive_count = root_node["primitiveCount"]
-        start_index = root_node["startIndex"]
-        bounding_box = root_node["boundingBox"]
+        # start_index = root_node["startIndex"] # We always read all of the geometry, so for us, the start index is always 0. This is because we just merge all of the contents of child nodes into the same object, since they share the same vertex buffer anwyways. Keeping child nodes as individual objects is more work than it's worth, and it's pretty pointless for 99% of cases anyway...
+        # bounding_box = root_node["boundingBox"] # We auto generate a new AABB on export anyways, so this value is not really required.
         
         # region Comment - Child nodes support
         
@@ -341,6 +341,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         
         # Asign the mcow object properties to the generated object
         obj.magickcow_collision_enabled = False # We disable the complex collision generation for thei mported mesh since the imported scene already has all of the collision meshes baked into the collision channel meshes, and since we don't want to accidentally add extra collisions on export, we might as well just disable it and assume that the collision channels are what the user expects to get / see on import.
+
+        # Set the mcow mesh type
+        mesh.magickcow_mesh_type = "GEOMETRY" # NOTE : This is already the default anyways, so we don't need the statement, but it's here for correctness, just in case the default changes in the future.
 
     # endregion
 
