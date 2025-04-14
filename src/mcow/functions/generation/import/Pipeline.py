@@ -113,7 +113,7 @@ class MCow_ImportPipeline:
         # Output variables
         # This function will generate a vertex buffer and an index buffer in a pydata format that Blender can understand through its Python API to generate a new mesh data block.
         vertices = []
-        indices = []
+        indices = index_buffer["data"] # This one is actually pretty fucking trivial, because it is already in a format that is 1:1 for what we require lol... whether the index size is 16 bit or 32 bit does not matter, since the numbers on the JSON text documented are already translated to whatever the width of Python's integers is anyway, so no need to handle that.
 
         # Vertex Attribute Offsets
         # NOTE : If any of these offset values is negative, then that means that the value was not found on the vertex declaration, so we cannot add that information to our newly generated Blender mesh data.
@@ -160,7 +160,7 @@ class MCow_ImportPipeline:
                 vertex_offset_color = offset
                 if element_format != 3:
                     raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex color!")
-            
+
             # NOTE : Supported Types / Element Formats:
             # Only the vec2, vec3 and vec4 types / formats are supported for reading as of now, as those are the types that I have found up until now that are used by Magicka's files.
             # Any other type will receive support for import in the future.
@@ -169,8 +169,15 @@ class MCow_ImportPipeline:
             # Only the position, normal, UV (TextureCoordinate), tangent and color properties are supported.
             # Anything else is considered to be irrelevant as of now for importing Magicka meshes into a Blender scene, but support will come if said features are found to be useful.
 
+        # Read Vertex data into a byte array / buffer so that we can use Python's struct.unpack() to perform type-punning-like byte reinterpretations (this would be so much fucking easier in C tho! fuck my life...)
+        buffer = bytes(vertex_buffer["Buffer"])
 
-
+        # If the input vertex data has a position attribute for each vertex, then read it.
+        if vertex_offset_position >= 0:
+            for offset in range(0, len(vertex_buffer), vertex_stride):
+                chunk = buffer[offset:(offset+vertex_stride)]
+                data = struct.unpack("<fff", chunk) # NOTE : As of now, we're always assuming that vertex position is in the format vec3. In the future, when we add support for other formats (if required), then make it so that we have a vertex_attribute_fmt variable or whatever, and assign it above, when we read the attributes' description / vertex layout on the vertex declaration parsing part of the code.
+                vertices.append(data)
 
         return vertices, indices
 
