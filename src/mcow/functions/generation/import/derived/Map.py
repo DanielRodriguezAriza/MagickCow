@@ -102,6 +102,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         mesh.from_pydata(mesh_vertices, [], mesh_triangles)
         mesh.update()
+
+        mesh.magickcow_mesh_type = "NAV"
     
     # endregion
 
@@ -192,6 +194,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         mesh.from_pydata(mesh_vertices, [], mesh_triangles)
         mesh.update()
+
+        mesh.magickcow_mesh_type = "COLLISION"
 
     def import_locator(self, locator):
         # Get the properties of the locator from the json data
