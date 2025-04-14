@@ -320,7 +320,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # endregion
 
         # Read the vertex and index buffer data
-        mesh_vertices, mesh_triangles = 
+        mesh_vertices, mesh_triangles = self.read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
 
         # Create mesh data and mesh object
         mesh = bpy.data.meshes.new(name=name)
