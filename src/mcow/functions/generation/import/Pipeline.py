@@ -110,17 +110,20 @@ class MCow_ImportPipeline:
     
     def read_mesh_buffer_data(self, vertex_stride, vertex_declaration, vertex_buffer, index_buffer):
 
+        # Output variables
+        # This function will generate a vertex buffer and an index buffer in a pydata format that Blender can understand through its Python API to generate a new mesh data block.
         vertices = []
         indices = []
 
-        # Attribute Offsets
-        # NOTE : If any of these offset values is negative, then that means that the value was not found, so we cannot add that information to our newly generated Blender mesh data.
+        # Vertex Attribute Offsets
+        # NOTE : If any of these offset values is negative, then that means that the value was not found on the vertex declaration, so we cannot add that information to our newly generated Blender mesh data.
         vertex_offset_position = -1
         vertex_offset_normal = -1
         vertex_offset_tangent = -1
         vertex_offset_color = -1
         vertex_offset_uv = -1
 
+        # Parse the vertex declarations to find the offsets for each of the vertex attributes
         vertex_declaration_entries = vertex_declaration["entries"]
         for idx, entry in enumerate(vertex_declaration_entries):
             # NOTE : Commented out lines are data from the entry that we do not need to compose a mesh in Blender / that we do not use yet.
