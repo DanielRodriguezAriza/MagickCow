@@ -2231,6 +2231,9 @@ def find_light_type_name(light):
 def find_collision_material_index(material):
     return find_element_index(["GENERIC", "GRAVEL", "GRASS", "WOOD", "SNOW", "STONE", "MUD", "REFLECT", "WATER", "LAVA"], material, 0)
 
+def find_collision_material_name(material):
+    return find_element(["GENERIC", "GRAVEL", "GRASS", "WOOD", "SNOW", "STONE", "MUD", "REFLECT", "WATER", "LAVA"], material, 0)
+
 def find_light_variation_type_index(light_variation):
     return find_element_index(["NONE", "SINE", "FLICKER", "CANDLE", "STROBE"], light_variation, 0)
 
@@ -6312,6 +6315,8 @@ class MCow_ImportPipeline:
 
     # region Read Methods - Vertex Buffer, Index Buffer, Vertex Declaration
     
+    # TODO : Fix the fact that the imported mesh has inverted normals!
+    # Can probably be fixed either by changing the winding order or adding normal data parsing.
     def read_mesh_buffer_data(self, vertex_stride, vertex_declaration, vertex_buffer, index_buffer):
 
         vertex_buffer_internal = vertex_buffer["Buffer"]
@@ -6462,10 +6467,10 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     
     def import_model_collision(self, collision_data): # TODO : Add support to specify the type of collision channel that we're importing, as of now we're only going to be importing the mesh and that's it.
         for idx, collision_channel in enumerate(collision_data):
-            self.import_collision_channel(f"collision_mesh_model_{idx}", collision_channel) # This would need an extra param to specify the collision channel index, but what happens then to the import camera collision function? those are the details we need to polish.
+            self.import_collision_channel(f"collision_mesh_model_{idx}", idx, collision_channel) # This would need an extra param to specify the collision channel index, but what happens then to the import camera collision function? those are the details we need to polish.
     
     def import_camera_collision(self, collision_data):
-        self.import_collision_channel("collision_mesh_camera", collision_data)
+        self.import_collision_channel("collision_mesh_camera", 0, collision_data)
     
     def import_triggers(self, triggers):
         for trigger in triggers:
@@ -6495,6 +6500,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         mesh.from_pydata(mesh_vertices, [], mesh_triangles)
         mesh.update()
+
+        mesh.magickcow_mesh_type = "NAV"
     
     # endregion
 
@@ -6566,7 +6573,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         light_data.magickcow_light_shadow_map_size = shadow_map_size
         light_data.magickcow_light_casts_shadows = casts_shadows
 
-    def import_collision_channel(self, name, collision):
+    def import_collision_channel(self, name, channel_index, collision):
         has_collision = collision["hasCollision"]
 
         if not has_collision:
@@ -6585,6 +6592,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         mesh.from_pydata(mesh_vertices, [], mesh_triangles)
         mesh.update()
+
+        mesh.magickcow_mesh_type = "COLLISION"
+        obj.magickcow_collision_material = find_collision_material_name(channel_index)
 
     def import_locator(self, locator):
         # Get the properties of the locator from the json data
@@ -6684,19 +6694,19 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
     def import_root_node(self, name, root_node):
         # Read root node properties
-        is_visible = root_node["isVisible"] # Ignored for now because we don't want meshes to be hidden on the scene on import. We'll maybe have an option that says "hide meshes that are set to invisible" or whatever on the mcow scene panel or some shit like that. Or maybe just import and hide the object and call it a day. Users can easily look for hidden objects and that's it.
+        is_visible = root_node["isVisible"]
         casts_shadows = root_node["castsShadows"]
-        sway = root_node["sway"] # Not supported yet because we don't know wtf sway is yet...
-        entity_influence = root_node["entityInfluence"] # Not supported yet because we don't know wtf this does yet...
-        ground_level = root_node["groundLevel"] # Not supported yet because the exporter hardcodes this anyway, and we don't really know wtf this is yet so yeah...
+        sway = root_node["sway"] # Now that we know what these 3 properties are, we can assign them without any issues!
+        entity_influence = root_node["entityInfluence"] # same
+        ground_level = root_node["groundLevel"] # same
         vertex_stride = root_node["vertexStride"]
         vertex_declaration = root_node["vertexDeclaration"]
         vertex_buffer = root_node["vertexBuffer"]
         index_buffer = root_node["indexBuffer"]
         effect = root_node["effect"]
         primitive_count = root_node["primitiveCount"]
-        start_index = root_node["startIndex"]
-        bounding_box = root_node["boundingBox"]
+        # start_index = root_node["startIndex"] # We always read all of the geometry, so for us, the start index is always 0. This is because we just merge all of the contents of child nodes into the same object, since they share the same vertex buffer anwyways. Keeping child nodes as individual objects is more work than it's worth, and it's pretty pointless for 99% of cases anyway...
+        # bounding_box = root_node["boundingBox"] # We auto generate a new AABB on export anyways, so this value is not really required.
         
         # region Comment - Child nodes support
         
@@ -6723,6 +6733,20 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         mesh.from_pydata(mesh_vertices, [], mesh_triangles)
         mesh.update()
+
+        # Asign the mcow mesh properties to the generated mesh data
+        mesh.magickcow_mesh_is_visible = is_visible
+        mesh.magickcow_mesh_casts_shadows = casts_shadows
+        mesh.magickcow_mesh_advanced_settings_enabled = True # We can't really compare equality between the float values of the advanced settings due to precission errors, so we might as well just enable these... besides, these default values were picked by me, so 90% of maps will not have them like that anyway.
+        mesh.magickcow_mesh_sway = sway
+        mesh.magickcow_mesh_entity_influence = entity_influence
+        mesh.magickcow_mesh_ground_level = ground_level
+        
+        # Asign the mcow object properties to the generated object
+        obj.magickcow_collision_enabled = False # We disable the complex collision generation for thei mported mesh since the imported scene already has all of the collision meshes baked into the collision channel meshes, and since we don't want to accidentally add extra collisions on export, we might as well just disable it and assume that the collision channels are what the user expects to get / see on import.
+
+        # Set the mcow mesh type
+        mesh.magickcow_mesh_type = "GEOMETRY" # NOTE : This is already the default anyways, so we don't need the statement, but it's here for correctness, just in case the default changes in the future.
 
     # endregion
 
