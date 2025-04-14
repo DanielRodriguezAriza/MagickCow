@@ -304,16 +304,23 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         primitive_count = ["primitiveCount"]
         start_index = ["startIndex"]
         bounding_box = ["boundingBox"]
-        has_child_a = ["hasChildA"]
-        has_child_b = ["hasChildB"]
-        child_a = ["childA"] # TODO : Implement child handling... note that mcow blender exported meshes, as of now (and for the planned forseeable future), does NOT make use of child nodes. All meshes are their own root nodes.
-        child_b = ["childB"]
+        
+        # region Comment - Child nodes support
+        
+        # NOTE : Child node support is not required. Children nodes do not have any way of moving geometry around, so they cannot be used to reuse parent geometry at a different location without generating a new vertex buffer.
+        # Tbh, I don't really know what the fuck they are for, seeing the code, they are pretty much useless, and I have no clue what the Magicka devs were smoking when they conjured up this idea.
+        # All we do in this importer addon is read the entire vertex buffer data and generate a single mesh, which effectively does the same as merging all of the child nodes with their parent nodes into a single mesh.
+        # I mean, after all, that IS exactly how they are organized in memory within the vertex buffer data itself. The only purpose that child nodes have is to give different bounding boxes to different segments of
+        # the mesh, which is pretty useless in 99% of usecases, and we auto generate those anyway, so yeah. Pretty much, just a premature optimization that actually just bloats memory use unnecessarily and fucks up cache alignment for no reason...
+        # has_child_a = ["hasChildA"]
+        # has_child_b = ["hasChildB"]
+        # child_a = ["childA"]
+        # child_b = ["childB"]
+        
+        # endregion
 
-        # TODO : Implement actual import code for meshes LOL
-
-        # TODO : Implement mesh vertices and triangles construction...
-        mesh_vertices = []
-        mesh_triangles = []
+        # Read the vertex and index buffer data
+        mesh_vertices, mesh_triangles = 
 
         # Create mesh data and mesh object
         mesh = bpy.data.meshes.new(name=name)
