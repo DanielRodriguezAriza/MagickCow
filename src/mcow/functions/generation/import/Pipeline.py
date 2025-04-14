@@ -107,17 +107,19 @@ class MCow_ImportPipeline:
     # endregion
 
     # region Read Methods - Vertex Buffer, Index Buffer, Vertex Declaration
-
-    def read_mesh_buffer_data(self, vertex_declaration, vertex_buffer, index_buffer):
+    
+    def read_mesh_buffer_data(self, vertex_stride, vertex_declaration, vertex_buffer, index_buffer):
 
         vertices = []
         indices = []
 
+        # Attribute Offsets
         # NOTE : If any of these offset values is negative, then that means that the value was not found, so we cannot add that information to our newly generated Blender mesh data.
         vertex_offset_position = -1
         vertex_offset_normal = -1
         vertex_offset_tangent = -1
         vertex_offset_color = -1
+        vertex_offset_uv = -1
 
         vertex_declaration_entries = vertex_declaration["entries"]
         for idx, entry in enumerate(vertex_declaration_entries):
@@ -129,24 +131,43 @@ class MCow_ImportPipeline:
             element_usage = entry["elementUsage"]
             # usage_index = entry["usageIndex"]
             
-            # Offset - Position
+            # Read Attribute Offsets and handle Attribute Formats:
+            # Position
             if element_usage == 0:
                 vertex_offset_position = offset
-            
-            # Offset - Normal
+                if element_format != 2:
+                    raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex position!")
+            # Normal
             elif element_usage == 3:
                 vertex_offset_normal = offset
-            
-            # Offset - Tangent
+                if element_format != 2:
+                    raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex normal!")
+            # UV
+            elif element_usage == 5:
+                vertex_offset_uv = offset
+                if element_format != 1:
+                    raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex UV!")
+            # Tangent
             elif element_usage == 6:
                 vertex_offset_tangent = offset
-            
-            # Offset - Color
+                if element_format != 2:
+                    raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex tangent!")
+            # Color
             elif element_usage == 10:
                 vertex_offset_color = offset
+                if element_format != 3:
+                    raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex color!")
+            
+            # NOTE : Supported Types / Element Formats:
+            # Only the vec2, vec3 and vec4 types / formats are supported for reading as of now, as those are the types that I have found up until now that are used by Magicka's files.
+            # Any other type will receive support for import in the future.
+
+            # NOTE : Supported Attributes / Element Usages:
+            # Only the position, normal, UV (TextureCoordinate), tangent and color properties are supported.
+            # Anything else is considered to be irrelevant as of now for importing Magicka meshes into a Blender scene, but support will come if said features are found to be useful.
 
 
-        
+
 
         return vertices, indices
 
