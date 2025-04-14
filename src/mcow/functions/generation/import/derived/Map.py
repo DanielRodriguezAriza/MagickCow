@@ -331,14 +331,16 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         mesh.from_pydata(mesh_vertices, [], mesh_triangles)
         mesh.update()
 
-        # Asign the mcow properties to this mesh
+        # Asign the mcow mesh properties to the generated mesh data
         mesh.magickcow_mesh_is_visible = is_visible
         mesh.magickcow_mesh_casts_shadows = casts_shadows
         mesh.magickcow_mesh_advanced_settings_enabled = True # We can't really compare equality between the float values of the advanced settings due to precission errors, so we might as well just enable these... besides, these default values were picked by me, so 90% of maps will not have them like that anyway.
         mesh.magickcow_mesh_sway = sway
         mesh.magickcow_mesh_entity_influence = entity_influence
         mesh.magickcow_mesh_ground_level = ground_level
-        mesh.magickcow_collision_enabled = False # We disable the complex collision generation for thei mported mesh since the imported scene already has all of the collision meshes baked into the collision channel meshes, and since we don't want to accidentally add extra collisions on export, we might as well just disable it and assume that the collision channels are what the user expects to get / see on import.
+        
+        # Asign the mcow object properties to the generated object
+        obj.magickcow_collision_enabled = False # We disable the complex collision generation for thei mported mesh since the imported scene already has all of the collision meshes baked into the collision channel meshes, and since we don't want to accidentally add extra collisions on export, we might as well just disable it and assume that the collision channels are what the user expects to get / see on import.
 
     # endregion
 
