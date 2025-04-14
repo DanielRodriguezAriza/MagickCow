@@ -62,6 +62,9 @@ def find_light_type_name(light):
 def find_collision_material_index(material):
     return find_element_index(["GENERIC", "GRAVEL", "GRASS", "WOOD", "SNOW", "STONE", "MUD", "REFLECT", "WATER", "LAVA"], material, 0)
 
+def find_collision_material_name(material):
+    return find_element(["GENERIC", "GRAVEL", "GRASS", "WOOD", "SNOW", "STONE", "MUD", "REFLECT", "WATER", "LAVA"], material, 0)
+
 def find_light_variation_type_index(light_variation):
     return find_element_index(["NONE", "SINE", "FLICKER", "CANDLE", "STROBE"], light_variation, 0)
 
