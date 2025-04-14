@@ -6310,6 +6310,84 @@ class MCow_ImportPipeline:
 
     # endregion
 
+    # region Read Methods - Vertex Buffer, Index Buffer, Vertex Declaration
+    
+    def read_mesh_buffer_data(self, vertex_stride, vertex_declaration, vertex_buffer, index_buffer):
+
+        vertex_buffer_internal = vertex_buffer["Buffer"]
+        index_buffer_internal = index_buffer["data"]
+
+        # Output variables
+        # This function will generate a vertex buffer and an index buffer in a pydata format that Blender can understand through its Python API to generate a new mesh data block.
+        vertices = []
+        indices = [index_buffer_internal[i:i+3] for i in range(0, len(index_buffer_internal), 3)] # This one is actually pretty fucking trivial, because it is already in a format that is 1:1 for what we require lol... whether the index size is 16 bit or 32 bit does not matter, since the numbers on the JSON text documented are already translated to whatever the width of Python's integers is anyway, so no need to handle that.
+
+        # Vertex Attribute Offsets
+        # NOTE : If any of these offset values is negative, then that means that the value was not found on the vertex declaration, so we cannot add that information to our newly generated Blender mesh data.
+        vertex_offset_position = -1
+        vertex_offset_normal = -1
+        vertex_offset_tangent = -1
+        vertex_offset_color = -1
+        vertex_offset_uv = -1
+
+        # Parse the vertex declarations to find the offsets for each of the vertex attributes
+        vertex_declaration_entries = vertex_declaration["entries"]
+        for idx, entry in enumerate(vertex_declaration_entries):
+            # NOTE : Commented out lines are data from the entry that we do not need to compose a mesh in Blender / that we do not use yet.
+            # stream = entry["stream"]
+            offset = entry["offset"]
+            element_format = entry["elementFormat"]
+            # element_method = entry["elementMethod"]
+            element_usage = entry["elementUsage"]
+            # usage_index = entry["usageIndex"]
+            
+            # Read Attribute Offsets and handle Attribute Formats:
+            # Position
+            if element_usage == 0:
+                vertex_offset_position = offset
+                if element_format != 2:
+                    raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex position!")
+            # Normal
+            elif element_usage == 3:
+                vertex_offset_normal = offset
+                if element_format != 2:
+                    raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex normal!")
+            # UV
+            elif element_usage == 5:
+                vertex_offset_uv = offset
+                if element_format != 1:
+                    raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex UV!")
+            # Tangent
+            elif element_usage == 6:
+                vertex_offset_tangent = offset
+                if element_format != 2:
+                    raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex tangent!")
+            # Color
+            elif element_usage == 10:
+                vertex_offset_color = offset
+                if element_format != 3:
+                    raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex color!")
+
+            # NOTE : Supported Types / Element Formats:
+            # Only the vec2, vec3 and vec4 types / formats are supported for reading as of now, as those are the types that I have found up until now that are used by Magicka's files.
+            # Any other type will receive support for import in the future.
+
+            # NOTE : Supported Attributes / Element Usages:
+            # Only the position, normal, UV (TextureCoordinate), tangent and color properties are supported.
+            # Anything else is considered to be irrelevant as of now for importing Magicka meshes into a Blender scene, but support will come if said features are found to be useful.
+
+        # Read Vertex data into a byte array / buffer so that we can use Python's struct.unpack() to perform type-punning-like byte reinterpretations (this would be so much fucking easier in C tho! fuck my life...)
+        buffer = bytes(vertex_buffer_internal)
+
+        # If the input vertex data has a position attribute for each vertex, then read it.
+        if vertex_offset_position >= 0:
+            for offset in range(0, len(vertex_buffer_internal), vertex_stride):
+                chunk = buffer[(offset + vertex_offset_position) : (offset + 12)] # The 12 comes from 3 * 4 = 12 bytes, because we read 3 floats for the vertex position.
+                data = struct.unpack("<fff", chunk) # NOTE : As of now, we're always assuming that vertex position is in the format vec3. In the future, when we add support for other formats (if required), then make it so that we have a vertex_attribute_fmt variable or whatever, and assign it above, when we read the attributes' description / vertex layout on the vertex declaration parsing part of the code.
+                vertices.append(mathutils.Vector(data))
+
+        return vertices, indices
+
 # endregion
 
 # ../mcow/functions/generation/import/derived/Map.py
@@ -6606,29 +6684,36 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
     def import_root_node(self, name, root_node):
         # Read root node properties
-        is_visible = ["isVisible"] # Ignored for now because we don't want meshes to be hidden on the scene on import. We'll maybe have an option that says "hide meshes that are set to invisible" or whatever on the mcow scene panel or some shit like that. Or maybe just import and hide the object and call it a day. Users can easily look for hidden objects and that's it.
-        casts_shadows = ["castsShadows"]
-        sway = ["sway"] # Not supported yet because we don't know wtf sway is yet...
-        entity_influence = ["entityInfluence"] # Not supported yet because we don't know wtf this does yet...
-        ground_level = ["groundLevel"] # Not supported yet because the exporter hardcodes this anyway, and we don't really know wtf this is yet so yeah...
-        vertex_stride = ["vertexStride"]
-        vertex_declaration = ["vertexDeclaration"]
-        vertex_buffer = ["vertexBuffer"]
-        index_buffer = ["indexBuffer"]
-        effect = ["effect"]
-        primitive_count = ["primitiveCount"]
-        start_index = ["startIndex"]
-        bounding_box = ["boundingBox"]
-        has_child_a = ["hasChildA"]
-        has_child_b = ["hasChildB"]
-        child_a = ["childA"] # TODO : Implement child handling... note that mcow blender exported meshes, as of now (and for the planned forseeable future), does NOT make use of child nodes. All meshes are their own root nodes.
-        child_b = ["childB"]
+        is_visible = root_node["isVisible"] # Ignored for now because we don't want meshes to be hidden on the scene on import. We'll maybe have an option that says "hide meshes that are set to invisible" or whatever on the mcow scene panel or some shit like that. Or maybe just import and hide the object and call it a day. Users can easily look for hidden objects and that's it.
+        casts_shadows = root_node["castsShadows"]
+        sway = root_node["sway"] # Not supported yet because we don't know wtf sway is yet...
+        entity_influence = root_node["entityInfluence"] # Not supported yet because we don't know wtf this does yet...
+        ground_level = root_node["groundLevel"] # Not supported yet because the exporter hardcodes this anyway, and we don't really know wtf this is yet so yeah...
+        vertex_stride = root_node["vertexStride"]
+        vertex_declaration = root_node["vertexDeclaration"]
+        vertex_buffer = root_node["vertexBuffer"]
+        index_buffer = root_node["indexBuffer"]
+        effect = root_node["effect"]
+        primitive_count = root_node["primitiveCount"]
+        start_index = root_node["startIndex"]
+        bounding_box = root_node["boundingBox"]
+        
+        # region Comment - Child nodes support
+        
+        # NOTE : Child node support is not required. Children nodes do not have any way of moving geometry around, so they cannot be used to reuse parent geometry at a different location without generating a new vertex buffer.
+        # Tbh, I don't really know what the fuck they are for, seeing the code, they are pretty much useless, and I have no clue what the Magicka devs were smoking when they conjured up this idea.
+        # All we do in this importer addon is read the entire vertex buffer data and generate a single mesh, which effectively does the same as merging all of the child nodes with their parent nodes into a single mesh.
+        # I mean, after all, that IS exactly how they are organized in memory within the vertex buffer data itself. The only purpose that child nodes have is to give different bounding boxes to different segments of
+        # the mesh, which is pretty useless in 99% of usecases, and we auto generate those anyway, so yeah. Pretty much, just a premature optimization that actually just bloats memory use unnecessarily and fucks up cache alignment for no reason...
+        # has_child_a = ["hasChildA"]
+        # has_child_b = ["hasChildB"]
+        # child_a = ["childA"]
+        # child_b = ["childB"]
+        
+        # endregion
 
-        # TODO : Implement actual import code for meshes LOL
-
-        # TODO : Implement mesh vertices and triangles construction...
-        mesh_vertices = []
-        mesh_triangles = []
+        # Read the vertex and index buffer data
+        mesh_vertices, mesh_triangles = self.read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
 
         # Create mesh data and mesh object
         mesh = bpy.data.meshes.new(name=name)
