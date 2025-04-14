@@ -291,19 +291,19 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
     def import_root_node(self, name, root_node):
         # Read root node properties
-        is_visible = ["isVisible"] # Ignored for now because we don't want meshes to be hidden on the scene on import. We'll maybe have an option that says "hide meshes that are set to invisible" or whatever on the mcow scene panel or some shit like that. Or maybe just import and hide the object and call it a day. Users can easily look for hidden objects and that's it.
-        casts_shadows = ["castsShadows"]
-        sway = ["sway"] # Not supported yet because we don't know wtf sway is yet...
-        entity_influence = ["entityInfluence"] # Not supported yet because we don't know wtf this does yet...
-        ground_level = ["groundLevel"] # Not supported yet because the exporter hardcodes this anyway, and we don't really know wtf this is yet so yeah...
-        vertex_stride = ["vertexStride"]
-        vertex_declaration = ["vertexDeclaration"]
-        vertex_buffer = ["vertexBuffer"]
-        index_buffer = ["indexBuffer"]
-        effect = ["effect"]
-        primitive_count = ["primitiveCount"]
-        start_index = ["startIndex"]
-        bounding_box = ["boundingBox"]
+        is_visible = root_nodes["isVisible"] # Ignored for now because we don't want meshes to be hidden on the scene on import. We'll maybe have an option that says "hide meshes that are set to invisible" or whatever on the mcow scene panel or some shit like that. Or maybe just import and hide the object and call it a day. Users can easily look for hidden objects and that's it.
+        casts_shadows = root_nodes["castsShadows"]
+        sway = root_nodes["sway"] # Not supported yet because we don't know wtf sway is yet...
+        entity_influence = root_nodes["entityInfluence"] # Not supported yet because we don't know wtf this does yet...
+        ground_level = root_nodes["groundLevel"] # Not supported yet because the exporter hardcodes this anyway, and we don't really know wtf this is yet so yeah...
+        vertex_stride = root_nodes["vertexStride"]
+        vertex_declaration = root_nodes["vertexDeclaration"]
+        vertex_buffer = root_nodes["vertexBuffer"]
+        index_buffer = root_nodes["indexBuffer"]
+        effect = root_nodes["effect"]
+        primitive_count = root_nodes["primitiveCount"]
+        start_index = root_nodes["startIndex"]
+        bounding_box = root_nodes["boundingBox"]
         
         # region Comment - Child nodes support
         
