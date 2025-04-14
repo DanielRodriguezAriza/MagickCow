@@ -108,6 +108,8 @@ class MCow_ImportPipeline:
 
     # region Read Methods - Vertex Buffer, Index Buffer, Vertex Declaration
     
+    # TODO : Fix the fact that the imported mesh has inverted normals!
+    # Can probably be fixed either by changing the winding order or adding normal data parsing.
     def read_mesh_buffer_data(self, vertex_stride, vertex_declaration, vertex_buffer, index_buffer):
 
         vertex_buffer_internal = vertex_buffer["Buffer"]
@@ -180,7 +182,7 @@ class MCow_ImportPipeline:
             for offset in range(0, len(vertex_buffer_internal), vertex_stride):
                 chunk = buffer[(offset + vertex_offset_position) : (offset + 12)] # The 12 comes from 3 * 4 = 12 bytes, because we read 3 floats for the vertex position.
                 data = struct.unpack("<fff", chunk) # NOTE : As of now, we're always assuming that vertex position is in the format vec3. In the future, when we add support for other formats (if required), then make it so that we have a vertex_attribute_fmt variable or whatever, and assign it above, when we read the attributes' description / vertex layout on the vertex declaration parsing part of the code.
-                vertices.append(mathutils.Vector(data))
+                vertices.append(point_to_z_up(data))
 
         return vertices, indices
 
