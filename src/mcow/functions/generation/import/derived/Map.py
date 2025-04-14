@@ -69,10 +69,10 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     
     def import_model_collision(self, collision_data): # TODO : Add support to specify the type of collision channel that we're importing, as of now we're only going to be importing the mesh and that's it.
         for idx, collision_channel in enumerate(collision_data):
-            self.import_collision_channel(f"collision_mesh_model_{idx}", collision_channel) # This would need an extra param to specify the collision channel index, but what happens then to the import camera collision function? those are the details we need to polish.
+            self.import_collision_channel(f"collision_mesh_model_{idx}", idx, collision_channel) # This would need an extra param to specify the collision channel index, but what happens then to the import camera collision function? those are the details we need to polish.
     
     def import_camera_collision(self, collision_data):
-        self.import_collision_channel("collision_mesh_camera", collision_data)
+        self.import_collision_channel("collision_mesh_camera", 0, collision_data)
     
     def import_triggers(self, triggers):
         for trigger in triggers:
@@ -175,7 +175,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         light_data.magickcow_light_shadow_map_size = shadow_map_size
         light_data.magickcow_light_casts_shadows = casts_shadows
 
-    def import_collision_channel(self, name, collision):
+    def import_collision_channel(self, name, channel_index, collision):
         has_collision = collision["hasCollision"]
 
         if not has_collision:
@@ -196,6 +196,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         mesh.update()
 
         mesh.magickcow_mesh_type = "COLLISION"
+        obj.magickcow_collision_material = find_collision_material_name(channel_index)
 
     def import_locator(self, locator):
         # Get the properties of the locator from the json data
