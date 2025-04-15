@@ -840,6 +840,12 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
             generated_collisions.append((has_collision, vertices, triangles))
         return generated_collisions
     
+    def generate_collision_camera_data(self, found_camera_collisions):
+        vertices, triangles = self.generate_collision_layer_data(found_camera_collisions)
+        has_collision = len(vertices) > 0
+        ans = (has_collision, vertices, triangles)
+        return ans
+
     # endregion
 
     # region Generate NavMesh Data
@@ -991,6 +997,10 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         ans = self.generate_collision_data(found_collisions)
         return ans
     
+    def generate_static_collisions_camera_data(self, found_camera_collisions):
+        ans = self.generate_collision_camera_data(found_camera_collisions)
+        return ans
+
     def generate_static_physics_entities_data(self, found_entities):
         ans = [self.generate_physics_entity_data(obj, transform) for obj, transform in found_entities]
         return ans
@@ -1149,17 +1159,18 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
 
     # NOTE : Some of the stuff generated on the static side of the code is not present on the animated side, so DO NOT call this function from the generate scene data animated functions as a way to simply the code...
     def generate_scene_data_static(self, found_scene_objects, generated_scene_objects):
-        generated_scene_objects.meshes           = self.generate_static_meshes_data(found_scene_objects.meshes)
-        generated_scene_objects.waters           = self.generate_static_liquids_data(found_scene_objects.waters)
-        generated_scene_objects.lavas            = self.generate_static_liquids_data(found_scene_objects.lavas)
-        generated_scene_objects.lights           = self.generate_static_lights_data(found_scene_objects.lights)
-        generated_scene_objects.locators         = self.generate_static_locators_data(found_scene_objects.locators)
-        generated_scene_objects.triggers         = self.generate_static_triggers_data(found_scene_objects.triggers)
-        generated_scene_objects.particles        = self.generate_static_particles_data(found_scene_objects.particles)
-        generated_scene_objects.collisions       = self.generate_static_collisions_data(found_scene_objects.collisions)
-        generated_scene_objects.nav_mesh         = self.generate_static_nav_meshes_data(found_scene_objects.nav_meshes)
-        generated_scene_objects.physics_entities = self.generate_static_physics_entities_data(found_scene_objects.physics_entities)
-        generated_scene_objects.force_fields     = self.generate_static_force_fields_data(found_scene_objects.force_fields)
+        generated_scene_objects.meshes                = self.generate_static_meshes_data(found_scene_objects.meshes)
+        generated_scene_objects.waters                = self.generate_static_liquids_data(found_scene_objects.waters)
+        generated_scene_objects.lavas                 = self.generate_static_liquids_data(found_scene_objects.lavas)
+        generated_scene_objects.lights                = self.generate_static_lights_data(found_scene_objects.lights)
+        generated_scene_objects.locators              = self.generate_static_locators_data(found_scene_objects.locators)
+        generated_scene_objects.triggers              = self.generate_static_triggers_data(found_scene_objects.triggers)
+        generated_scene_objects.particles             = self.generate_static_particles_data(found_scene_objects.particles)
+        generated_scene_objects.collisions            = self.generate_static_collisions_data(found_scene_objects.collisions)
+        generated_scene_objects.camera_collision_mesh = self.generate_static_collisions_camera_data(found_scene_objects.camera_collision_meshes)
+        generated_scene_objects.nav_mesh              = self.generate_static_nav_meshes_data(found_scene_objects.nav_meshes)
+        generated_scene_objects.physics_entities      = self.generate_static_physics_entities_data(found_scene_objects.physics_entities)
+        generated_scene_objects.force_fields          = self.generate_static_force_fields_data(found_scene_objects.force_fields)
     
     def generate_scene_data_static_TIMINGS(self, found_scene_objects, generated_scene_objects):
         t0 = time.time()
