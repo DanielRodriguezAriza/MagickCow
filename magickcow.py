@@ -6426,6 +6426,26 @@ class MCow_ImportPipeline:
 
         return vertices, indices
 
+    # endregion
+
+    # region Read Methods - Collision Mesh
+
+    def read_collision_mesh(self, collision):
+        has_collision = collision["hasCollision"]
+        
+        if not has_collision:
+            return (False, [], [])
+        
+        json_vertices = collision["vertices"]
+        json_triangles = collision["triangles"]
+
+        mesh_vertices = [self.read_point(vert) for vert in json_vertices]
+        mesh_triangles = [(tri["index0"], tri["index1"], tri["index2"]) for tri in json_triangles]
+
+        return (True, mesh_vertices, mesh_triangles)
+
+    # endregion
+
 # endregion
 
 # ../mcow/functions/generation/import/derived/Map.py
@@ -6498,12 +6518,12 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     def import_force_fields(self, force_fields):
         pass
     
-    def import_model_collision(self, collision_data): # TODO : Add support to specify the type of collision channel that we're importing, as of now we're only going to be importing the mesh and that's it.
+    def import_model_collision(self, collision_data):
         for idx, collision_channel in enumerate(collision_data):
-            self.import_collision_channel(f"collision_mesh_model_{idx}", idx, collision_channel) # This would need an extra param to specify the collision channel index, but what happens then to the import camera collision function? those are the details we need to polish.
+            self.import_collision_mesh_level(collision_channel, idx)
     
     def import_camera_collision(self, collision_data):
-        self.import_collision_channel("collision_mesh_camera", 0, collision_data)
+        self.import_collision_mesh_camera(collision_data)
     
     def import_triggers(self, triggers):
         for trigger in triggers:
@@ -6540,8 +6560,6 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
     # region Import Methods - Internal
 
-    # TODO : Finish implementing (what's left as of now is modifying the properties of the spawned in light so that it uses the values that it has read from the JSON data)
-    # TODO : Handle translating ALL vectors from Y up to Z up...
     def import_light(self, light):
         # Read the light data
         name = light["LightName"]
@@ -6606,28 +6624,37 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         light_data.magickcow_light_shadow_map_size = shadow_map_size
         light_data.magickcow_light_casts_shadows = casts_shadows
 
-    def import_collision_channel(self, name, channel_index, collision):
-        has_collision = collision["hasCollision"]
+    def import_collision_mesh_generic(self, collision, name):
+        has_collision, vertices, triangles = self.read_collision_mesh(collision)
 
-        if not has_collision:
-            return
-        
-        json_vertices = collision["vertices"]
-        json_triangles = collision["triangles"]
+        if has_collision:
+            mesh = bpy.data.meshes.new(name=name)
+            obj = bpy.data.objects.new(name=name, object_data=mesh)
+            bpy.context.collection.objects.link(obj)
+            mesh.from_pydata(vertices, [], triangles)
+            mesh.update()
+            return (True, obj, mesh)
+        else:
+            return (False, None, None)
 
-        mesh_vertices = [self.read_point(vert) for vert in json_vertices]
-        mesh_triangles = [(tri["index0"], tri["index1"], tri["index2"]) for tri in json_triangles]
 
-        mesh = bpy.data.meshes.new(name=name)
-        obj = bpy.data.objects.new(name=name, object_data=mesh)
+    def import_collision_mesh_level(self, collision, channel_index = 0):
+        channel_name = find_collision_material_name(channel_index)
+        name = f"collision_mesh_model_{channel_index}_{channel_name}"
 
-        bpy.context.collection.objects.link(obj)
+        has_collision, obj, mesh = self.import_collision_mesh_generic(collision, name)
 
-        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
-        mesh.update()
+        if has_collision:
+            mesh.magickcow_mesh_type = "COLLISION"
+            obj.magickcow_collision_material = channel_name
 
-        mesh.magickcow_mesh_type = "COLLISION"
-        obj.magickcow_collision_material = find_collision_material_name(channel_index)
+    def import_collision_mesh_camera(self, collision):
+        name = "collision_mesh_camera"
+
+        has_collision, obj, mesh = self.import_collision_mesh_generic(collision, name)
+
+        if has_collision:
+            mesh.magickcow_mesh_type = "CAMERA"
 
     def import_locator(self, locator):
         # Get the properties of the locator from the json data
