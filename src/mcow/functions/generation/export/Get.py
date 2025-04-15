@@ -153,6 +153,9 @@ class MCow_Data_Getter_Map(MCow_Data_Getter):
                     # Allows "malformed" (with a hierarchy that would not be correct in game) scenes to export successfully and work correctly in game.
                     # found_objects_global.force_fields.append((obj, transform))
                     self._get_scene_data_add_mesh(found_objects_global.force_fields, obj, transform)
+                
+                elif obj.data.magickcow_mesh_type == "CAMERA":
+                    found_objects_current.camera_collision_meshes.append((obj, transform))
             
             elif obj.type == "LIGHT":
                 
