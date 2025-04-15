@@ -28,7 +28,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Execute the import functions for each of the types of data found within the level model JSON dict.
         self.import_model_mesh(model_mesh)
         self.import_animated_parts(animated_parts)
-        self.import_lights(lights)
+        self.import_lights(lights) # TODO : In the future, we should import these before the animated level parts, and then cache them, so that we can do the hierarchy parenting thing correctly. This is because animated level parts don't store their own lights, but they do store references to lights, which are then stored within the base level class, on the lights list / array.
         self.import_effects(effects)
         self.import_physics_entities(physics_entities)
         self.import_liquids(liquids)
