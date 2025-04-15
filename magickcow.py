@@ -207,9 +207,10 @@ class MCow_Map_SceneObjectsFound:
         self.nav_meshes = []
         self.animated_parts = []
         
-        # NOTE : These 2 ahead can only be found on static level data, can't be within animated level parts.
+        # NOTE : These fields ahead can only be found on static level data, can't be within animated level parts.
         self.physics_entities = []
         self.force_fields = []
+        self.camera_collision_meshes = []
 
 class MCow_Map_SceneObjectsGeneratedStatic:
     def __init__(self):
@@ -221,6 +222,7 @@ class MCow_Map_SceneObjectsGeneratedStatic:
         self.triggers = []
         self.particles = []
         self.collisions = []
+        self.camera_collision_mesh = None
         self.nav_mesh = None
         self.animated_parts = []
         self.physics_entities = []
@@ -1093,17 +1095,26 @@ class MagickCowPanelObjectPropertiesMap:
     def draw_mesh(self, layout, obj):
         layout.prop(obj.data, "magickcow_mesh_type")
         
-        if obj.data.magickcow_mesh_type == "GEOMETRY":
+        mesh_type = obj.data.magickcow_mesh_type
+
+        if mesh_type == "GEOMETRY":
             self.draw_mesh_geometry(layout, obj)
-            # self.draw_mesh_vertex_properties(layout, obj)
-        elif obj.data.magickcow_mesh_type in ["WATER", "LAVA"]:
+        
+        elif mesh_type in ["WATER", "LAVA"]: # TODO : Maybe replace this with a single "LIQUID" type and then have the distinction between lava and water be done at the material level? or maybe have a subtype category / liquid type, which enforces the liquid type if the material does not match or whatever... or we could just sync it with the material, idk, we'll see in the future. For now, I just do it like this and that's it.
             self.draw_mesh_liquid(layout, obj)
-            # self.draw_mesh_vertex_properties(layout, obj)
-        elif obj.data.magickcow_mesh_type == "COLLISION":
+        
+        elif mesh_type == "COLLISION":
             self.draw_mesh_collision(layout, obj)
-        elif obj.data.magickcow_mesh_type == "FORCE_FIELD":
+        
+        elif mesh_type == "NAV":
+            self.draw_mesh_nav(layout, obj)
+
+        elif mesh_type == "FORCE_FIELD":
             self.draw_mesh_force_field(layout, obj)
-            # self.draw_mesh_vertex_properties(layout, obj)
+        
+        elif mesh_type == "CAMERA":
+            self.draw_mesh_camera(layout, obj)
+
         return
     
     def draw_mesh_geometry(self, layout, obj):
@@ -1135,6 +1146,12 @@ class MagickCowPanelObjectPropertiesMap:
     
     # def draw_mesh_vertex_properties(self, layout, obj):
     #     layout.prop(obj.data, "magickcow_vertex_color_enabled")
+
+    def draw_mesh_nav(self, layout, obj):
+        pass
+
+    def draw_mesh_camera(self, layout, obj):
+        pass
 
 class MagickCowPanelObjectPropertiesPhysicsEntity:
     
@@ -1438,12 +1455,13 @@ def register_properties_map_mesh():
         name = "Type",
         description = "Determine the type of this object",
         items = [
-            ("GEOMETRY", "Geometry", "This object will be exported as a piece of level geometry"),
-            ("COLLISION", "Collision", "This object will be exported as a piece of level collision"),
-            ("WATER", "Water", "This object will be exported as a liquid of type \"Water\""),
-            ("LAVA", "Lava", "This object will be exported as a liquid of type \"Lava\""),
-            ("NAV", "Nav", "This object will be exported as a nav mesh"),
-            ("FORCE_FIELD", "Force Field", "This object will be exported as a force field")
+            ("GEOMETRY", "Geometry", "This object will be exported as a piece of level geometry"), # Level Geometry
+            ("COLLISION", "Collision", "This object will be exported as a piece of level collision"), # Level Collision / Collision - Level
+            ("WATER", "Water", "This object will be exported as a liquid of type \"Water\""), # Liquid Water
+            ("LAVA", "Lava", "This object will be exported as a liquid of type \"Lava\""), # Liquid Lava
+            ("NAV", "Nav", "This object will be exported as a nav mesh"), # Nav Mesh / Navmesh
+            ("FORCE_FIELD", "Force Field", "This object will be exported as a force field"), # Force Field
+            ("CAMERA", "Camera", "This object will be exported as a collision mesh for camera collision") # Camera Collision / Collision - Camera
         ],
         default = "GEOMETRY"
     )
@@ -2864,6 +2882,9 @@ class MCow_Data_Getter_Map(MCow_Data_Getter):
                     # Allows "malformed" (with a hierarchy that would not be correct in game) scenes to export successfully and work correctly in game.
                     # found_objects_global.force_fields.append((obj, transform))
                     self._get_scene_data_add_mesh(found_objects_global.force_fields, obj, transform)
+                
+                elif obj.data.magickcow_mesh_type == "CAMERA":
+                    found_objects_current.camera_collision_meshes.append((obj, transform))
             
             elif obj.type == "LIGHT":
                 
@@ -3882,6 +3903,12 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
             generated_collisions.append((has_collision, vertices, triangles))
         return generated_collisions
     
+    def generate_collision_camera_data(self, found_camera_collisions):
+        vertices, triangles = self.generate_collision_layer_data(found_camera_collisions)
+        has_collision = len(vertices) > 0
+        ans = (has_collision, vertices, triangles)
+        return ans
+
     # endregion
 
     # region Generate NavMesh Data
@@ -4033,6 +4060,10 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         ans = self.generate_collision_data(found_collisions)
         return ans
     
+    def generate_static_collisions_camera_data(self, found_camera_collisions):
+        ans = self.generate_collision_camera_data(found_camera_collisions)
+        return ans
+
     def generate_static_physics_entities_data(self, found_entities):
         ans = [self.generate_physics_entity_data(obj, transform) for obj, transform in found_entities]
         return ans
@@ -4191,17 +4222,18 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
 
     # NOTE : Some of the stuff generated on the static side of the code is not present on the animated side, so DO NOT call this function from the generate scene data animated functions as a way to simply the code...
     def generate_scene_data_static(self, found_scene_objects, generated_scene_objects):
-        generated_scene_objects.meshes           = self.generate_static_meshes_data(found_scene_objects.meshes)
-        generated_scene_objects.waters           = self.generate_static_liquids_data(found_scene_objects.waters)
-        generated_scene_objects.lavas            = self.generate_static_liquids_data(found_scene_objects.lavas)
-        generated_scene_objects.lights           = self.generate_static_lights_data(found_scene_objects.lights)
-        generated_scene_objects.locators         = self.generate_static_locators_data(found_scene_objects.locators)
-        generated_scene_objects.triggers         = self.generate_static_triggers_data(found_scene_objects.triggers)
-        generated_scene_objects.particles        = self.generate_static_particles_data(found_scene_objects.particles)
-        generated_scene_objects.collisions       = self.generate_static_collisions_data(found_scene_objects.collisions)
-        generated_scene_objects.nav_mesh         = self.generate_static_nav_meshes_data(found_scene_objects.nav_meshes)
-        generated_scene_objects.physics_entities = self.generate_static_physics_entities_data(found_scene_objects.physics_entities)
-        generated_scene_objects.force_fields     = self.generate_static_force_fields_data(found_scene_objects.force_fields)
+        generated_scene_objects.meshes                = self.generate_static_meshes_data(found_scene_objects.meshes)
+        generated_scene_objects.waters                = self.generate_static_liquids_data(found_scene_objects.waters)
+        generated_scene_objects.lavas                 = self.generate_static_liquids_data(found_scene_objects.lavas)
+        generated_scene_objects.lights                = self.generate_static_lights_data(found_scene_objects.lights)
+        generated_scene_objects.locators              = self.generate_static_locators_data(found_scene_objects.locators)
+        generated_scene_objects.triggers              = self.generate_static_triggers_data(found_scene_objects.triggers)
+        generated_scene_objects.particles             = self.generate_static_particles_data(found_scene_objects.particles)
+        generated_scene_objects.collisions            = self.generate_static_collisions_data(found_scene_objects.collisions)
+        generated_scene_objects.camera_collision_mesh = self.generate_static_collisions_camera_data(found_scene_objects.camera_collision_meshes)
+        generated_scene_objects.nav_mesh              = self.generate_static_nav_meshes_data(found_scene_objects.nav_meshes)
+        generated_scene_objects.physics_entities      = self.generate_static_physics_entities_data(found_scene_objects.physics_entities)
+        generated_scene_objects.force_fields          = self.generate_static_force_fields_data(found_scene_objects.force_fields)
     
     def generate_scene_data_static_TIMINGS(self, found_scene_objects, generated_scene_objects):
         t0 = time.time()
@@ -5434,6 +5466,7 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
         triggers = self.make_triggers(generated_scene_data.triggers)
         particles = self.make_particles(generated_scene_data.particles)
         collisions = self.make_collisions(generated_scene_data.collisions)
+        camera_collisions = self.make_collision(generated_scene_data.camera_collision_mesh)
         nav_mesh = self.make_nav_mesh(generated_scene_data.nav_mesh)
         animated_parts = self.make_animated_level_parts(generated_scene_data.animated_parts)
         physics_entities = self.make_physics_entities(generated_scene_data.physics_entities)
@@ -5458,7 +5491,7 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
             "numForceFields" : len(force_fields),
             "forceFields" : force_fields,
             "collisionDataLevel" : collisions,
-            "collisionDataCamera" : self.make_collision((False, [], [])), # For now, hard code no collision data for camera collision. Or whatever the fuck this truly is...
+            "collisionDataCamera" : camera_collisions,
             "numTriggers" : len(triggers),
             "triggers" : triggers,
             "numLocators" : len(locators),
