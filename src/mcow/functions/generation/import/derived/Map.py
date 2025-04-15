@@ -358,8 +358,24 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         mesh.magickcow_mesh_type = "GEOMETRY" # NOTE : This is already the default anyways, so we don't need the statement, but it's here for correctness, just in case the default changes in the future.
 
     def import_liquid(self, liquid):
+        # Read the properties from the JSON object
+        liquid_type = liquid["$type"]
+        vertex_buffer = liquid["vertices"]
+        index_buffer = liquid["indices"]
+        vertex_declaration = liquid["declaration"]
+        vertex_stride = liquid["vertexStride"]
+        num_vertices = liquid["numVertices"]
+        primitive_count = liquid["primitiveCount"]
+
+        can_drown = liquid["flag"]
+        can_freeze = liquid["freezable"]
+        can_auto_freeze = liquid["autofreeze"]
+
+        effect = liquid["effect"]
+
+
+
         # TODO : Implement
-        pass
 
     # endregion
 
