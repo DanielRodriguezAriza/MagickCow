@@ -74,17 +74,23 @@ class MagickCowPanelObjectPropertiesMap:
     def draw_mesh(self, layout, obj):
         layout.prop(obj.data, "magickcow_mesh_type")
         
-        if obj.data.magickcow_mesh_type == "GEOMETRY":
+        mesh_type = obj.data.magickcow_mesh_type
+
+        if mesh_type == "GEOMETRY":
             self.draw_mesh_geometry(layout, obj)
-            # self.draw_mesh_vertex_properties(layout, obj)
-        elif obj.data.magickcow_mesh_type in ["WATER", "LAVA"]:
+        
+        elif mesh_type in ["WATER", "LAVA"]: # TODO : Maybe replace this with a single "LIQUID" type and then have the distinction between lava and water be done at the material level? or maybe have a subtype category / liquid type, which enforces the liquid type if the material does not match or whatever... or we could just sync it with the material, idk, we'll see in the future. For now, I just do it like this and that's it.
             self.draw_mesh_liquid(layout, obj)
-            # self.draw_mesh_vertex_properties(layout, obj)
-        elif obj.data.magickcow_mesh_type == "COLLISION":
+        
+        elif mesh_type == "COLLISION":
             self.draw_mesh_collision(layout, obj)
-        elif obj.data.magickcow_mesh_type == "FORCE_FIELD":
+        
+        elif mesh_type == "FORCE_FIELD":
             self.draw_mesh_force_field(layout, obj)
-            # self.draw_mesh_vertex_properties(layout, obj)
+        
+        elif mesh_type == "CAMERA":
+            self.draw_mesh_camera(layout, obj)
+
         return
     
     def draw_mesh_geometry(self, layout, obj):
@@ -116,6 +122,9 @@ class MagickCowPanelObjectPropertiesMap:
     
     # def draw_mesh_vertex_properties(self, layout, obj):
     #     layout.prop(obj.data, "magickcow_vertex_color_enabled")
+
+    def draw_mesh_camera(self, layout, obj):
+        pass
 
 class MagickCowPanelObjectPropertiesPhysicsEntity:
     
@@ -425,7 +434,7 @@ def register_properties_map_mesh():
             ("LAVA", "Lava", "This object will be exported as a liquid of type \"Lava\""), # Liquid Lava
             ("NAV", "Nav", "This object will be exported as a nav mesh"), # Nav Mesh / Navmesh
             ("FORCE_FIELD", "Force Field", "This object will be exported as a force field"), # Force Field
-            ("CAMERA", "Camera Collision", "This object will be exported as a collision mesh for camera collision") # Camera Collision / Collision - Camera
+            ("CAMERA", "Camera", "This object will be exported as a collision mesh for camera collision") # Camera Collision / Collision - Camera
         ],
         default = "GEOMETRY"
     )
