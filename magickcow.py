@@ -6479,7 +6479,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Execute the import functions for each of the types of data found within the level model JSON dict.
         self.import_model_mesh(model_mesh)
         self.import_animated_parts(animated_parts)
-        self.import_lights(lights)
+        self.import_lights(lights) # TODO : In the future, we should import these before the animated level parts, and then cache them, so that we can do the hierarchy parenting thing correctly. This is because animated level parts don't store their own lights, but they do store references to lights, which are then stored within the base level class, on the lights list / array.
         self.import_effects(effects)
         self.import_physics_entities(physics_entities)
         self.import_liquids(liquids)
@@ -6513,7 +6513,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             self.import_physics_entity(idx, physics_entity)
     
     def import_liquids(self, liquids):
-        pass
+        for liquid in liquids:
+            self.import_liquid(liquid)
     
     def import_force_fields(self, force_fields):
         pass
@@ -6636,7 +6637,6 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             return (True, obj, mesh)
         else:
             return (False, None, None)
-
 
     def import_collision_mesh_level(self, collision, channel_index = 0):
         channel_name = find_collision_material_name(channel_index)
@@ -6807,6 +6807,48 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         # Set the mcow mesh type
         mesh.magickcow_mesh_type = "GEOMETRY" # NOTE : This is already the default anyways, so we don't need the statement, but it's here for correctness, just in case the default changes in the future.
+
+    def import_liquid(self, liquid):
+        # Read the properties from the JSON object
+        liquid_type = liquid["$type"]
+        vertex_buffer = liquid["vertices"]
+        index_buffer = liquid["indices"]
+        vertex_declaration = liquid["declaration"]
+        vertex_stride = liquid["vertexStride"]
+        primitive_count = liquid["primitiveCount"]
+
+        can_drown = liquid["flag"]
+        can_freeze = liquid["freezable"]
+        can_auto_freeze = liquid["autofreeze"]
+
+        effect = liquid["effect"]
+
+        # Read vertex buffer data and index buffer data
+        mesh_vertices, mesh_triangles = self.read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
+
+        # Create mesh data and mesh object
+        mesh = bpy.data.meshes.new(name=name)
+        obj = bpy.data.objects.new(name=name, object_data=mesh)
+
+        bpy.context.collection.objects.link(obj)
+
+        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
+        mesh.update()
+
+        # Get mcow mesh type from input liquid type.
+        # NOTE : In the future, this may be modified / removed, IF / when the WATER / LAVA system is deprecated / modified (if it ever happens)
+        if liquid_type == "liquid_water":
+            mesh_type = "WATER"
+        elif liquid_type == "liquid_lava":
+            mesh_type = "LAVA"
+        else:
+            raise MagickCowImportException(f"Imported liquid has unknown liquid type: \"{liquid_type}\"")
+        
+        # Asign mcow properties
+        mesh.magickcow_mesh_type = mesh_type
+        mesh.magickcow_mesh_can_drown = can_drown
+        mesh.magickcow_mesh_freezable = can_freeze
+        mesh.magickcow_mesh_autofreeze = can_auto_freeze
 
     # endregion
 
