@@ -384,6 +384,21 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         mesh.from_pydata(mesh_vertices, [], mesh_triangles)
         mesh.update()
 
+        # Get mcow mesh type from input liquid type.
+        # NOTE : In the future, this may be modified / removed, IF / when the WATER / LAVA system is deprecated / modified (if it ever happens)
+        if liquid_type == "liquid_water":
+            mesh_type = "WATER"
+        elif liquid_type == "liquid_lava":
+            mesh_type = "LAVA"
+        else:
+            raise MagickCowImportException(f"Imported liquid has unknown liquid type: \"{liquid_type}\"")
+        
+        # Asign mcow properties
+        mesh.magickcow_mesh_type = mesh_type
+        mesh.magickcow_mesh_can_drown = can_drown
+        mesh.magickcow_mesh_freezable = can_freeze
+        mesh.magickcow_mesh_autofreeze = can_auto_freeze
+
     # endregion
 
 # endregion
