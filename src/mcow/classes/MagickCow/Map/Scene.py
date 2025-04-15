@@ -13,9 +13,10 @@ class MCow_Map_SceneObjectsFound:
         self.nav_meshes = []
         self.animated_parts = []
         
-        # NOTE : These 2 ahead can only be found on static level data, can't be within animated level parts.
+        # NOTE : These fields ahead can only be found on static level data, can't be within animated level parts.
         self.physics_entities = []
         self.force_fields = []
+        self.camera_collision_meshes = []
 
 class MCow_Map_SceneObjectsGeneratedStatic:
     def __init__(self):
@@ -27,6 +28,7 @@ class MCow_Map_SceneObjectsGeneratedStatic:
         self.triggers = []
         self.particles = []
         self.collisions = []
+        self.camera_collision_mesh = None
         self.nav_mesh = None
         self.animated_parts = []
         self.physics_entities = []
