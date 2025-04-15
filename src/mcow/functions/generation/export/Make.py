@@ -1019,6 +1019,7 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
         triggers = self.make_triggers(generated_scene_data.triggers)
         particles = self.make_particles(generated_scene_data.particles)
         collisions = self.make_collisions(generated_scene_data.collisions)
+        camera_collisions = self.make_collision(generated_scene_data.camera_collision_mesh)
         nav_mesh = self.make_nav_mesh(generated_scene_data.nav_mesh)
         animated_parts = self.make_animated_level_parts(generated_scene_data.animated_parts)
         physics_entities = self.make_physics_entities(generated_scene_data.physics_entities)
@@ -1043,7 +1044,7 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
             "numForceFields" : len(force_fields),
             "forceFields" : force_fields,
             "collisionDataLevel" : collisions,
-            "collisionDataCamera" : self.make_collision((False, [], [])), # For now, hard code no collision data for camera collision. Or whatever the fuck this truly is...
+            "collisionDataCamera" : camera_collisions,
             "numTriggers" : len(triggers),
             "triggers" : triggers,
             "numLocators" : len(locators),
