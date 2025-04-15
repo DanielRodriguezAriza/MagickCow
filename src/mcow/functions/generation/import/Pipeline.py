@@ -163,7 +163,11 @@ class MCow_ImportPipeline:
             # Color
             elif element_usage == 10:
                 vertex_offset_color = offset
-                if element_format != 3:
+                if element_format == 0:
+                    pass
+                elif element_format == 3:
+                    pass
+                else:
                     raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex color!")
 
             # NOTE : Supported Types / Element Formats:
