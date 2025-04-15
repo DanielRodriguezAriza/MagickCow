@@ -419,12 +419,13 @@ def register_properties_map_mesh():
         name = "Type",
         description = "Determine the type of this object",
         items = [
-            ("GEOMETRY", "Geometry", "This object will be exported as a piece of level geometry"),
-            ("COLLISION", "Collision", "This object will be exported as a piece of level collision"),
-            ("WATER", "Water", "This object will be exported as a liquid of type \"Water\""),
-            ("LAVA", "Lava", "This object will be exported as a liquid of type \"Lava\""),
-            ("NAV", "Nav", "This object will be exported as a nav mesh"),
-            ("FORCE_FIELD", "Force Field", "This object will be exported as a force field")
+            ("GEOMETRY", "Geometry", "This object will be exported as a piece of level geometry"), # Level Geometry
+            ("COLLISION", "Collision", "This object will be exported as a piece of level collision"), # Level Collision / Collision - Level
+            ("WATER", "Water", "This object will be exported as a liquid of type \"Water\""), # Liquid Water
+            ("LAVA", "Lava", "This object will be exported as a liquid of type \"Lava\""), # Liquid Lava
+            ("NAV", "Nav", "This object will be exported as a nav mesh"), # Nav Mesh / Navmesh
+            ("FORCE_FIELD", "Force Field", "This object will be exported as a force field"), # Force Field
+            ("CAMERA", "Camera Collision", "This object will be exported as a collision mesh for camera collision") # Camera Collision / Collision - Camera
         ],
         default = "GEOMETRY"
     )
