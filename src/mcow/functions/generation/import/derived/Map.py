@@ -44,7 +44,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     def import_model_mesh(self, model):
         root_nodes = model["RootNodes"]
         for idx, root_node in enumerate(root_nodes):
-            self.import_root_node(f"mesh_{idx}", root_node)
+            self.import_root_node(idx, root_node)
     
     def import_animated_parts(self, animated_parts):
         pass
@@ -62,8 +62,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             self.import_physics_entity(idx, physics_entity)
     
     def import_liquids(self, liquids):
-        for liquid in liquids:
-            self.import_liquid(liquid)
+        for idx, liquid in enumerate(liquids):
+            self.import_liquid(idx, liquid)
     
     def import_force_fields(self, force_fields):
         pass
@@ -301,7 +301,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         obj.magickcow_empty_type = "PHYSICS_ENTITY"
         obj.magickcow_physics_entity_name = template
 
-    def import_root_node(self, name, root_node):
+    def import_root_node(self, idx, root_node):
         # Read root node properties
         is_visible = root_node["isVisible"]
         casts_shadows = root_node["castsShadows"]
@@ -335,6 +335,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         mesh_vertices, mesh_triangles = self.read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
 
         # Create mesh data and mesh object
+        name = f"mesh_{idx}"
         mesh = bpy.data.meshes.new(name=name)
         obj = bpy.data.objects.new(name=name, object_data=mesh)
 
@@ -357,7 +358,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Set the mcow mesh type
         mesh.magickcow_mesh_type = "GEOMETRY" # NOTE : This is already the default anyways, so we don't need the statement, but it's here for correctness, just in case the default changes in the future.
 
-    def import_liquid(self, liquid):
+    def import_liquid(self, idx, liquid):
         # Read the properties from the JSON object
         liquid_type = liquid["$type"]
         vertex_buffer = liquid["vertices"]
@@ -376,6 +377,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         mesh_vertices, mesh_triangles = self.read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
 
         # Create mesh data and mesh object
+        name = f"liquid_{idx}_{liquid_type}"
         mesh = bpy.data.meshes.new(name=name)
         obj = bpy.data.objects.new(name=name, object_data=mesh)
 
