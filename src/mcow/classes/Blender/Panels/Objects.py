@@ -85,6 +85,9 @@ class MagickCowPanelObjectPropertiesMap:
         elif mesh_type == "COLLISION":
             self.draw_mesh_collision(layout, obj)
         
+        elif mesh_type == "NAV":
+            self.draw_mesh_nav(layout, obj)
+
         elif mesh_type == "FORCE_FIELD":
             self.draw_mesh_force_field(layout, obj)
         
@@ -122,6 +125,9 @@ class MagickCowPanelObjectPropertiesMap:
     
     # def draw_mesh_vertex_properties(self, layout, obj):
     #     layout.prop(obj.data, "magickcow_vertex_color_enabled")
+
+    def draw_mesh_nav(self, layout, obj):
+        pass
 
     def draw_mesh_camera(self, layout, obj):
         pass
