@@ -364,7 +364,6 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         index_buffer = liquid["indices"]
         vertex_declaration = liquid["declaration"]
         vertex_stride = liquid["vertexStride"]
-        num_vertices = liquid["numVertices"]
         primitive_count = liquid["primitiveCount"]
 
         can_drown = liquid["flag"]
@@ -373,9 +372,17 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         effect = liquid["effect"]
 
+        # Read vertex buffer data and index buffer data
+        mesh_vertices, mesh_triangles = self.read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
 
+        # Create mesh data and mesh object
+        mesh = bpy.data.meshes.new(name=name)
+        obj = bpy.data.objects.new(name=name, object_data=mesh)
 
-        # TODO : Implement
+        bpy.context.collection.objects.link(obj)
+
+        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
+        mesh.update()
 
     # endregion
 
