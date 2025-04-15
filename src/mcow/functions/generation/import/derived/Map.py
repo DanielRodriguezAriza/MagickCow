@@ -109,8 +109,6 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
     # region Import Methods - Internal
 
-    # TODO : Finish implementing (what's left as of now is modifying the properties of the spawned in light so that it uses the values that it has read from the JSON data)
-    # TODO : Handle translating ALL vectors from Y up to Z up...
     def import_light(self, light):
         # Read the light data
         name = light["LightName"]
