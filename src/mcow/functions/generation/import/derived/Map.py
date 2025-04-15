@@ -62,7 +62,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             self.import_physics_entity(idx, physics_entity)
     
     def import_liquids(self, liquids):
-        pass
+        for liquid in liquids:
+            self.import_liquid(liquid)
     
     def import_force_fields(self, force_fields):
         pass
@@ -185,7 +186,6 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             return (True, obj, mesh)
         else:
             return (False, None, None)
-
 
     def import_collision_mesh_level(self, collision, channel_index = 0):
         channel_name = find_collision_material_name(channel_index)
@@ -356,6 +356,10 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         # Set the mcow mesh type
         mesh.magickcow_mesh_type = "GEOMETRY" # NOTE : This is already the default anyways, so we don't need the statement, but it's here for correctness, just in case the default changes in the future.
+
+    def import_liquid(self, liquid):
+        # TODO : Implement
+        pass
 
     # endregion
 
