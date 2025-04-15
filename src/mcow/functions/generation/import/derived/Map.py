@@ -1,5 +1,7 @@
 # region Import Data Pipeline class - LevelModel / Map
 
+# TODO : Solve the vertex winding issues on all of the mesh imports... except collisions, which actually have the correct winding as of now.
+
 # TODO : Implement all import functions...
 class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     def __init__(self):
