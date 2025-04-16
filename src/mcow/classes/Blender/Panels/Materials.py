@@ -114,10 +114,58 @@ def register_properties_material_geometry(material): # NOTE : Maybe this should 
         default = False
     )
 
+    material.mcow_effect_deferred_reflection_map_enabled = bpy.props.BoolProperty(
+        name = "Reflection Map Enabled",
+        default = False
+    )
+
+    material.mcow_effect_deferred_reflection_map = bpy.props.StringProperty(
+        name = "Reflection Map",
+        default = False
+    )
+
+    material.mcow_effect_deferred_diffuse_texture_0_alpha_disabled = bpy.props.BoolProperty(
+        name = "Texture 0 Alpha Disabled",
+        default = False
+    )
+
+    material.mcow_effect_deferred_alpha_mask_0_enabled = bpy.props.BoolProperty(
+        name = "Alpha Mask 0 Enabled",
+        default = False
+    )
+
+    material.mcow_effect_deferred_diffuse_color = bpy.props.bpy.props.FloatVectorProperty(
+        name = "Diffuse Color 0",
+        subtype = "COLOR",
+        default = (1.0, 1.0, 1.0),
+        min = 0.0,
+        max = 1.0,
+        size = 3
+    )
+
+    material.mcow_effect_deferred_specular_amount_0 = bpy.props.FloatProperty(
+        name = "Specular Amount 0",
+        default = 0
+    )
+
+    material.mcow_effect_deferred_specular_power_0 = bpy.props.FloatProperty(
+        name = "Specular Power 0",
+        default = 20
+    )
+
+    material.mcow_effect_deferred_emissive_amount_0 = bpy.props.FloatProperty(
+        name = "Emissive Amount 0",
+        default = 0
+    )
+
+    # NOTE : On the GUI side, maybe expose these properties under the labels "texture set 0" and "texture set 1" or whatever the fuck so that we can have some better organization, maybe even make the window expandable or whatever, or add an enabled / disabled option for the second texture / material info set. Something like "bool secondMaterialSetEnabled"...
+
 def unregister_properties_material_geometry(material):
     del material.mcow_effect_deferred_alpha
     del material.mcow_effect_deferred_sharpness
     del material.mcow_effect_deferred_vertex_color_enabled
+
+    # TODO : Remove the newly added properties
 
 def register_properties_material_water(material):
     pass
