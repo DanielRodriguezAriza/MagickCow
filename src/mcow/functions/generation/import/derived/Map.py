@@ -68,7 +68,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             self.import_liquid(idx, liquid)
     
     def import_force_fields(self, force_fields):
-        pass
+        for idx, force_field in enumerate(force_fields):
+            self.import_force_field(idx, force_field)
     
     def import_model_collision(self, collision_data):
         for idx, collision_channel in enumerate(collision_data):
@@ -402,6 +403,10 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         mesh.magickcow_mesh_can_drown = can_drown
         mesh.magickcow_mesh_freezable = can_freeze
         mesh.magickcow_mesh_autofreeze = can_auto_freeze
+
+    def import_force_field(self, idx, force_field):
+        # TODO : Implement
+        pass
 
     # endregion
 
