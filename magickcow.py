@@ -6455,6 +6455,8 @@ class MCow_ImportPipeline:
 # ../mcow/functions/generation/import/derived/Map.py
 # region Import Data Pipeline class - LevelModel / Map
 
+# TODO : Solve the vertex winding issues on all of the mesh imports... except collisions, which actually have the correct winding as of now.
+
 # TODO : Implement all import functions...
 class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     def __init__(self):
@@ -6521,7 +6523,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             self.import_liquid(idx, liquid)
     
     def import_force_fields(self, force_fields):
-        pass
+        for idx, force_field in enumerate(force_fields):
+            self.import_force_field(idx, force_field)
     
     def import_model_collision(self, collision_data):
         for idx, collision_channel in enumerate(collision_data):
@@ -6855,6 +6858,32 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         mesh.magickcow_mesh_can_drown = can_drown
         mesh.magickcow_mesh_freezable = can_freeze
         mesh.magickcow_mesh_autofreeze = can_auto_freeze
+
+    def import_force_field(self, idx, force_field):
+        # Get data from the input json object
+        vertex_buffer = force_field["vertices"]
+        index_buffer = force_field["indices"]
+        vertex_declaration = force_field["declaration"]
+        vertex_stride = force_field["vertexStride"]
+
+        # Compute mesh data
+        mesh_vertices, mesh_triangles = self.read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
+
+        # Generate object and mesh data
+        name = f"force_field_{idx}"
+        mesh = bpy.data.meshes.new(name = name)
+        obj = bpy.data.objects.new(name = name, object_data = mesh)
+
+        bpy.context.collection.objects.link(obj)
+
+        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
+        mesh.update()
+
+        # Assign mcow properties to mesh
+        mesh.magickcow_mesh_type = "FORCE_FIELD"
+
+        # TODO : Implement all of the material properties stuff for the force field properties.
+        # etc...
 
     # endregion
 
