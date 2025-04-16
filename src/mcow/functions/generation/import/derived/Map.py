@@ -406,9 +406,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
     def import_force_field(self, idx, force_field):
         # Get data from the input json object
-        vertices = force_field["vertices"]
-        indices = force_field["indices"]
-        declaration = force_field["declaration"]
+        vertex_buffer = force_field["vertices"]
+        index_buffer = force_field["indices"]
+        vertex_declaration = force_field["declaration"]
         vertex_stride = force_field["vertexStride"]
 
         # Compute mesh data
