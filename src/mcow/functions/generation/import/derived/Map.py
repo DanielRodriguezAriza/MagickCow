@@ -405,8 +405,30 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         mesh.magickcow_mesh_autofreeze = can_auto_freeze
 
     def import_force_field(self, idx, force_field):
-        # TODO : Implement
-        pass
+        # Get data from the input json object
+        vertices = force_field["vertices"]
+        indices = force_field["indices"]
+        declaration = force_field["declaration"]
+        vertex_stride = force_field["vertexStride"]
+
+        # Compute mesh data
+        mesh_vertices, mesh_triangles = self.read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
+
+        # Generate object and mesh data
+        name = f"force_field_{idx}"
+        mesh = bpy.data.meshes.new(name = name)
+        obj = bpy.data.objects.new(name = name, object_data = mesh)
+
+        bpy.context.collection.objects.link(obj)
+
+        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
+        mesh.update()
+
+        # Assign mcow properties to mesh
+        mesh.magickcow_mesh_type = "FORCE_FIELD"
+
+        # TODO : Implement all of the material properties stuff for the force field properties.
+        # etc...
 
     # endregion
 
