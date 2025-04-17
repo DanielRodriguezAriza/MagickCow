@@ -889,6 +889,35 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
         layout.prop(material, "mcow_effect_deferred_alpha")
         layout.prop(material, "mcow_effect_deferred_sharpness")
         layout.prop(material, "mcow_effect_deferred_vertex_color_enabled")
+
+        layout.prop(material, "mcow_effect_deferred_reflection_map_enabled")
+        layout.prop(material, "mcow_effect_deferred_reflection_map")
+
+        layout.prop(material, "mcow_effect_deferred_diffuse_texture_0_alpha_disabled")
+        layout.prop(material, "mcow_effect_deferred_alpha_mask_0_enabled")
+        layout.prop(material, "mcow_effect_deferred_diffuse_color_0")
+        layout.prop(material, "mcow_effect_deferred_specular_amount_0")
+        layout.prop(material, "mcow_effect_deferred_specular_power_0")
+        layout.prop(material, "mcow_effect_deferred_emissive_amount_0")
+        layout.prop(material, "mcow_effect_deferred_normal_power_0")
+        layout.prop(material, "mcow_effect_deferred_reflection_intensity_0")
+        layout.prop(material, "mcow_effect_deferred_diffuse_texture_0")
+        layout.prop(material, "mcow_effect_deferred_material_texture_0")
+        layout.prop(material, "mcow_effect_deferred_normal_texture_0")
+
+        layout.prop(material, "mcow_effect_deferred_has_second_set")
+
+        layout.prop(material, "mcow_effect_deferred_diffuse_texture_1_alpha_disabled")
+        layout.prop(material, "mcow_effect_deferred_alpha_mask_1_enabled")
+        layout.prop(material, "mcow_effect_deferred_diffuse_color_1")
+        layout.prop(material, "mcow_effect_deferred_specular_amount_1")
+        layout.prop(material, "mcow_effect_deferred_specular_power_1")
+        layout.prop(material, "mcow_effect_deferred_emissive_amount_1")
+        layout.prop(material, "mcow_effect_deferred_normal_power_1")
+        layout.prop(material, "mcow_effect_deferred_reflection_intensity_1")
+        layout.prop(material, "mcow_effect_deferred_diffuse_texture_1")
+        layout.prop(material, "mcow_effect_deferred_material_texture_1")
+        layout.prop(material, "mcow_effect_deferred_normal_texture_1")
     
     def draw_effect_water(self, layout, material):
         pass
