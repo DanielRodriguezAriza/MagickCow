@@ -403,11 +403,16 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         else:
             raise MagickCowImportException(f"Imported liquid has unknown liquid type: \"{liquid_type}\"")
         
-        # Asign mcow properties
+        # Assign mcow properties
         mesh.magickcow_mesh_type = mesh_type
         mesh.magickcow_mesh_can_drown = can_drown
         mesh.magickcow_mesh_freezable = can_freeze
         mesh.magickcow_mesh_autofreeze = can_auto_freeze
+
+        # Create material and assign it to the mesh
+        mat_name = f"liquid_material_{idx}_{liquid_type}"
+        mat = self.read_effect(mat_name, effect)
+        mesh.materials.append(mat)
 
     def import_force_field(self, idx, force_field):
         # Get data from the input json object
