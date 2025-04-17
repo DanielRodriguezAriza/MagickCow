@@ -926,7 +926,16 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
         pass
     
     def draw_effect_force_field(self, layout, material):
-        pass
+        layout.prop(material, "mcow_effect_force_field_color")
+        layout.prop(material, "mcow_effect_force_field_width")
+        layout.prop(material, "mcow_effect_force_field_alpha_power")
+        layout.prop(material, "mcow_effect_force_field_alpha_fallof_power")
+        layout.prop(material, "mcow_effect_force_field_max_radius")
+        layout.prop(material, "mcow_effect_force_field_ripple_distortion")
+        layout.prop(material, "mcow_effect_force_field_map_distortion")
+        layout.prop(material, "mcow_effect_force_field_vertex_color_enabled")
+        layout.prop(material, "mcow_effect_force_field_displacement_map")
+        layout.prop(material, "mcow_effect_force_field_ttl")
 
 # endregion
 
@@ -1165,10 +1174,71 @@ def unregister_properties_material_lava(material):
     pass
 
 def register_properties_material_force_field(material):
-    pass
+    material.mcow_effect_force_field_color = bpy.props.FloatVectorProperty(
+        name = "Color",
+        subtype = "COLOR",
+        default = (1.0, 1.0, 1.0),
+        min = 0.0,
+        max = 1.0,
+        size = 3
+    )
+
+    material.mcow_effect_force_field_width = bpy.props.FloatProperty(
+        name = "Width",
+        default = 0.5
+    )
+
+    material.mcow_effect_force_field_alpha_power = bpy.props.FloatProperty(
+        name = "Alpha Power",
+        default = 4
+    )
+
+    material.mcow_effect_force_field_alpha_fallof_power = bpy.props.FloatProperty(
+        name = "Alpha Falloff Power",
+        default = 2
+    )
+
+    material.mcow_effect_force_field_max_radius = bpy.props.FloatProperty(
+        name = "Max Radius",
+        default = 4
+    )
+
+    material.mcow_effect_force_field_ripple_distortion = bpy.props.FloatProperty(
+        name = "Ripple Distortion",
+        default = 2
+    )
+
+    material.mcow_effect_force_field_map_distortion = bpy.props.FloatProperty(
+        name = "Map Distortion",
+        default = 0.53103447
+    )
+
+    material.mcow_effect_force_field_vertex_color_enabled = bpy.props.BoolProperty(
+        name = "Vertex Color Enabled",
+        default = True
+    )
+
+    material.mcow_effect_force_field_displacement_map = bpy.props.StringProperty(
+        name = "Displacement Map",
+        default = "..\\..\\Textures\\Liquids\\WaterNormals_0"
+    )
+
+    material.mcow_effect_force_field_ttl = bpy.props.FloatProperty(
+        name = "Time",
+        default = 1
+    )
 
 def unregister_properties_material_force_field(material):
-    pass
+    del material.mcow_effect_force_field_color
+    del material.mcow_effect_force_field_width
+    del material.mcow_effect_force_field_alpha_power
+    del material.mcow_effect_force_field_alpha_fallof_power
+    del material.mcow_effect_force_field_max_radius
+    del material.mcow_effect_force_field_ripple_distortion
+    del material.mcow_effect_force_field_map_distortion
+    del material.mcow_effect_force_field_vertex_color_enabled
+    del material.mcow_effect_force_field_displacement_map
+    del material.mcow_effect_force_field_ttl
 
 def register_properties_panel_class_material():
     bpy.utils.register_class(MATERIAL_PT_MagickCowPanel)
@@ -6651,20 +6721,35 @@ class MCow_ImportPipeline:
         mat.use_nodes = True
 
         if "$type" in effect:
-            effect_type = effect["$type"]
+            effect_type_json = effect["$type"]
+            if effect_type_json == "effect_deferred":
+                effect_type = "EFFECT_DEFERRED"
+                effect_reader = self.read_effect_deferred
+            
+            elif effect_type_json == "effect_deferred_liquid":
+                effect_type = "EFFECT_LIQUID_WATER"
+                effect_reader = self.read_effect_liquid_water
+            
+            elif effect_type_json == "effect_lava":
+                effect_type = "EFFECT_LIQUID_LAVA"
+                effect_reader = self.read_effect_liquid_lava
+            
+            else:
+                raise MagickCowImportException(f"Unknown material effect type : \"{effect_type}\"")
+        
+        elif "vertices" in effect and "indices" in effect and "declaration" in effect:
+            effect_type = "EFFECT_FORCE_FIELD"
+            effect_reader = self.read_effect_force_field
+        
         else:
             raise MagickCowImportException("The input data does not contain a valid material effect")
 
-        if effect_type == "effect_deferred":
-            self.read_effect_deferred(mat, effect)
-        # TODO : Implement cases for all of the other types of materials
-        else:
-            raise MagickCowImportException(f"Unknown effect type : \"{effect_type}\"")
-        
+        mat.mcow_effect_type = effect_type
+        effect_reader(mat, effect)
+
         return mat
 
     def read_effect_deferred(self, material, effect):
-        material.mcow_effect_type = "EFFECT_DEFERRED"
         material.mcow_effect_deferred_alpha = effect["Alpha"]
         material.mcow_effect_deferred_sharpness = effect["Sharpness"]
         material.mcow_effect_deferred_vertex_color_enabled = effect["VertexColorEnabled"]
@@ -6697,6 +6782,24 @@ class MCow_ImportPipeline:
             material.mcow_effect_deferred_diffuse_texture_1 = effect["DiffuseTexture1"]
             material.mcow_effect_deferred_material_texture_1 = effect["MaterialTexture1"]
             material.mcow_effect_deferred_normal_texture_1 = effect["NormalTexture1"]
+
+    def read_effect_liquid_water(self, material, effect):
+        pass
+    
+    def read_effect_liquid_lava(self, material, effect):
+        pass
+    
+    def read_effect_force_field(self, material, effect):
+        material.mcow_effect_force_field_color = self.read_color_rgb(effect["color"])
+        material.mcow_effect_force_field_width = effect["width"]
+        material.mcow_effect_force_field_alpha_power = effect["alphaPower"]
+        material.mcow_effect_force_field_alpha_fallof_power = effect["alphaFalloffPower"]
+        material.mcow_effect_force_field_max_radius = effect["maxRadius"]
+        material.mcow_effect_force_field_ripple_distortion = effect["rippleDistortion"]
+        material.mcow_effect_force_field_map_distortion = effect["mapDistortion"]
+        material.mcow_effect_force_field_vertex_color_enabled = effect["vertexColorEnabled"]
+        material.mcow_effect_force_field_displacement_map = effect["displacementMap"]
+        material.mcow_effect_force_field_ttl = effect["ttl"]
 
     # endregion
 
