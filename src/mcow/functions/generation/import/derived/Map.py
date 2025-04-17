@@ -49,7 +49,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             self.import_root_node(idx, root_node)
     
     def import_animated_parts(self, animated_parts):
-        pass
+        for part in animated_parts:
+            self.import_animated_part(part)
     
     def import_lights(self, lights):
         for light in lights:
@@ -441,6 +442,13 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         mat_name = f"force_field_material_{idx}"
         mat = self.read_effect(mat_name, force_field) # NOTE : The material effect data is embedded within the force field object itself.
         mesh.materials.append(mat)
+
+    def import_animated_part(self, part):
+        # TODO : Implement
+        pass
+        # TODO : Figure out how to deal with animated level parts from the base game which contain more than one bone... I just found one like that on wc_s4, and it sure will make things a bit harder to deal with.
+        # Note that for my exporter implementation, I settled for every single part having a single bone, and any child bones being a separate part, which is what the vs boat map does, so yeah... this is gonna be
+        # a bit complicated to deal with, I suppose...
 
     # endregion
 
