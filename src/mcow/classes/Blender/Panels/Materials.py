@@ -381,7 +381,16 @@ def register_properties_material_force_field(material):
     )
 
 def unregister_properties_material_force_field(material):
-    pass
+    del material.mcow_effect_force_field_color
+    del material.mcow_effect_force_field_width
+    del material.mcow_effect_force_field_alpha_power
+    del material.mcow_effect_force_field_alpha_fallof_power
+    del material.mcow_effect_force_field_max_radius
+    del material.mcow_effect_force_field_ripple_distortion
+    del material.mcow_effect_force_field_map_distortion
+    del material.mcow_effect_force_field_vertex_color_enabled
+    del material.mcow_effect_force_field_displacement_map
+    del material.mcow_effect_force_field_ttl
 
 def register_properties_panel_class_material():
     bpy.utils.register_class(MATERIAL_PT_MagickCowPanel)
