@@ -361,6 +361,11 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Set the mcow mesh type
         mesh.magickcow_mesh_type = "GEOMETRY" # NOTE : This is already the default anyways, so we don't need the statement, but it's here for correctness, just in case the default changes in the future.
 
+        # Read material data and append it to the generated mesh
+        material_name = f"material_mesh_{idx}"
+        mat = self.read_effect(material_name, root_node["effect"])
+        mesh.materials.append(mat)
+
     def import_liquid(self, idx, liquid):
         # Read the properties from the JSON object
         liquid_type = liquid["$type"]
