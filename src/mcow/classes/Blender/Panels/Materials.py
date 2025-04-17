@@ -163,7 +163,7 @@ def register_properties_material_geometry(material): # NOTE : Maybe this should 
         default = False
     )
 
-    material.mcow_effect_deferred_diffuse_color_0 = bpy.props.bpy.props.FloatVectorProperty(
+    material.mcow_effect_deferred_diffuse_color_0 = bpy.props.FloatVectorProperty(
         name = "Diffuse Color 0",
         subtype = "COLOR",
         default = (1.0, 1.0, 1.0),
@@ -227,7 +227,7 @@ def register_properties_material_geometry(material): # NOTE : Maybe this should 
         default = False
     )
 
-    material.mcow_effect_deferred_diffuse_color_1 = bpy.props.bpy.props.FloatVectorProperty(
+    material.mcow_effect_deferred_diffuse_color_1 = bpy.props.FloatVectorProperty(
         name = "Diffuse Color 1",
         subtype = "COLOR",
         default = (1.0, 1.0, 1.0),
