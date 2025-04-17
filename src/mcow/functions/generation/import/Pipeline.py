@@ -246,7 +246,6 @@ class MCow_ImportPipeline:
         return mat
 
     def read_effect_deferred(self, material, effect):
-        material.mcow_effect_type = "EFFECT_DEFERRED"
         material.mcow_effect_deferred_alpha = effect["Alpha"]
         material.mcow_effect_deferred_sharpness = effect["Sharpness"]
         material.mcow_effect_deferred_vertex_color_enabled = effect["VertexColorEnabled"]
