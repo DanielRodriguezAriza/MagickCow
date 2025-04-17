@@ -87,7 +87,16 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
         pass
     
     def draw_effect_force_field(self, layout, material):
-        pass
+        layout.prop(material, "mcow_effect_force_field_color")
+        layout.prop(material, "mcow_effect_force_field_width")
+        layout.prop(material, "mcow_effect_force_field_alpha_power")
+        layout.prop(material, "mcow_effect_force_field_alpha_fallof_power")
+        layout.prop(material, "mcow_effect_force_field_max_radius")
+        layout.prop(material, "mcow_effect_force_field_ripple_distortion")
+        layout.prop(material, "mcow_effect_force_field_map_distortion")
+        layout.prop(material, "mcow_effect_force_field_vertex_color_enabled")
+        layout.prop(material, "mcow_effect_force_field_displacement_map")
+        layout.prop(material, "mcow_effect_force_field_ttl")
 
 # endregion
 
