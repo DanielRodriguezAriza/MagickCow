@@ -326,7 +326,59 @@ def unregister_properties_material_lava(material):
     pass
 
 def register_properties_material_force_field(material):
-    pass
+    material.mcow_effect_force_field_color = bpy.props.FloatVectorProperty(
+        name = "Color",
+        subtype = "COLOR",
+        default = (1.0, 1.0, 1.0),
+        min = 0.0,
+        max = 1.0,
+        size = 3
+    )
+
+    material.mcow_effect_force_field_width = bpy.props.FloatProperty(
+        name = "Width",
+        default = 0.5
+    )
+
+    material.mcow_effect_force_field_alpha_power = bpy.props.FloatProperty(
+        name = "Alpha Power",
+        default = 4
+    )
+
+    material.mcow_effect_force_field_alpha_fallof_power = bpy.props.FloatProperty(
+        name = "Alpha Falloff Power",
+        default = 2
+    )
+
+    material.mcow_effect_force_field_max_radius = bpy.props.FloatProperty(
+        name = "Max Radius",
+        default = 4
+    )
+
+    material.mcow_effect_force_field_ripple_distortion = bpy.props.FloatProperty(
+        name = "Ripple Distortion",
+        default = 2
+    )
+
+    material.mcow_effect_force_field_map_distortion = bpy.props.FloatProperty(
+        name = "Map Distortion",
+        default = 0.53103447
+    )
+
+    material.mcow_effect_force_field_vertex_color_enabled = bpy.props.BoolProperty(
+        name = "Vertex Color Enabled",
+        default = True
+    )
+
+    material.mcow_effect_force_field_displacement_map = bpy.props.StringProperty(
+        name = "Displacement Map",
+        default = "..\\..\\Textures\\Liquids\\WaterNormals_0"
+    )
+
+    material.mcow_effect_force_field_ttl = bpy.props.FloatProperty(
+        name = "Time",
+        default = 1
+    )
 
 def unregister_properties_material_force_field(material):
     pass
