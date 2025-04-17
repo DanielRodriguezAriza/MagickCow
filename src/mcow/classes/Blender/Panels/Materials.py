@@ -150,7 +150,7 @@ def register_properties_material_geometry(material): # NOTE : Maybe this should 
 
     material.mcow_effect_deferred_reflection_map = bpy.props.StringProperty(
         name = "Reflection Map",
-        default = False
+        default = ""
     )
 
     material.mcow_effect_deferred_diffuse_texture_0_alpha_disabled = bpy.props.BoolProperty(
