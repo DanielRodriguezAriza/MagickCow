@@ -255,7 +255,34 @@ def unregister_properties_material_geometry(material):
     del material.mcow_effect_deferred_sharpness
     del material.mcow_effect_deferred_vertex_color_enabled
 
-    # TODO : Remove the newly added properties
+    del material.mcow_effect_deferred_reflection_map_enabled
+    del material.mcow_effect_deferred_reflection_map
+
+    del material.mcow_effect_deferred_diffuse_texture_0_alpha_disabled
+    del material.mcow_effect_deferred_alpha_mask_0_enabled
+    del material.mcow_effect_deferred_diffuse_color_0
+    del material.mcow_effect_deferred_specular_amount_0
+    del material.mcow_effect_deferred_specular_power_0
+    del material.mcow_effect_deferred_emissive_amount_0
+    del material.mcow_effect_deferred_normal_power_0
+    del material.mcow_effect_deferred_reflection_intensity_0
+    del material.mcow_effect_deferred_diffuse_texture_0
+    del material.mcow_effect_deferred_material_texture_0
+    del material.mcow_effect_deferred_normal_texture_0
+
+    del material.mcow_effect_deferred_has_second_set
+
+    del material.mcow_effect_deferred_diffuse_texture_1_alpha_disabled
+    del material.mcow_effect_deferred_alpha_mask_1_enabled
+    del material.mcow_effect_deferred_diffuse_color_1
+    del material.mcow_effect_deferred_specular_amount_1
+    del material.mcow_effect_deferred_specular_power_1
+    del material.mcow_effect_deferred_emissive_amount_1
+    del material.mcow_effect_deferred_normal_power_1
+    del material.mcow_effect_deferred_reflection_intensity_1
+    del material.mcow_effect_deferred_diffuse_texture_1
+    del material.mcow_effect_deferred_material_texture_1
+    del material.mcow_effect_deferred_normal_texture_1
 
 def register_properties_material_water(material):
     pass
