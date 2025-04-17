@@ -6644,6 +6644,62 @@ class MCow_ImportPipeline:
 
     # endregion
 
+    # region Read Methods - Materials
+
+    def read_effect(self, name, effect):
+        mat = bpy.data.materials.new(name = name)
+        mat.use_nodes = True
+
+        if "$type" in effect:
+            effect_type = effect["$type"]
+        else:
+            raise MagickCowImportException("The input data does not contain a valid material effect")
+
+        if effect_type == "effect_deferred":
+            self.read_effect_deferred(mat, effect)
+        # TODO : Implement cases for all of the other types of materials
+        else:
+            raise MagickCowImportException(f"Unknown effect type : \"{effect_type}\"")
+        
+        return mat
+
+    def read_effect_deferred(self, material, effect):
+        material.mcow_effect_type = "EFFECT_DEFERRED"
+        material.mcow_effect_deferred_alpha = effect["Alpha"]
+        material.mcow_effect_deferred_sharpness = effect["Sharpness"]
+        material.mcow_effect_deferred_vertex_color_enabled = effect["VertexColorEnabled"]
+
+        material.mcow_effect_deferred_reflection_map_enabled = effect["UseMaterialTextureForReflectiveness"]
+        material.mcow_effect_deferred_reflection_map = effect["ReflectionMap"]
+
+        material.mcow_effect_deferred_diffuse_texture_0_alpha_disabled = effect["DiffuseTexture0AlphaDisabled"]
+        material.mcow_effect_deferred_alpha_mask_0_enabled = effect["AlphaMask0Enabled"]
+        material.mcow_effect_deferred_diffuse_color_0 = self.read_color_rgb(effect["DiffuseColor0"])
+        material.mcow_effect_deferred_specular_amount_0 = effect["SpecAmount0"]
+        material.mcow_effect_deferred_specular_power_0 = effect["SpecPower0"]
+        material.mcow_effect_deferred_emissive_amount_0 = effect["EmissiveAmount0"]
+        material.mcow_effect_deferred_normal_power_0 = effect["NormalPower0"]
+        material.mcow_effect_deferred_reflection_intensity_0 = effect["Reflectiveness0"]
+        material.mcow_effect_deferred_diffuse_texture_0 = effect["DiffuseTexture0"]
+        material.mcow_effect_deferred_material_texture_0 = effect["MaterialTexture0"]
+        material.mcow_effect_deferred_normal_texture_0 = effect["NormalTexture0"]
+
+        material.mcow_effect_deferred_has_second_set = effect["HasSecondSet"] # NOTE : This is done since on the C# side, our strings and vecs are still nullable, so this can fail even on valid effect json data... it would be ideal if we made it non nullable, obviously, but that's yet to come. As of now, this is the way that things work, for now, will be fixed in the future.
+        if material.mcow_effect_deferred_has_second_set:
+            material.mcow_effect_deferred_diffuse_texture_1_alpha_disabled = effect["DiffuseTexture1AlphaDisabled"]
+            material.mcow_effect_deferred_alpha_mask_1_enabled = effect["AlphaMask1Enabled"]
+            material.mcow_effect_deferred_diffuse_color_1 = self.read_color_rgb(effect["DiffuseColor1"])
+            material.mcow_effect_deferred_specular_amount_1 = effect["SpecAmount1"]
+            material.mcow_effect_deferred_specular_power_1 = effect["SpecPower1"]
+            material.mcow_effect_deferred_emissive_amount_1 = effect["EmissiveAmount1"]
+            material.mcow_effect_deferred_normal_power_1 = effect["NormalPower1"]
+            material.mcow_effect_deferred_reflection_intensity_1 = effect["Reflectiveness1"]
+            material.mcow_effect_deferred_diffuse_texture_1 = effect["DiffuseTexture1"]
+            material.mcow_effect_deferred_material_texture_1 = effect["MaterialTexture1"]
+            material.mcow_effect_deferred_normal_texture_1 = effect["NormalTexture1"]
+
+    # endregion
+
 # endregion
 
 # ../mcow/functions/generation/import/derived/Map.py
@@ -7009,6 +7065,11 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         # Set the mcow mesh type
         mesh.magickcow_mesh_type = "GEOMETRY" # NOTE : This is already the default anyways, so we don't need the statement, but it's here for correctness, just in case the default changes in the future.
+
+        # Read material data and append it to the generated mesh
+        material_name = f"material_mesh_{idx}"
+        mat = self.read_effect(material_name, root_node["effect"])
+        mesh.materials.append(mat)
 
     def import_liquid(self, idx, liquid):
         # Read the properties from the JSON object
