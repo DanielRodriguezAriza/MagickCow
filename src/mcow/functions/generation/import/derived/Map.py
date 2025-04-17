@@ -449,6 +449,12 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # TODO : Figure out how to deal with animated level parts from the base game which contain more than one bone... I just found one like that on wc_s4, and it sure will make things a bit harder to deal with.
         # Note that for my exporter implementation, I settled for every single part having a single bone, and any child bones being a separate part, which is what the vs boat map does, so yeah... this is gonna be
         # a bit complicated to deal with, I suppose...
+        # NOTE : Considering how only the root bone of an animated level part can be moved (it's the one used to describe the motion), we have 2 possible solutions here:
+        # 1) Modify the exporter so that child bones with no motion and identical collision channel as their parents are not added to separate animated level part on export, but rather they are added as child bones of the same XNA model hierarchy.
+        # 2) Accept that the importer will translate things to the way mcow does it, just add a different child animated level part on import and have it exist so that we don't break pois. On export, it will be a separate animated level part, but theoretically, the outcome should be the same, so we just compile to an slightly different form hierarchy-wise.
+        # Option 1 may be a bit more elegant, but option 2 requires far less work in the long run, and is probably just as valid. Also note that this would never even be a problem if the magicka devs hadn't made maps that contain for some fucking stupid reason multiple bones on the same animated level part, when only the root matters... which means that they just exist as a way to add different identifiers to pois but for the same fucking object, like wtf?
+        # iirc, pois are identified with part_name.child_part_name.child_bone_name etc... which means that this does lead to different pois with different names, but they point to the same fucking visual object, so wtf?
+        # This also means that we can't really get away with option 2, since that means that objects with geometry that must glow when pointing at a poi will no longer do so on recompilation... wtf... artificial problems...
 
     # endregion
 
