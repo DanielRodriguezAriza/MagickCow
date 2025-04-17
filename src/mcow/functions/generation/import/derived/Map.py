@@ -432,8 +432,10 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Assign mcow properties to mesh
         mesh.magickcow_mesh_type = "FORCE_FIELD"
 
-        # TODO : Implement all of the material properties stuff for the force field properties.
-        # etc...
+        # Create material data and assign it to the mesh
+        mat_name = f"force_field_material_{idx}"
+        mat = self.read_effect(mat_name, force_field) # NOTE : The material effect data is embedded within the force field object itself.
+        mesh.materials.append(mat)
 
     # endregion
 
