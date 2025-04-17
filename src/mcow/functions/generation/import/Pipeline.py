@@ -287,7 +287,16 @@ class MCow_ImportPipeline:
         pass
     
     def read_effect_force_field(self, material, effect):
-        pass
+        material.mcow_effect_force_field_color = self.read_color_rgb(effect["color"])
+        material.mcow_effect_force_field_width = effect["width"]
+        material.mcow_effect_force_field_alpha_power = effect["alphaPower"]
+        material.mcow_effect_force_field_alpha_fallof_power = effect["alphaFalloffPower"]
+        material.mcow_effect_force_field_max_radius = effect["maxRadius"]
+        material.mcow_effect_force_field_ripple_distortion = effect["rippleDistortion"]
+        material.mcow_effect_force_field_map_distortion = effect["mapDistortion"]
+        material.mcow_effect_force_field_vertex_color_enabled = effect["vertexColorEnabled"]
+        material.mcow_effect_force_field_displacement_map = effect["displacementMap"]
+        material.mcow_effect_force_field_ttl = effect["ttl"]
 
     # endregion
 
