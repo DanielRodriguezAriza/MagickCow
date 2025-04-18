@@ -493,16 +493,58 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         children = part["children"]
 
+        # TODO : Implement property assignment...
+
     # endregion
 
     # region Import Methods - Internal - Animated
 
-    def import_animated_part_model(self, model, bone):
+    # TODO : Maybe in the future, make it so thatthese read functions become members of the base Importer Pipeline class so that the PhysicsEntity Importer can use it as well.
+    
+    def read_animated_model(self, model, parent_bone_obj):
+        # Get model properties
         bones = model["bones"]
         vertex_declarations = model["vertexDeclarations"]
         model_meshes = model["modelMeshes"]
 
-        # TODO : Implement
+        # Read the root bone of the model
+        root_bone_name = bones[0]["name"]
+        root_bone_transform = self.read_mat4x4(bones[0]["transform"]) # NOTE : This transform is relative to the parent bone of this part. If no parent exists, then obviously it's in global coordinates, since it is relative to the parent, which is the world origin.
+        # Generate the root bone
+        # TODO : Refine the handling of the bounding sphere, maybe fully figure out what it does and maybe even auto-generate it like the bounding box for static mesh level parts.
+        root_bone_obj = bpy.data.objects.new(name=root_bone_name, object_data=None)
+        if parent_bone is None:
+            root_bone_obj.matrix_world = root_bone_transform # Set the matrix world transform matrix
+        else:
+            root_bone_obj.parent = parent_bone_obj # Attach the generate bone to the existing parent bone
+            root_bone_obj.matrix_parent_inverse = mathutils.Matrix.Identity(4) # Clear the parent inverse matrix that Blender calculates.
+            root_bone_obj.matrix_basis = root_bone_transform # Set the relative transform
+            
+            # region Comment - Clearing out parent inverse matrix
+            
+            # We clear the parent inverse matrix that Blender calculates.
+            # This way, the relative offset behaviour we get is what we would expect in literally any other 3D software on planet Earth.
+            # Note that I'm NOT saying that Blender's parent inverse is useless... no, it's pretty nice... sometimes... but in this case? it's a fucking pain in the ass. So we clear it out.
+            # We also could clear it with bpy.ops, but that's a pain in the butt, so easier to just do what bpy.ops does under the hood, which is setting the inverse matrix to the identity,
+            # which is the same as having no inverse parent matrix.
+            # For more information regarding the parent inverse matrix, read: https://en.wikibooks.org/wiki/Blender_3D:_Noob_to_Pro/Parenting#Clear_Parent_Inverse_Clarified
+            # It will all make sense...
+            
+            # NOTE : Quote from the article (copy-pasted here just in case the link goes dead at some point in the future):
+            # Normally, when a parent relationship is set up, if the parent has already had an object transformation applied, the child does not immediately inherit that.
+            # Instead, it only picks up subsequent changes to the parent’s object transformation. What happens is that, at the time the parent relationship is set up, the inverse of the current parent
+            # object transformation is calculated and henceforth applied before passing the parent transformation onto the child.
+            # This cancels out the initial transformation, leaving the child where it is to start with.
+            # This inverse is not recomputed when the parent object is subsequently moved or subject to other object transformations, so the child follows along thereafter.
+            # The "Clear Parent Inverse" function sets this inverse transformation to the identity transformation, so the child picks up the full parent object transformation.
+
+            # endregion
+
+
+        return ans_bone, ans_mesh
+
+        # TODO : Finish implementing
+
 
     # endregion
 
