@@ -461,6 +461,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Also, as a warning, note that maybe the impl will change, but I'm sure I will forget to update this comment, so just be aware of the issue for future reference and look at the code to know what impl
         # is actually on the code right now...
 
+        # NOTE : The "extra" bone names could correspond to the mesh names, no? iirc that's the way it works, I don't remember how I implemented it on the exporter, but now that I think about it, it very well could be...
+        # TODO : Figure this part out again and then properly implement the fucking importer ffs...
+
         # endregion
 
         # TODO : Finish implementing
