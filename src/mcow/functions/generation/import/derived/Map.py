@@ -50,7 +50,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     
     def import_animated_parts(self, animated_parts):
         for part in animated_parts:
-            self.import_animated_part(part)
+            self.import_animated_part(part, None)
     
     def import_lights(self, lights):
         for light in lights:
@@ -443,7 +443,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         mat = self.read_effect(mat_name, force_field) # NOTE : The material effect data is embedded within the force field object itself.
         mesh.materials.append(mat)
 
-    def import_animated_part(self, part):
+    def import_animated_part(self, part, parent):
         # region Comments - Stuff to figure out about the animated level part import implementation
 
         # TODO : Figure out how to deal with animated level parts from the base game which contain more than one bone... I just found one like that on wc_s4, and it sure will make things a bit harder to deal with.
@@ -468,8 +468,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         name = part["name"] # NOTE : For now, we're taking the bone name from the part name. From what I've seen, these should always match (the name of this part and the name of the root bone of this part), but if in the future I find any examples on the base game that don't match, then it would be important to revise this implementation and change it.
         affects_shields = part["affectsShields"]
 
-        model = None # TODO : Add model reading code
-        mesh_settings = None # TODO : Implement mesh settings reading
+        model = part["model"]
+        mesh_settings = part["meshSettings"] # TODO : Implement mesh settings handling
         
         liquids = part["liquids"]
         locators = part["locators"]
@@ -489,6 +489,17 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         nav_mesh = part["nav_mesh"]
 
         children = part["children"]
+
+    # endregion
+
+    # region Import Methods - Internal - Animated
+
+    def import_animated_part_model(self, model, bone):
+        bones = model["bones"]
+        vertex_declarations = model["vertexDeclarations"]
+        model_meshes = model["modelMeshes"]
+
+        # TODO : Implement
 
     # endregion
 
