@@ -463,9 +463,32 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         # endregion
 
-        
+        # TODO : Finish implementing
 
-        pass
+        name = part["name"] # NOTE : For now, we're taking the bone name from the part name. From what I've seen, these should always match (the name of this part and the name of the root bone of this part), but if in the future I find any examples on the base game that don't match, then it would be important to revise this implementation and change it.
+        affects_shields = part["affectsShields"]
+
+        model = None # TODO : Add model reading code
+        mesh_settings = None # TODO : Implement mesh settings reading
+        
+        liquids = part["liquids"]
+        locators = part["locators"]
+        effects = part["effects"]
+
+        lights = part["lights"]
+
+        animation_duration = part["animationDuration"]
+        animation = part["animation"]
+
+        has_collision = part["hasCollision"]
+        collision_material = part["collisionMaterial"]
+        collision_vertices = part["collisionVertices"]
+        collision_triangles = part["collisionTriangles"]
+
+        has_nav_mesh = part["hasNavMesh"]
+        nav_mesh = part["nav_mesh"]
+
+        children = part["children"]
 
     # endregion
 
