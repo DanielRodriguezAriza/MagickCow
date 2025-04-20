@@ -108,12 +108,12 @@ def register_properties_material_generic(material):
         description = "Determines the type of this material",
         items = [
             ("EFFECT_DEFERRED", "Deferred", "Deferred material. Used for opaque objects. This is the default configuration for level geometry materials."),
-            ("EFFECT_ADDITIVE", "Additive", "Additive material. Used for objects with transparency."),
+            ("EFFECT_ADDITIVE", "Additive", "Additive material. Used for objects with transparency."), # NOTE : Be mindful of the performance impact of using additive (transparent) materials. Magicka suffers of overdraw issues with transparent materials, just like any other game engine.
             ("EFFECT_LIQUID_WATER", "Water", "Water material. Used for surfaces of type water."),
             ("EFFECT_LIQUID_LAVA", "Lava", "Lava material. Used for surfaces of type lava."),
             ("EFFECT_FORCE_FIELD", "Force Field", "Force Field material. Used for surfaces of type force field.")
         ],
-        default = "EFFECT_DEFERRED"
+        default = "EFFECT_DEFERRED" # This is the best default option for obvious reasons. First because of performance reasons. Second because most objects an user will add will be opaque level geometry, so this is the best default setting.
     )
 
     material.mcow_effect_mode = bpy.props.EnumProperty(
