@@ -6822,7 +6822,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     
     def import_level_model(self, level_model):
         # Get the data entries from the level model JSON dict object.
-        model_mesh = level_model["model"]
+        level_model_mesh = level_model["model"]
         animated_parts = level_model["animatedParts"]
         lights = level_model["lights"]
         effects = level_model["effects"]
@@ -6836,7 +6836,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         nav_mesh = level_model["navMesh"]
         
         # Execute the import functions for each of the types of data found within the level model JSON dict.
-        self.import_model_mesh(model_mesh)
+        self.import_level_model_mesh(level_model_mesh)
         self.import_animated_parts(animated_parts)
         self.import_lights(lights) # TODO : In the future, we should import these before the animated level parts, and then cache them, so that we can do the hierarchy parenting thing correctly. This is because animated level parts don't store their own lights, but they do store references to lights, which are then stored within the base level class, on the lights list / array.
         self.import_effects(effects)
@@ -6851,13 +6851,14 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
     # region Import Methods - Top Level
 
-    def import_model_mesh(self, model):
+    def import_level_model_mesh(self, model):
         root_nodes = model["RootNodes"]
         for idx, root_node in enumerate(root_nodes):
             self.import_root_node(idx, root_node)
     
     def import_animated_parts(self, animated_parts):
-        pass
+        for part in animated_parts:
+            self.import_animated_part(part, None)
     
     def import_lights(self, lights):
         for light in lights:
@@ -7211,11 +7212,16 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         else:
             raise MagickCowImportException(f"Imported liquid has unknown liquid type: \"{liquid_type}\"")
         
-        # Asign mcow properties
+        # Assign mcow properties
         mesh.magickcow_mesh_type = mesh_type
         mesh.magickcow_mesh_can_drown = can_drown
         mesh.magickcow_mesh_freezable = can_freeze
         mesh.magickcow_mesh_autofreeze = can_auto_freeze
+
+        # Create material and assign it to the mesh
+        mat_name = f"liquid_material_{idx}_{liquid_type}"
+        mat = self.read_effect(mat_name, effect)
+        mesh.materials.append(mat)
 
     def import_force_field(self, idx, force_field):
         # Get data from the input json object
@@ -7244,6 +7250,193 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         mat_name = f"force_field_material_{idx}"
         mat = self.read_effect(mat_name, force_field) # NOTE : The material effect data is embedded within the force field object itself.
         mesh.materials.append(mat)
+
+    def import_animated_part(self, part, parent):
+        # region Comments - Stuff to figure out about the animated level part import implementation
+
+        # TODO : Figure out how to deal with animated level parts from the base game which contain more than one bone... I just found one like that on wc_s4, and it sure will make things a bit harder to deal with.
+        # Note that for my exporter implementation, I settled for every single part having a single bone, and any child bones being a separate part, which is what the vs boat map does, so yeah... this is gonna be
+        # a bit complicated to deal with, I suppose...
+        # NOTE : Considering how only the root bone of an animated level part can be moved (it's the one used to describe the motion), we have 2 possible solutions here:
+        # 1) Modify the exporter so that child bones with no motion and identical collision channel as their parents are not added to separate animated level part on export, but rather they are added as child bones of the same XNA model hierarchy.
+        # 2) Accept that the importer will translate things to the way mcow does it, just add a different child animated level part on import and have it exist so that we don't break pois. On export, it will be a separate animated level part, but theoretically, the outcome should be the same, so we just compile to an slightly different form hierarchy-wise.
+        # Option 1 may be a bit more elegant, but option 2 requires far less work in the long run, and is probably just as valid. Also note that this would never even be a problem if the magicka devs hadn't made maps that contain for some fucking stupid reason multiple bones on the same animated level part, when only the root matters... which means that they just exist as a way to add different identifiers to pois but for the same fucking object, like wtf?
+        # iirc, pois are identified with part_name.child_part_name.child_bone_name etc... which means that this does lead to different pois with different names, but they point to the same fucking visual object, so wtf?
+        # This also means that we can't really get away with option 2, since that means that objects with geometry that must glow when pointing at a poi will no longer do so on recompilation... wtf... artificial problems...
+
+        # NOTE : All of this may not matter at all if in the base game, these sort of "leaf" bones are never really used for anything and just exist for some fucking weird reason...
+        # If that's the case, then we can just ignore them and import them as new bones, and go with route 1), which is what I'm gonna be implementing for now.
+        # Also, as a warning, note that maybe the impl will change, but I'm sure I will forget to update this comment, so just be aware of the issue for future reference and look at the code to know what impl
+        # is actually on the code right now...
+
+        # NOTE : The "extra" bone names could correspond to the mesh names, no? iirc that's the way it works, I don't remember how I implemented it on the exporter, but now that I think about it, it very well could be...
+        # TODO : Figure this part out again and then properly implement the fucking importer ffs...
+
+        # endregion
+
+        # TODO : Finish implementing
+
+        # Get properties for the animated level part
+        name = part["name"] # NOTE : For now, we're taking the bone name from the part name. From what I've seen, these should always match (the name of this part and the name of the root bone of this part), but if in the future I find any examples on the base game that don't match, then it would be important to revise this implementation and change it.
+        affects_shields = part["affectsShields"]
+
+        model = part["model"]
+        mesh_settings = part["meshSettings"] # TODO : Implement mesh settings handling
+        
+        liquids = part["liquids"]
+        locators = part["locators"]
+        effects = part["effects"]
+
+        lights = part["lights"]
+
+        animation_duration = part["animationDuration"]
+        animation = part["animation"]
+
+        has_collision = part["hasCollision"]
+        collision_material = part["collisionMaterial"]
+        collision_vertices = part["collisionVertices"]
+        collision_triangles = part["collisionTriangles"]
+
+        has_nav_mesh = part["hasNavMesh"]
+        nav_mesh = part["nav_mesh"]
+
+        children = part["children"]
+
+        # Internal import process
+        root_bone_obj = self.import_animated_model(model, parent)
+
+        # Import child animated parts
+        for child_part in children:
+            self.import_animated_part(child_part, root_bone_obj)
+
+        # TODO : Implement property assignment, etc...
+
+    # endregion
+
+    # region Import Methods - Internal - Animated
+
+    # TODO : Maybe in the future, make it so thatthese read functions become members of the base Importer Pipeline class so that the PhysicsEntity Importer can use it as well.
+    
+    def import_animated_model(self, model, parent_bone_obj):
+        # Get model properties
+        bones = model["bones"]
+        vertex_declarations = model["vertexDeclarations"]
+        model_meshes = model["modelMeshes"]
+
+        # Import the root bone of the model
+        root_bone_obj = self.import_bone(bones[0], parent_bone_obj)
+
+        # Import the child meshes of this animated level part
+        self.import_model_meshes(root_bone_obj, bones, model_meshes)
+
+        return root_bone_obj
+
+    # region Comment
+    # TODO : Maybe make this function a generic importer pipeline function so that Physics Entities and other such objects can import bones as well?
+    # Or at least part of its logic, since the empty object type is Map and PE specific, and when the skinned character mesh export / import support is added, we'll use armatures for that, so only the JSON
+    # parsing side of things could be considered generic, everything else requires some specific treatment regarding the object creation process itself and the properties that must be added to properly
+    # handle importing and object creation / generation.
+    # endregion
+    def import_bone(self, bone_data, parent_bone_obj):
+        # Get bone properties
+        bone_name = bone_data["name"]
+        bone_transform = self.read_mat4x4(bone_data["transform"]) # NOTE : This transform is relative to the parent bone of this part. If no parent exists, then obviously it's in global coordinates, since it is relative to the parent, which is the world origin.
+
+        # Create bone object
+        bone_obj = bpy.data.objects.new(name=bone_name, object_data=None)
+        
+        # Set bone transform and attach to parent if there's a parent bone object
+        if parent_bone_obj is None:
+            bone_obj.matrix_world = bone_transform # Set the matrix world transform matrix
+        else:
+            bone_obj.parent = parent_bone_obj # Attach the generate bone to the existing parent bone
+            bone_obj.matrix_parent_inverse = mathutils.Matrix.Identity(4) # Clear the parent inverse matrix that Blender calculates.
+            bone_obj.matrix_basis = root_bone_transform # Set the relative transform
+            # region Comment - Clearing out parent inverse matrix
+            
+            # We clear the parent inverse matrix that Blender calculates.
+            # This way, the relative offset behaviour we get is what we would expect in literally any other 3D software on planet Earth.
+            # Note that I'm NOT saying that Blender's parent inverse is useless... no, it's pretty nice... sometimes... but in this case? it's a fucking pain in the ass. So we clear it out.
+            # We also could clear it with bpy.ops, but that's a pain in the butt, so easier to just do what bpy.ops does under the hood, which is setting the inverse matrix to the identity,
+            # which is the same as having no inverse parent matrix.
+            # For more information regarding the parent inverse matrix, read: https://en.wikibooks.org/wiki/Blender_3D:_Noob_to_Pro/Parenting#Clear_Parent_Inverse_Clarified
+            # It will all make sense...
+            
+            # NOTE : Quote from the article (copy-pasted here just in case the link goes dead at some point in the future):
+            # Normally, when a parent relationship is set up, if the parent has already had an object transformation applied, the child does not immediately inherit that.
+            # Instead, it only picks up subsequent changes to the parent’s object transformation. What happens is that, at the time the parent relationship is set up, the inverse of the current parent
+            # object transformation is calculated and henceforth applied before passing the parent transformation onto the child.
+            # This cancels out the initial transformation, leaving the child where it is to start with.
+            # This inverse is not recomputed when the parent object is subsequently moved or subject to other object transformations, so the child follows along thereafter.
+            # The "Clear Parent Inverse" function sets this inverse transformation to the identity transformation, so the child picks up the full parent object transformation.
+
+            # endregion
+        
+        # Set mcow properties
+        bone_obj.magickcow_empty_type = "BONE"
+
+        # TODO : Refine the handling of the bounding sphere, maybe fully figure out what it does and maybe even auto-generate it like the bounding box for static mesh level parts.
+
+        return bone_obj
+
+    def import_model_meshes(self, root_bone_obj, bones, vertex_declarations, model_meshes):
+        for model_mesh in model_meshes:
+            
+            parent_bone_index = model_mesh["parentBone"]
+            parent_bone_data = bones[parent_bone_index]
+
+            json_vertex_buffer = model_mesh["vertexBuffer"]
+            json_index_buffer = model_mesh["indexBuffer"]
+            
+            mesh_parts = model_mesh["meshParts"]
+
+            total_vertices = 0
+            for mesh_part in mesh_parts:
+                total_vertices += mesh_part["numVertices"]
+            vertex_stride = len(json_vertex_buffer) // total_vertices
+
+            for mesh_part in mesh_parts:
+                
+                # region Comment - Mesh Parts Handling
+
+                # TODO : Add proper mesh part handling in the future in the event that any of the vanilla maps have model meshes with multiple mesh parts rather than just 1.
+                # Note that all mesh parts share the same vertex and index buffers, but they allow assigning different share resource indices (different material effects) to a segment of the mesh,
+                # as well as different vertex declarations.
+
+                # endregion
+                
+                vertex_declaration_index = mesh_part["vertexDeclarationIndex"]
+                json_vertex_declaration = vertex_declarations[vertex_declaration_index]
+
+                self.import_model_mesh(root_bone_obj, parent_bone_data, vertex_stride, json_vertex_declaration, json_vertex_buffer, json_index_buffer)
+
+                share_resource_index = mesh_part["sharedResourceIndex"] # TODO : Add shared resource handling
+
+    def import_model_mesh(self, obj_root_bone, json_parent_bone, vertex_stride, json_vertex_declaration, json_vertex_buffer, json_index_buffer):
+        # Generate mesh data
+        mesh_vertices, mesh_triangles = self.read_mesh_buffer_data(vertex_stride, json_vertex_declaration, json_vertex_buffer, json_index_buffer)
+
+        # Create mesh data block and Blender object
+        name = json_parent_bone["name"]
+        mesh = bpy.data.meshes.new(name=name)
+        obj = bpy.data.objects.new(name=name, object_data=mesh)
+
+        bpy.context.collection.objects.link(obj)
+
+        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
+        mesh.update()
+
+        # Assign mcow properties
+        mesh.magickcow_mesh_type = "GEOMETRY"
+
+        # Attach to parent bone object and set relative object transform
+        transform = self.read_mat4x4(json_parent_bone["transform"])
+        obj.parent = obj_root_bone
+        obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
+        obj.matrix_basis = transform
+
+        # Create material data
+        # TODO : Implement material handling
 
     # endregion
 
