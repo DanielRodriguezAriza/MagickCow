@@ -7409,7 +7409,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         else:
             bone_obj.parent = parent_bone_obj # Attach the generate bone to the existing parent bone
             bone_obj.matrix_parent_inverse = mathutils.Matrix.Identity(4) # Clear the parent inverse matrix that Blender calculates.
-            bone_obj.matrix_basis = root_bone_transform # Set the relative transform
+            bone_obj.matrix_basis = bone_transform # Set the relative transform
             # region Comment - Clearing out parent inverse matrix
             
             # We clear the parent inverse matrix that Blender calculates.
