@@ -101,10 +101,10 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
         layout.prop(material, "mcow_effect_force_field_ttl")
     
     def draw_effect_additive(self, layout, material):
-        layout.prop(material, mcow_effect_additive_color_tint)
-        layout.prop(material, mcow_effect_additive_vertex_color_enabled)
-        layout.prop(material, mcow_effect_additive_texture_enabled)
-        layout.prop(material, mcow_effect_additive_texture)
+        layout.prop(material, "mcow_effect_additive_color_tint")
+        layout.prop(material, "mcow_effect_additive_vertex_color_enabled")
+        layout.prop(material, "mcow_effect_additive_texture_enabled")
+        layout.prop(material, "mcow_effect_additive_texture")
 
 # endregion
 
