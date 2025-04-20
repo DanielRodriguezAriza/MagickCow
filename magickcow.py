@@ -1308,7 +1308,7 @@ def register_properties_material():
     # Register the material properties panel
     register_properties_panel_class_material()
 
-def unregister_custom_material_panel():
+def unregister_properties_material():
     # Get reference to Blender material type
     material = bpy.types.Material
 
