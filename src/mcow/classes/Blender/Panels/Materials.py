@@ -107,10 +107,11 @@ def register_properties_material_generic(material):
         name = "Material Type",
         description = "Determines the type of this material",
         items = [
-            ("EFFECT_DEFERRED", "Deferred", "Default geometry material"),
-            ("EFFECT_LIQUID_WATER", "Water", "Water material"),
-            ("EFFECT_LIQUID_LAVA", "Lava", "Lava material"),
-            ("EFFECT_FORCE_FIELD", "Force Field", "Force Field material")
+            ("EFFECT_DEFERRED", "Deferred", "Deferred material. Used for opaque objects. This is the default configuration for level geometry materials."),
+            ("EFFECT_ADDITIVE", "Additive", "Additive material. Used for objects with transparency."),
+            ("EFFECT_LIQUID_WATER", "Water", "Water material. Used for surfaces of type water."),
+            ("EFFECT_LIQUID_LAVA", "Lava", "Lava material. Used for surfaces of type lava."),
+            ("EFFECT_FORCE_FIELD", "Force Field", "Force Field material. Used for surfaces of type force field.")
         ],
         default = "EFFECT_DEFERRED"
     )
