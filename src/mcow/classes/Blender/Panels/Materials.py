@@ -42,6 +42,8 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
                     self.draw_effect_lava(layout, material)
                 elif material_type == "EFFECT_FORCE_FIELD":
                     self.draw_effect_force_field(layout, material)
+                elif material_type == "EFFECT_ADDITIVE":
+                    self.draw_effect_additive(layout, material)
             elif material_mode == "DOC":
                 layout.prop(material, "mcow_effect_path")
     
@@ -97,6 +99,12 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
         layout.prop(material, "mcow_effect_force_field_vertex_color_enabled")
         layout.prop(material, "mcow_effect_force_field_displacement_map")
         layout.prop(material, "mcow_effect_force_field_ttl")
+    
+    def draw_effect_additive(self, layout, material):
+        layout.prop(material, mcow_effect_additive_color_tint)
+        layout.prop(material, mcow_effect_additive_vertex_color_enabled)
+        layout.prop(material, mcow_effect_additive_texture_enabled)
+        layout.prop(material, mcow_effect_additive_texture)
 
 # endregion
 
