@@ -566,10 +566,41 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         return bone_obj
 
-    # TODO : Rename to import_model_mesh, and rename the other import_model_mesh function to import_level_mesh, since that's what it should be, probably, I'll look at the mpup side of the code later just
-    # to get a better idea of what the most convenient and appropriate naming convention should be so as to not cause any confusion in the long run...
-    def import_model_mesh(self, mesh_data):
+    def import_model_meshes(self, root_bone_obj, bones, vertex_declarations, model_meshes):
+        for model_mesh in model_meshes:
+            
+            parent_bone_index = model_mesh["parentBone"]
+            parent_bone_data = bones[parent_bone_index]
+
+            json_vertex_buffer = model_mesh["vertexBuffer"]
+            json_index_buffer = model_mesh["indexBuffer"]
+            
+            mesh_parts = model_mesh["meshParts"]
+
+            for mesh_part in model_mesh:
+                
+                # region Comment - Mesh Parts Handling
+
+                # TODO : Add proper mesh part handling in the future in the event that any of the vanilla maps have model meshes with multiple mesh parts rather than just 1.
+                # Note that all mesh parts share the same vertex and index buffers, but they allow assigning different share resource indices (different material effects) to a segment of the mesh,
+                # as well as different vertex declarations.
+
+                # endregion
+                
+                vertex_declaration_index = mesh_part["vertexDeclarationIndex"]
+                json_vertex_declaration = vertex_declarations[vertex_declaration_index]
+
+                self.import_model_mesh(root_bone_obj, parent_bone_data, json_vertex_buffer, json_index_buffer, json_vertex_declaration)
+
+                share_resource_index = mesh_part["sharedResourceIndex"] # TODO : Add shared resource handling
+
+    def import_model_mesh(self, obj_root_bone, json_parent_bone, json_vertex_buffer, json_index_buffer, json_vertex_declaration):
+        
+        
+
+
         pass
+
         # TODO : Implement
 
     # endregion
