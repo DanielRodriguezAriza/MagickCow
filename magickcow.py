@@ -7336,7 +7336,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         # Get properties for the animated level part
         name = part["name"] # NOTE : For now, we're taking the bone name from the part name. From what I've seen, these should always match (the name of this part and the name of the root bone of this part), but if in the future I find any examples on the base game that don't match, then it would be important to revise this implementation and change it.
-        affects_shields = part["affectsShields"]
+        affects_shields = part["affectShields"]
 
         model = part["model"]
         mesh_settings = part["meshSettings"] # TODO : Implement mesh settings handling
@@ -7356,7 +7356,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         collision_triangles = part["collisionTriangles"]
 
         has_nav_mesh = part["hasNavMesh"]
-        nav_mesh = part["nav_mesh"]
+        nav_mesh = part["navMesh"]
 
         children = part["children"]
 
@@ -7385,7 +7385,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         root_bone_obj = self.import_bone(bones[0], parent_bone_obj)
 
         # Import the child meshes of this animated level part
-        self.import_model_meshes(root_bone_obj, bones, model_meshes)
+        self.import_model_meshes(root_bone_obj, bones, vertex_declarations, model_meshes)
 
         return root_bone_obj
 
