@@ -230,6 +230,10 @@ class MCow_ImportPipeline:
                 effect_type = "EFFECT_LIQUID_LAVA"
                 effect_reader = self.read_effect_liquid_lava
             
+            elif effect_type_json == "effect_additive":
+                effect_type = "EFFECT_ADDITIVE"
+                effect_reader = self.read_effect_additive
+            
             else:
                 raise MagickCowImportException(f"Unknown material effect type : \"{effect_type_json}\"")
         
@@ -296,6 +300,13 @@ class MCow_ImportPipeline:
         material.mcow_effect_force_field_vertex_color_enabled = effect["vertexColorEnabled"]
         material.mcow_effect_force_field_displacement_map = effect["displacementMap"]
         material.mcow_effect_force_field_ttl = effect["ttl"]
+
+    def read_effect_additive(self, material, effect):
+        material.mcow_effect_additive_color_tint = self.read_color_rgb(effect["colorTint"])
+        material.mcow_effect_additive_vertex_color_enabled = effect["vertexColorEnabled"]
+        material.mcow_effect_additive_texture_enabled = effect["textureEnabled"]
+        if material.mcow_effect_additive_texture_enabled: # NOTE : Same note as the deferred material reading code.
+            material.mcow_effect_additive_texture = effect["texture"]
 
     # endregion
 
