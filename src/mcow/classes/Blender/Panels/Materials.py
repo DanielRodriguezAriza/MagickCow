@@ -403,10 +403,38 @@ def unregister_properties_material_force_field(material):
     del material.mcow_effect_force_field_ttl
 
 def register_properties_material_additive(material):
-    pass
+    material.mcow_effect_additive_color_tint = bpy.props.FloatVectorProperty(
+        name = "Color Tint",
+        subtype = "COLOR",
+        default = (1.0, 1.0, 1.0),
+        min = 0.0,
+        max = 1.0,
+        size = 3
+    )
+
+    # NOTE : Maybe in the future, this property should be automatically determined for ALL of the material effect types, based on whether the object has a vertex color layer or not? idk...
+    # Also, these properties that are common across different types of material effects should maybe be modified to be added in the generic props rather than having them duplicated.
+    # For now, this is ok, but this should probably be reworked in the future.
+    material.mcow_effect_additive_vertex_color_enabled = bpy.props.BoolProperty(
+        name = "Vertex Color Enabled",
+        default = False
+    )
+
+    material.mcow_effect_additive_texture_enabled = bpy.props.BoolProperty(
+        name = "Texture Enabled",
+        default = True
+    )
+
+    material.mcow_effect_additive_texture = bpy.props.StringProperty(
+        name = "Texture",
+        default = "..\\Textures\\Surface\\Nature\\Atmosphere\\light_ray00_0"
+    )
 
 def unregister_properties_material_additive(material):
-    pass
+    del material.mcow_effect_additive_color_tint
+    del material.mcow_effect_additive_vertex_color_enabled
+    del material.mcow_effect_additive_texture_enabled
+    del material.mcow_effect_additive_texture
 
 def register_properties_panel_class_material():
     bpy.utils.register_class(MATERIAL_PT_MagickCowPanel)
