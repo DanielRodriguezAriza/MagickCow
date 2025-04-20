@@ -401,6 +401,12 @@ def unregister_properties_material_force_field(material):
     del material.mcow_effect_force_field_displacement_map
     del material.mcow_effect_force_field_ttl
 
+def register_properties_material_additive(material):
+    pass
+
+def unregister_properties_material_additive(material):
+    pass
+
 def register_properties_panel_class_material():
     bpy.utils.register_class(MATERIAL_PT_MagickCowPanel)
 
@@ -421,6 +427,7 @@ def register_properties_material():
     register_properties_material_water(material)
     register_properties_material_lava(material)
     register_properties_material_force_field(material)
+    register_properties_material_additive(material)
 
     # Register the material properties panel
     register_properties_panel_class_material()
@@ -435,6 +442,7 @@ def unregister_custom_material_panel():
     unregister_properties_material_water(material)
     unregister_properties_material_lava(material)
     unregister_properties_material_force_field(material)
+    unregister_properties_material_additive(material)
 
     # Unregister the material properties panel
     unregister_properties_panel_class_material()
