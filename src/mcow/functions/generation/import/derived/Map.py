@@ -468,6 +468,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         # TODO : Finish implementing
 
+        # Get properties for the animated level part
         name = part["name"] # NOTE : For now, we're taking the bone name from the part name. From what I've seen, these should always match (the name of this part and the name of the root bone of this part), but if in the future I find any examples on the base game that don't match, then it would be important to revise this implementation and change it.
         affects_shields = part["affectsShields"]
 
@@ -493,7 +494,14 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         children = part["children"]
 
-        # TODO : Implement property assignment...
+        # Internal import process
+        root_bone_obj = self.import_animated_model(model, parent)
+
+        # Import child animated parts
+        for child_part in children:
+            self.import_animated_part(child_part, root_bone_obj)
+
+        # TODO : Implement property assignment, etc...
 
     # endregion
 
@@ -513,9 +521,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Import the child meshes of this animated level part
         self.import_model_meshes(root_bone_obj, bones, model_meshes)
 
-        return ans_bone, ans_mesh
-
-        # TODO : Finish implementing
+        return root_bone_obj
 
     # region Comment
     # TODO : Maybe make this function a generic importer pipeline function so that Physics Entities and other such objects can import bones as well?
