@@ -254,6 +254,8 @@ class material_utility:
                 "displacementMap": "..\\Textures\\Liquids\\WaterNormals_0",
                 "ttl": 1
             }
+        # NOTE : No default fallback for additive effects exists in JSON mode, since geometry objects can have both deferred effects and additive effects, and for performance and logical reasons,
+        # level geometry (mcow type "GEOMETRY") meshes with non-specified or non-valid materials are assumed to use deferred effects as fallback by default
         return ans
 
     @staticmethod
