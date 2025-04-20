@@ -566,6 +566,12 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         return bone_obj
 
+    # TODO : Rename to import_model_mesh, and rename the other import_model_mesh function to import_level_mesh, since that's what it should be, probably, I'll look at the mpup side of the code later just
+    # to get a better idea of what the most convenient and appropriate naming convention should be so as to not cause any confusion in the long run...
+    def import_model_mesh_alt(self, mesh_data):
+        pass
+        # TODO : Implement
+
     # endregion
 
 # endregion
