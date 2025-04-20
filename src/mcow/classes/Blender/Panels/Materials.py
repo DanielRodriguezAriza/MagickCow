@@ -435,7 +435,7 @@ def register_properties_material_additive(material):
 
     material.mcow_effect_additive_texture = bpy.props.StringProperty(
         name = "Texture",
-        default = "..\\Textures\\Surface\\Nature\\Atmosphere\\light_ray00_0"
+        default = "..\\Textures\\Surface\\Nature\\Atmosphere\\light_ray00_0" # NOTE : Maybe find a better default for this, like a grass texture or whatever?
     )
 
 def unregister_properties_material_additive(material):
