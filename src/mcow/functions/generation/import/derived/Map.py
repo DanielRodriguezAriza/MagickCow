@@ -497,6 +497,19 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Internal import process
         root_bone_obj = self.import_animated_model(model, parent)
 
+        # Temporary Hack to set the transform of the bones to that of the first frame of the animation
+        # NOTE : This part is a hacky workaround and should NOT be used in the final version.
+        # Remove this piece of shit code once full animation import support is added, since that will also fix this issue!
+        # NOTE : The transform operations applied in Blender to objects through their .location .rotation_quaternion / .rotation_euler and .scale are all performed relative to the parent, so no need to handle matrix_basis or matrix_world to ensure that we get the correct results.
+        first_anim_frame = animation["frames"][0]["pose"]
+        faf_pos = self.read_point(first_anim_frame["translation"])
+        faf_rot = self.read_quat(first_anim_frame["orientation"])
+        faf_scale = self.read_scale(first_anim_frame["scale"])
+        root_bone_obj.location = faf_pos
+        root_bone_obj.rotation_mode = "QUATERNION" # NOTE : Important to ensure that this is the rotation mode so that we can assign rotation quaternions...
+        root_bone_obj.rotation_quaternion = faf_rot
+        root_bone_obj.scale = faf_scale
+
         # Import child animated parts
         for child_part in children:
             self.import_animated_part(child_part, root_bone_obj)
