@@ -14,7 +14,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     
     def import_level_model(self, level_model):
         # Get the data entries from the level model JSON dict object.
-        model_mesh = level_model["model"]
+        level_model_mesh = level_model["model"]
         animated_parts = level_model["animatedParts"]
         lights = level_model["lights"]
         effects = level_model["effects"]
@@ -28,7 +28,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         nav_mesh = level_model["navMesh"]
         
         # Execute the import functions for each of the types of data found within the level model JSON dict.
-        self.import_model_mesh(model_mesh)
+        self.import_level_model_mesh(level_model_mesh)
         self.import_animated_parts(animated_parts)
         self.import_lights(lights) # TODO : In the future, we should import these before the animated level parts, and then cache them, so that we can do the hierarchy parenting thing correctly. This is because animated level parts don't store their own lights, but they do store references to lights, which are then stored within the base level class, on the lights list / array.
         self.import_effects(effects)
@@ -43,7 +43,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
     # region Import Methods - Top Level
 
-    def import_model_mesh(self, model):
+    def import_level_model_mesh(self, model):
         root_nodes = model["RootNodes"]
         for idx, root_node in enumerate(root_nodes):
             self.import_root_node(idx, root_node)
@@ -568,7 +568,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
     # TODO : Rename to import_model_mesh, and rename the other import_model_mesh function to import_level_mesh, since that's what it should be, probably, I'll look at the mpup side of the code later just
     # to get a better idea of what the most convenient and appropriate naming convention should be so as to not cause any confusion in the long run...
-    def import_model_mesh_alt(self, mesh_data):
+    def import_model_mesh(self, mesh_data):
         pass
         # TODO : Implement
 
