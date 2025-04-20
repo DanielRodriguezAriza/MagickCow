@@ -545,6 +545,26 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         # TODO : Finish implementing
 
+    # TODO : Maybe make this function a generic importer pipeline function so that Physics Entities and other such objects can import bones as well?
+    # Or at least part of its logic, since the empty object type is Map and PE specific, and when the skinned character mesh export / import support is added, we'll use armatures for that, so only the JSON
+    # parsing side of things could be considered generic, everything else requires some specific treatment regarding the object creation process itself and the properties that must be added to properly
+    # handle importing and object creation / generation.
+    def import_bone(self, bone_data, parent_bone_obj):
+        bone_name = bone_data["name"]
+        bone_transform = self.read_mat4x4(bone_data["transform"])
+
+        bone_obj = bpy.data.objects.new(name=bone_name, object_data=None)
+        
+        if parent_bone_obj is None:
+            bone_obj.matrix_world = bone_transform
+        else:
+            bone_obj.parent = parent_bone_obj # Attach the generate bone to the existing parent bone
+            bone_obj.matrix_parent_inverse = mathutils.Matrix.Identity(4) # Clear the parent inverse matrix that Blender calculates.
+            bone_obj.matrix_basis = root_bone_transform # Set the relative transform
+        
+        bone_obj.magickcow_empty_type = "BONE"
+
+        return bone_obj
 
     # endregion
 
