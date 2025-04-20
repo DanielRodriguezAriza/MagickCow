@@ -577,7 +577,12 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             
             mesh_parts = model_mesh["meshParts"]
 
-            for mesh_part in model_mesh:
+            total_vertices = 0
+            for mesh_part in mesh_parts:
+                total_vertices += mesh_part["numVertices"]
+            vertex_stride = len(json_vertex_buffer) // total_vertices
+
+            for mesh_part in mesh_parts:
                 
                 # region Comment - Mesh Parts Handling
 
@@ -590,11 +595,11 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
                 vertex_declaration_index = mesh_part["vertexDeclarationIndex"]
                 json_vertex_declaration = vertex_declarations[vertex_declaration_index]
 
-                self.import_model_mesh(root_bone_obj, parent_bone_data, json_vertex_buffer, json_index_buffer, json_vertex_declaration)
+                self.import_model_mesh(root_bone_obj, parent_bone_data, vertex_stride, json_vertex_buffer, json_index_buffer, json_vertex_declaration)
 
                 share_resource_index = mesh_part["sharedResourceIndex"] # TODO : Add shared resource handling
 
-    def import_model_mesh(self, obj_root_bone, json_parent_bone, json_vertex_buffer, json_index_buffer, json_vertex_declaration):
+    def import_model_mesh(self, obj_root_bone, json_parent_bone, vertex_stride, json_vertex_buffer, json_index_buffer, json_vertex_declaration):
         
         
 
