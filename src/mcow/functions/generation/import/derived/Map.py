@@ -508,9 +508,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         model_meshes = model["modelMeshes"]
 
         # Read the root bone of the model
-        root_boje_obj = self.import_bone(bones[0], parent_bone_obj)
-            
-            
+        root_bone_obj = self.import_bone(bones[0], parent_bone_obj)
+
 
 
         return ans_bone, ans_mesh
