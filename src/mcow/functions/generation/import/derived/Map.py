@@ -600,13 +600,30 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
                 share_resource_index = mesh_part["sharedResourceIndex"] # TODO : Add shared resource handling
 
     def import_model_mesh(self, obj_root_bone, json_parent_bone, vertex_stride, json_vertex_declaration, json_vertex_buffer, json_index_buffer):
-        
+        # Generate mesh data
         mesh_vertices, mesh_triangles = self.read_mesh_buffer_data(vertex_stride, json_vertex_declaration, json_vertex_buffer, json_index_buffer)
 
+        # Create mesh data block and Blender object
+        name = json_parent_bone["name"]
+        mesh = bpy.data.meshes.new(name=name)
+        obj = bpy.data.objects.new(name=name, object_data=mesh)
 
-        pass
+        bpy.context.collection.objects.link(obj)
 
-        # TODO : Implement
+        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
+        mesh.update()
+
+        # Assign mcow properties
+        mesh.magickcow_mesh_type = "GEOMETRY"
+
+        # Attach to parent bone object and set relative object transform
+        transform = self.read_mat4x4(json_parent_bone["transform"])
+        obj.parent = obj_root_bone
+        obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
+        obj.matrix_basis = transform
+
+        # Create material data
+        # TODO : Implement material handling
 
     # endregion
 
