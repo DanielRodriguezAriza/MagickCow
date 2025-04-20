@@ -7430,6 +7430,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
             # endregion
         
+        # Link the object to the scene
+        bpy.context.collection.objects.link(bone_obj)
+
         # Set mcow properties
         bone_obj.magickcow_empty_type = "BONE"
 
