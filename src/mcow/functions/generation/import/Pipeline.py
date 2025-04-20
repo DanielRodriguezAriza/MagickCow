@@ -231,7 +231,7 @@ class MCow_ImportPipeline:
                 effect_reader = self.read_effect_liquid_lava
             
             else:
-                raise MagickCowImportException(f"Unknown material effect type : \"{effect_type}\"")
+                raise MagickCowImportException(f"Unknown material effect type : \"{effect_type_json}\"")
         
         elif "vertices" in effect and "indices" in effect and "declaration" in effect:
             effect_type = "EFFECT_FORCE_FIELD"
