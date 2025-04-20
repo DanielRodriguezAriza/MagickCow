@@ -585,7 +585,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             total_vertices = 0
             for mesh_part in mesh_parts:
                 total_vertices += mesh_part["numVertices"]
-            vertex_stride = len(json_vertex_buffer) // total_vertices
+            vertex_stride = len(json_vertex_buffer["Buffer"]) // total_vertices
 
             for mesh_part in mesh_parts:
                 
