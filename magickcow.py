@@ -881,6 +881,8 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
                     self.draw_effect_lava(layout, material)
                 elif material_type == "EFFECT_FORCE_FIELD":
                     self.draw_effect_force_field(layout, material)
+                elif material_type == "EFFECT_ADDITIVE":
+                    self.draw_effect_additive(layout, material)
             elif material_mode == "DOC":
                 layout.prop(material, "mcow_effect_path")
     
@@ -936,6 +938,12 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
         layout.prop(material, "mcow_effect_force_field_vertex_color_enabled")
         layout.prop(material, "mcow_effect_force_field_displacement_map")
         layout.prop(material, "mcow_effect_force_field_ttl")
+    
+    def draw_effect_additive(self, layout, material):
+        layout.prop(material, mcow_effect_additive_color_tint)
+        layout.prop(material, mcow_effect_additive_vertex_color_enabled)
+        layout.prop(material, mcow_effect_additive_texture_enabled)
+        layout.prop(material, mcow_effect_additive_texture)
 
 # endregion
 
@@ -946,12 +954,13 @@ def register_properties_material_generic(material):
         name = "Material Type",
         description = "Determines the type of this material",
         items = [
-            ("EFFECT_DEFERRED", "Deferred", "Default geometry material"),
-            ("EFFECT_LIQUID_WATER", "Water", "Water material"),
-            ("EFFECT_LIQUID_LAVA", "Lava", "Lava material"),
-            ("EFFECT_FORCE_FIELD", "Force Field", "Force Field material")
+            ("EFFECT_DEFERRED", "Deferred", "Deferred material. Used for opaque objects. This is the default configuration for level geometry materials."),
+            ("EFFECT_ADDITIVE", "Additive", "Additive material. Used for objects with transparency."), # NOTE : Be mindful of the performance impact of using additive (transparent) materials. Magicka suffers of overdraw issues with transparent materials, just like any other game engine.
+            ("EFFECT_LIQUID_WATER", "Water", "Water material. Used for surfaces of type water."),
+            ("EFFECT_LIQUID_LAVA", "Lava", "Lava material. Used for surfaces of type lava."),
+            ("EFFECT_FORCE_FIELD", "Force Field", "Force Field material. Used for surfaces of type force field.")
         ],
-        default = "EFFECT_DEFERRED"
+        default = "EFFECT_DEFERRED" # This is the best default option for obvious reasons. First because of performance reasons. Second because most objects an user will add will be opaque level geometry, so this is the best default setting.
     )
 
     material.mcow_effect_mode = bpy.props.EnumProperty(
@@ -1240,6 +1249,40 @@ def unregister_properties_material_force_field(material):
     del material.mcow_effect_force_field_displacement_map
     del material.mcow_effect_force_field_ttl
 
+def register_properties_material_additive(material):
+    material.mcow_effect_additive_color_tint = bpy.props.FloatVectorProperty(
+        name = "Color Tint",
+        subtype = "COLOR",
+        default = (1.0, 1.0, 1.0),
+        min = 0.0,
+        max = 1.0,
+        size = 3
+    )
+
+    # NOTE : Maybe in the future, this property should be automatically determined for ALL of the material effect types, based on whether the object has a vertex color layer or not? idk...
+    # Also, these properties that are common across different types of material effects should maybe be modified to be added in the generic props rather than having them duplicated.
+    # For now, this is ok, but this should probably be reworked in the future.
+    material.mcow_effect_additive_vertex_color_enabled = bpy.props.BoolProperty(
+        name = "Vertex Color Enabled",
+        default = False
+    )
+
+    material.mcow_effect_additive_texture_enabled = bpy.props.BoolProperty(
+        name = "Texture Enabled",
+        default = True
+    )
+
+    material.mcow_effect_additive_texture = bpy.props.StringProperty(
+        name = "Texture",
+        default = "..\\Textures\\Surface\\Nature\\Atmosphere\\light_ray00_0" # NOTE : Maybe find a better default for this, like a grass texture or whatever?
+    )
+
+def unregister_properties_material_additive(material):
+    del material.mcow_effect_additive_color_tint
+    del material.mcow_effect_additive_vertex_color_enabled
+    del material.mcow_effect_additive_texture_enabled
+    del material.mcow_effect_additive_texture
+
 def register_properties_panel_class_material():
     bpy.utils.register_class(MATERIAL_PT_MagickCowPanel)
 
@@ -1260,6 +1303,7 @@ def register_properties_material():
     register_properties_material_water(material)
     register_properties_material_lava(material)
     register_properties_material_force_field(material)
+    register_properties_material_additive(material)
 
     # Register the material properties panel
     register_properties_panel_class_material()
@@ -1274,6 +1318,7 @@ def unregister_custom_material_panel():
     unregister_properties_material_water(material)
     unregister_properties_material_lava(material)
     unregister_properties_material_force_field(material)
+    unregister_properties_material_additive(material)
 
     # Unregister the material properties panel
     unregister_properties_panel_class_material()
@@ -2955,6 +3000,8 @@ class material_utility:
                 "displacementMap": "..\\Textures\\Liquids\\WaterNormals_0",
                 "ttl": 1
             }
+        # NOTE : No default fallback for additive effects exists in JSON mode, since geometry objects can have both deferred effects and additive effects, and for performance and logical reasons,
+        # level geometry (mcow type "GEOMETRY") meshes with non-specified or non-valid materials are assumed to use deferred effects as fallback by default
         return ans
 
     @staticmethod
@@ -6734,6 +6781,10 @@ class MCow_ImportPipeline:
                 effect_type = "EFFECT_LIQUID_LAVA"
                 effect_reader = self.read_effect_liquid_lava
             
+            elif effect_type_json == "effect_additive":
+                effect_type = "EFFECT_ADDITIVE"
+                effect_reader = self.read_effect_additive
+            
             else:
                 raise MagickCowImportException(f"Unknown material effect type : \"{effect_type_json}\"")
         
@@ -6800,6 +6851,13 @@ class MCow_ImportPipeline:
         material.mcow_effect_force_field_vertex_color_enabled = effect["vertexColorEnabled"]
         material.mcow_effect_force_field_displacement_map = effect["displacementMap"]
         material.mcow_effect_force_field_ttl = effect["ttl"]
+
+    def read_effect_additive(self, material, effect):
+        material.mcow_effect_additive_color_tint = self.read_color_rgb(effect["colorTint"])
+        material.mcow_effect_additive_vertex_color_enabled = effect["vertexColorEnabled"]
+        material.mcow_effect_additive_texture_enabled = effect["textureEnabled"]
+        if material.mcow_effect_additive_texture_enabled: # NOTE : Same note as the deferred material reading code.
+            material.mcow_effect_additive_texture = effect["texture"]
 
     # endregion
 
