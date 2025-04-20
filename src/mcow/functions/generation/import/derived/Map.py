@@ -501,16 +501,17 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
     # TODO : Maybe in the future, make it so thatthese read functions become members of the base Importer Pipeline class so that the PhysicsEntity Importer can use it as well.
     
-    def read_animated_model(self, model, parent_bone_obj):
+    def import_animated_model(self, model, parent_bone_obj):
         # Get model properties
         bones = model["bones"]
         vertex_declarations = model["vertexDeclarations"]
         model_meshes = model["modelMeshes"]
 
-        # Read the root bone of the model
+        # Import the root bone of the model
         root_bone_obj = self.import_bone(bones[0], parent_bone_obj)
 
-
+        # Import the child meshes of this animated level part
+        self.import_model_meshes(root_bone_obj, bones, model_meshes)
 
         return ans_bone, ans_mesh
 
