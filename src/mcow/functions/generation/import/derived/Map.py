@@ -185,6 +185,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         light_data.magickcow_light_shadow_map_size = shadow_map_size
         light_data.magickcow_light_casts_shadows = casts_shadows
 
+        # Return the generated object
+        return light_object
+
     def import_collision_mesh_generic(self, collision, name):
         has_collision, vertices, triangles = self.read_collision_mesh(collision)
 
