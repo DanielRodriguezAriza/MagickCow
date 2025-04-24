@@ -6718,6 +6718,8 @@ class MCow_ImportPipeline:
                     pass
                 elif element_format == 3:
                     pass
+                elif element_format == 4:
+                    pass
                 else:
                     raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex color!")
 
@@ -6931,8 +6933,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             self.import_physics_entity(idx, physics_entity)
     
     def import_liquids(self, liquids):
-        for idx, liquid in enumerate(liquids):
-            self.import_liquid(idx, liquid)
+        ans = [self.import_liquid(idx, liquid) for idx, liquid in enumerate(liquids)]
+        return ans
     
     def import_force_fields(self, force_fields):
         for idx, force_field in enumerate(force_fields):
@@ -7281,6 +7283,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         mat = self.read_effect(mat_name, effect)
         mesh.materials.append(mat)
 
+        # Return the generated object for further use
+        return obj
+
     def import_force_field(self, idx, force_field):
         # Get data from the input json object
         vertex_buffer = force_field["vertices"]
@@ -7361,11 +7366,14 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         children = part["children"]
 
         # Internal import process
+
+        # Import animated level part model mesh
         root_bone_obj = self.import_animated_model(model, parent)
 
         # Temporary Hack to set the transform of the bones to that of the first frame of the animation
         # NOTE : This part is a hacky workaround and should NOT be used in the final version.
         # Remove this piece of shit code once full animation import support is added, since that will also fix this issue!
+        # NOTE : The transform operations applied in Blender to objects through their .location .rotation_quaternion / .rotation_euler and .scale are all performed relative to the parent, so no need to handle matrix_basis or matrix_world to ensure that we get the correct results.
         first_anim_frame = animation["frames"][0]["pose"]
         faf_pos = self.read_point(first_anim_frame["translation"])
         faf_rot = self.read_quat(first_anim_frame["orientation"])
@@ -7374,6 +7382,13 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         root_bone_obj.rotation_mode = "QUATERNION" # NOTE : Important to ensure that this is the rotation mode so that we can assign rotation quaternions...
         root_bone_obj.rotation_quaternion = faf_rot
         root_bone_obj.scale = faf_scale
+
+        # Import Liquids
+        self.import_animated_liquids(liquids, root_bone_obj)
+
+        # Import Locators
+
+        # Import Effects
 
         # Import child animated parts
         for child_part in children:
@@ -7510,6 +7525,14 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         # Create material data
         # TODO : Implement material handling
+
+    def import_animated_liquids(self, liquids_data, parent_obj):
+        liquids_objs = self.import_liquids(liquids_data)
+        if parent_obj is not None: # NOTE : Parent should never be None here, since we always generate a bone obj for each animated level part, but we add the None check just in case...
+            for liquid_obj in liquids_objs:
+                liquid_obj.parent = parent_obj
+                liquid_obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
+                liquid_obj.matrix_basis = mathutils.Matrix.Identity(4)
 
     # endregion
 
