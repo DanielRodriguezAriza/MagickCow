@@ -519,6 +519,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         self.import_animated_liquids(liquids, root_bone_obj)
 
         # Import Locators
+        self.import_animated_locators(locators, root_bone_obj)
 
         # Import Effects
 
@@ -665,6 +666,14 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
                 liquid_obj.parent = parent_obj
                 liquid_obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
                 liquid_obj.matrix_basis = mathutils.Matrix.Identity(4)
+
+    def import_animated_locators(self, locators_data, parent_obj):
+        locators_objs = self.import_locators(locators_data)
+        if parent_obj is not None:
+            for locator_obj in locators_objs:
+                locator_obj.parent = parent_obj
+                locator_obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
+                locator_obj.matrix_basis = mathutils.Matrix.Identity(4)
 
     # endregion
 
