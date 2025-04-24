@@ -550,6 +550,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Import collision
         self.import_animated_collision_mesh(has_collision, collision_material, collision_vertices, collision_triangles, root_bone_obj)
 
+        # Import nav mesh
+        self.import_animated_nav_mesh(has_nav_mesh, nav_mesh, root_bone_obj)
+
         # Import child animated parts
         for child_part in children:
             self.import_animated_part(child_part, root_bone_obj)
@@ -739,6 +742,10 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
                 obj.parent = parent_obj
                 obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
                 obj.matrix_basis = mathutils.Matrix.Identity(4)
+
+    def import_animated_nav_mesh(self, has_nav_mesh, nav_mesh, root_bone_obj):
+        # TODO : Implement
+        pass
 
     # endregion
 
