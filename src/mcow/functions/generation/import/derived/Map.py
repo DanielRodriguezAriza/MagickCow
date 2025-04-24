@@ -231,6 +231,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         empty.magickcow_empty_type = "LOCATOR"
         empty.magickcow_locator_radius = radius
 
+        # Return the generated object
+        return empty
+
     def import_trigger(self, trigger):
         # Extract the data from the json object
         name = trigger["Name"]
@@ -291,6 +294,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         obj.magickcow_empty_type = "PARTICLE"
         obj.magickcow_particle_name = effect_name
         obj.magickcow_particle_range = effect_range
+
+        return obj
 
     def import_physics_entity(self, idx, physics_entity):
         template = physics_entity["template"]
