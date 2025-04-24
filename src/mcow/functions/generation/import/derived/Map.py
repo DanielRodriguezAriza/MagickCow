@@ -57,8 +57,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             self.import_light(light)
     
     def import_effects(self, effects):
-        for effect in effects:
-            self.import_effect(effect)
+        ans = [self.import_effect(effect) for effect in effects]
+        return ans
     
     def import_physics_entities(self, physics_entities):
         for idx, physics_entity in enumerate(physics_entities):
@@ -84,8 +84,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             self.import_trigger(trigger)
     
     def import_locators(self, locators):
-        for locator in locators:
-            self.import_locator(locator)
+        ans = [self.import_locator(locator) for locator in locators]
+        return ans
     
     def import_nav_mesh(self, nav_mesh):
         # NOTE : The generated nav mesh has inverted normals, and I have no idea as of now if that has any negative impact on the AI's behaviour.
