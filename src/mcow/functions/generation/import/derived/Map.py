@@ -522,6 +522,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         self.import_animated_locators(locators, root_bone_obj)
 
         # Import Effects
+        self.import_animated_effects(effects, root_bone_obj)
 
         # Import child animated parts
         for child_part in children:
@@ -674,6 +675,14 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
                 locator_obj.parent = parent_obj
                 locator_obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
                 locator_obj.matrix_basis = mathutils.Matrix.Identity(4)
+
+    def import_animated_effects(self, effects_data, parent_obj):
+        effects_objs = self.import_effects(effects_data)
+        if parent_obj is not None:
+            for effect_obj in effects_objs:
+                effect_obj.parent = parent_obj
+                effect_obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
+                effect_obj.matrix_basis = mathutils.Matrix.Identity(4)
 
     # endregion
 
