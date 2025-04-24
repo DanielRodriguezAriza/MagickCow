@@ -711,7 +711,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
                 effect_obj.matrix_basis = mathutils.Matrix.Identity(4)
 
     def import_animated_lights(self, lights, parent_obj):
-        if parent_obj is not None
+        if parent_obj is not None:
             for light in lights:
                 name = light["name"]
                 transform = self.read_mat4x4(light["position"])
@@ -721,7 +721,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
                     obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
                     obj.matrix_basis = transform
 
-    def import_animated_collision_mesh(self, json_has_collision, json_collision_material, json_vertices, json_triangles, parent_obj);
+    def import_animated_collision_mesh(self, json_has_collision, json_collision_material, json_vertices, json_triangles, parent_obj):
         # Get generic collision properties
         name = "animated_collision_mesh"
         collision_material = find_collision_material_name(json_collision_material)
