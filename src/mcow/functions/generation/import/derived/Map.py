@@ -28,10 +28,16 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         locators = level_model["locators"]
         nav_mesh = level_model["navMesh"]
         
+        # Import level lights and cache them so that they can be referenced and parented when importing the animated level data.
+        lights_objs = self.import_lights(lights)
+        for light_obj in lights_objs:
+            self._cached_lights[light_obj.name] = light_obj
+
         # Execute the import functions for each of the types of data found within the level model JSON dict.
         self.import_level_model_mesh(level_model_mesh)
         self.import_animated_parts(animated_parts)
-        self.import_lights(lights) # TODO : In the future, we should import these before the animated level parts, and then cache them, so that we can do the hierarchy parenting thing correctly. This is because animated level parts don't store their own lights, but they do store references to lights, which are then stored within the base level class, on the lights list / array.
+        # NOTE : We used to import the lights here before, just as they were ordered within the JSON file, but the truth is that Magicka's file format for maps requires referencing lights
+        # When importing the animated level parts, so we import the lights first and then everything else.
         self.import_effects(effects)
         self.import_physics_entities(physics_entities)
         self.import_liquids(liquids)
@@ -54,8 +60,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             self.import_animated_part(part, None)
     
     def import_lights(self, lights):
-        for light in lights:
-            self.import_light(light)
+        ans = [self.import_light(light) for light in lights]
+        return ans
     
     def import_effects(self, effects):
         ans = [self.import_effect(effect) for effect in effects]
