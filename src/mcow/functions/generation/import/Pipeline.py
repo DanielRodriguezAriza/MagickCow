@@ -198,7 +198,9 @@ class MCow_ImportPipeline:
 
     def read_collision_mesh(self, has_collision, json_vertices, json_triangles):
         
-        if not has_collision:
+        # If the collision is set to false, then we have no collision.
+        # If the collision is set to true but we have 0 collision vertices, then we don't have collision either.
+        if not has_collision or len(json_vertices) <= 0:
             return (False, [], [])
 
         mesh_vertices = [self.read_point(vert) for vert in json_vertices]
