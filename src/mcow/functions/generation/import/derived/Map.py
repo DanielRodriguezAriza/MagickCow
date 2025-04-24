@@ -547,6 +547,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Import lights
         self.import_animated_lights(lights, root_bone_obj)
 
+        # Import collision
+        self.import_animated_collision_mesh(has_collision, collision_material, collision_vertices, collision_triangles, root_bone_obj)
+
         # Import child animated parts
         for child_part in children:
             self.import_animated_part(child_part, root_bone_obj)
@@ -716,6 +719,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
                 obj.parent = parent_obj
                 obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
                 obj.matrix_basis = transform
+
+    def import_animated_collision_mesh(self, json_has_collision, json_collision_material, json_vertices, json_triangles, parent_obj);
+        pass
 
     # endregion
 
