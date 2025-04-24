@@ -196,14 +196,10 @@ class MCow_ImportPipeline:
 
     # region Read Methods - Collision Mesh
 
-    def read_collision_mesh(self, collision):
-        has_collision = collision["hasCollision"]
+    def read_collision_mesh(self, has_collision, json_vertices, json_triangles):
         
         if not has_collision:
             return (False, [], [])
-        
-        json_vertices = collision["vertices"]
-        json_triangles = collision["triangles"]
 
         mesh_vertices = [self.read_point(vert) for vert in json_vertices]
         mesh_triangles = [(tri["index0"], tri["index1"], tri["index2"]) for tri in json_triangles]
