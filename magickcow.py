@@ -6874,6 +6874,7 @@ class MCow_ImportPipeline:
 class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     def __init__(self):
         super().__init__()
+        self._cached_lights = {} # Cache object that stores the lights that have been generated so that they can be referenced on the animated level parts import side of the code. Remember that in Magicka's file format, lights are stored on the static level data, but the animated level data can move lights by referencing them through their ID.
         return
     
     def exec(self, data):
@@ -6895,10 +6896,16 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         locators = level_model["locators"]
         nav_mesh = level_model["navMesh"]
         
+        # Import level lights and cache them so that they can be referenced and parented when importing the animated level data.
+        lights_objs = self.import_lights(lights)
+        for light_obj in lights_objs:
+            self._cached_lights[light_obj.name] = light_obj
+
         # Execute the import functions for each of the types of data found within the level model JSON dict.
         self.import_level_model_mesh(level_model_mesh)
         self.import_animated_parts(animated_parts)
-        self.import_lights(lights) # TODO : In the future, we should import these before the animated level parts, and then cache them, so that we can do the hierarchy parenting thing correctly. This is because animated level parts don't store their own lights, but they do store references to lights, which are then stored within the base level class, on the lights list / array.
+        # NOTE : We used to import the lights here before, just as they were ordered within the JSON file, but the truth is that Magicka's file format for maps requires referencing lights
+        # When importing the animated level parts, so we import the lights first and then everything else.
         self.import_effects(effects)
         self.import_physics_entities(physics_entities)
         self.import_liquids(liquids)
@@ -6921,12 +6928,12 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             self.import_animated_part(part, None)
     
     def import_lights(self, lights):
-        for light in lights:
-            self.import_light(light)
+        ans = [self.import_light(light) for light in lights]
+        return ans
     
     def import_effects(self, effects):
-        for effect in effects:
-            self.import_effect(effect)
+        ans = [self.import_effect(effect) for effect in effects]
+        return ans
     
     def import_physics_entities(self, physics_entities):
         for idx, physics_entity in enumerate(physics_entities):
@@ -6952,8 +6959,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             self.import_trigger(trigger)
     
     def import_locators(self, locators):
-        for locator in locators:
-            self.import_locator(locator)
+        ans = [self.import_locator(locator) for locator in locators]
+        return ans
     
     def import_nav_mesh(self, nav_mesh):
         # NOTE : The generated nav mesh has inverted normals, and I have no idea as of now if that has any negative impact on the AI's behaviour.
@@ -7046,6 +7053,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         light_data.magickcow_light_shadow_map_size = shadow_map_size
         light_data.magickcow_light_casts_shadows = casts_shadows
 
+        # Return the generated object
+        return light_object
+
     def import_collision_mesh_generic(self, collision, name):
         has_collision, vertices, triangles = self.read_collision_mesh(collision)
 
@@ -7098,6 +7108,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Update the mcow properties
         empty.magickcow_empty_type = "LOCATOR"
         empty.magickcow_locator_radius = radius
+
+        # Return the generated object
+        return empty
 
     def import_trigger(self, trigger):
         # Extract the data from the json object
@@ -7159,6 +7172,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         obj.magickcow_empty_type = "PARTICLE"
         obj.magickcow_particle_name = effect_name
         obj.magickcow_particle_range = effect_range
+
+        return obj
 
     def import_physics_entity(self, idx, physics_entity):
         template = physics_entity["template"]
@@ -7390,6 +7405,10 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         self.import_animated_locators(locators, root_bone_obj)
 
         # Import Effects
+        self.import_animated_effects(effects, root_bone_obj)
+
+        # Import lights
+        self.import_animated_lights(lights, root_bone_obj)
 
         # Import child animated parts
         for child_part in children:
@@ -7542,6 +7561,24 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
                 locator_obj.parent = parent_obj
                 locator_obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
                 locator_obj.matrix_basis = mathutils.Matrix.Identity(4)
+
+    def import_animated_effects(self, effects_data, parent_obj):
+        effects_objs = self.import_effects(effects_data)
+        if parent_obj is not None:
+            for effect_obj in effects_objs:
+                effect_obj.parent = parent_obj
+                effect_obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
+                effect_obj.matrix_basis = mathutils.Matrix.Identity(4)
+
+    def import_animated_lights(self, lights, parent_obj):
+        for light in lights:
+            name = light["name"]
+            transform = self.read_mat4x4(light["position"])
+            if name in self._cached_lights:
+                obj = self._cached_lights[name]
+                obj.parent = parent_obj
+                obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
+                obj.matrix_basis = transform
 
     # endregion
 
