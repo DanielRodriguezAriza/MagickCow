@@ -536,6 +536,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Import Effects
         self.import_animated_effects(effects, root_bone_obj)
 
+        # Import lights
+        self.import_animated_lights(lights, root_bone_obj)
+
         # Import child animated parts
         for child_part in children:
             self.import_animated_part(child_part, root_bone_obj)
@@ -695,6 +698,16 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
                 effect_obj.parent = parent_obj
                 effect_obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
                 effect_obj.matrix_basis = mathutils.Matrix.Identity(4)
+
+    def import_animated_lights(self, lights, parent_obj):
+        for light in lights:
+            name = light["name"]
+            transform = self.read_mat4x4(light["position"])
+            if name in self._cached_lights:
+                obj = self._cached_lights[name]
+                obj.parent = parent_obj
+                obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
+                obj.matrix_basis = transform
 
     # endregion
 
