@@ -167,6 +167,8 @@ class MCow_ImportPipeline:
                     pass
                 elif element_format == 3:
                     pass
+                elif element_format == 4:
+                    pass
                 else:
                     raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex color!")
 
