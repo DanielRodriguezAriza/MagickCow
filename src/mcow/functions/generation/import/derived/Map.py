@@ -210,7 +210,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         channel_name = find_collision_material_name(channel_index)
         name = f"collision_mesh_model_{channel_index}_{channel_name}"
 
-        has_collision, obj, mesh = self.import_collision_mesh_generic_static(collision, name)
+        has_collision, obj, mesh = self.import_static_collision_mesh(collision, name)
 
         if has_collision:
             mesh.magickcow_mesh_type = "COLLISION"
@@ -219,7 +219,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
     def import_collision_mesh_camera(self, collision):
         name = "collision_mesh_camera"
 
-        has_collision, obj, mesh = self.import_collision_mesh_generic_static(collision, name)
+        has_collision, obj, mesh = self.import_static_collision_mesh(collision, name)
 
         if has_collision:
             mesh.magickcow_mesh_type = "CAMERA"
@@ -711,17 +711,34 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
                 effect_obj.matrix_basis = mathutils.Matrix.Identity(4)
 
     def import_animated_lights(self, lights, parent_obj):
-        for light in lights:
-            name = light["name"]
-            transform = self.read_mat4x4(light["position"])
-            if name in self._cached_lights:
-                obj = self._cached_lights[name]
-                obj.parent = parent_obj
-                obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
-                obj.matrix_basis = transform
+        if parent_obj is not None
+            for light in lights:
+                name = light["name"]
+                transform = self.read_mat4x4(light["position"])
+                if name in self._cached_lights:
+                    obj = self._cached_lights[name]
+                    obj.parent = parent_obj
+                    obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
+                    obj.matrix_basis = transform
 
     def import_animated_collision_mesh(self, json_has_collision, json_collision_material, json_vertices, json_triangles, parent_obj);
-        pass
+        # Get generic collision properties
+        name = "animated_collision_mesh"
+        collision_material = find_collision_material_name(json_collision_material)
+        
+        # Generate collision blender mesh data and blender object
+        has_collision, obj, mesh = self.import_collision_mesh_generic_internal(name, json_has_collision, json_vertices, json_triangles)
+
+        # If a collision mesh object was generated, set the mcow properties and attach to parent bone object
+        if has_collision:
+            mesh.magickcow_mesh_type = "COLLISION"
+            obj.magickcow_collision_material = collision_material
+        
+            # Attach the collision mesh to the parent bone object and set the relative transform to the identity matrix
+            if parent_obj is not None:
+                obj.parent = parent_obj
+                obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
+                obj.matrix_basis = mathutils.Matrix.Identity(4)
 
     # endregion
 
