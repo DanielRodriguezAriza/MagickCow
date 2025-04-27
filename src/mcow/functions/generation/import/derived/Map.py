@@ -535,6 +535,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         root_bone_obj.rotation_quaternion = faf_rot
         root_bone_obj.scale = faf_scale
 
+        # Import Animation
+        # TODO : Implement
+
         # Import Liquids
         self.import_animated_liquids(liquids, root_bone_obj)
 
@@ -563,7 +566,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
     # region Import Methods - Internal - Animated
 
-    # TODO : Maybe in the future, make it so thatthese read functions become members of the base Importer Pipeline class so that the PhysicsEntity Importer can use it as well.
+    # TODO : Maybe in the future, make it so that these read functions become members of the base Importer Pipeline class so that the PhysicsEntity Importer can use it as well.
     
     def import_animated_model(self, model, parent_bone_obj):
         # Get model properties
