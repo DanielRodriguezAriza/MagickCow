@@ -784,10 +784,12 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
             root_bone_obj.keyframe_insert(data_path="scale", frame=keyframe)
 
             # Update the start and end frame times
+            # region Comment - Set timeline start and end frame times to fit imported animation
             # NOTE : We need to find the smallest and largest keyframes within the imported animation so that we can extend the Blender animation start and end frame times.
             # This way, we can play the whole animation without any imported keyframes being left out of the bounds of the time timeline.
             # It also prevents any possible confusions where users will miss some keyframe that is way out of sight, letting them know that at most there's a frame present at the end frame time if it
             # is larger than the default Blender value of 250, or whatever value they had already configured.
+            # endregion
             bpy.context.scene.frame_start = min(bpy.context.scene.frame_start, keyframe)
             bpy.context.scene.frame_end = max(bpy.context.scene.frame_end, keyframe)
 
