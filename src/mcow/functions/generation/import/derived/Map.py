@@ -741,8 +741,11 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
                 obj.matrix_basis = mathutils.Matrix.Identity(4)
 
     def import_animated_nav_mesh(self, has_nav_mesh, nav_mesh, root_bone_obj):
-        # TODO : Implement
-        pass
+        if has_nav_mesh:
+            obj = self.import_nav_mesh_internal(nav_mesh, "nav_mesh_animated")
+            obj.parent = root_bone_obj
+            obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
+            obj.matrix_basis = mathutils.Matrix.Identity(4)
     
     def import_animation_data(self, animation, root_bone_obj):
         # Set the bone rotation mode to quaternion so that we can assign directly the rotation data
