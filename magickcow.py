@@ -6961,27 +6961,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         return ans
     
     def import_nav_mesh(self, nav_mesh):
-        # NOTE : The generated nav mesh has inverted normals, and I have no idea as of now if that has any negative impact on the AI's behaviour.
-        # So for now, this is ok I suppose, since I have not seen anything within Magicka's code that would point to the face orientation of the nav mesh
-        # being taken into account... so this should be ok, but it would be ideal to solve this issue so that people who import maps don't have to deal with the ugly
-        # inverted normals, or maybe it's ok, idk.
-        name = "nav_mesh_static"
-
-        json_vertices = nav_mesh["Vertices"]
-        json_triangles = nav_mesh["Triangles"]
-
-        mesh_vertices = [self.read_point(vert) for vert in json_vertices]
-        mesh_triangles = [(tri["VertexA"], tri["VertexB"], tri["VertexC"]) for tri in json_triangles]
-
-        mesh = bpy.data.meshes.new(name = name)
-        obj = bpy.data.objects.new(name = name, object_data = mesh)
-
-        bpy.context.collection.objects.link(obj)
-
-        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
-        mesh.update()
-
-        mesh.magickcow_mesh_type = "NAV"
+        self.import_nav_mesh_internal(nav_mesh, "nav_mesh_static")
     
     # endregion
 
@@ -7415,6 +7395,33 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         # TODO : Implement property assignment, etc...
 
+    def import_nav_mesh_internal(self, nav_mesh, name):
+        # region Comment - Inverted Normals Problem
+        # NOTE : The generated nav mesh has inverted normals, and I have no idea as of now if that has any negative impact on the AI's behaviour.
+        # So for now, this is ok I suppose, since I have not seen anything within Magicka's code that would point to the face orientation of the nav mesh
+        # being taken into account... so this should be ok, but it would be ideal to solve this issue so that people who import maps don't have to deal with the ugly
+        # inverted normals, or maybe it's ok, idk.
+        # TODO : Fix Me!!!
+        # endregion
+
+        json_vertices = nav_mesh["Vertices"]
+        json_triangles = nav_mesh["Triangles"]
+
+        mesh_vertices = [self.read_point(vert) for vert in json_vertices]
+        mesh_triangles = [(tri["VertexA"], tri["VertexB"], tri["VertexC"]) for tri in json_triangles]
+
+        mesh = bpy.data.meshes.new(name = name)
+        obj = bpy.data.objects.new(name = name, object_data = mesh)
+
+        bpy.context.collection.objects.link(obj)
+
+        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
+        mesh.update()
+
+        mesh.magickcow_mesh_type = "NAV"
+
+        return obj
+
     # endregion
 
     # region Import Methods - Internal - Animated
@@ -7600,8 +7607,11 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
                 obj.matrix_basis = mathutils.Matrix.Identity(4)
 
     def import_animated_nav_mesh(self, has_nav_mesh, nav_mesh, root_bone_obj):
-        # TODO : Implement
-        pass
+        if has_nav_mesh:
+            obj = self.import_nav_mesh_internal(nav_mesh, "nav_mesh_animated")
+            obj.parent = root_bone_obj
+            obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
+            obj.matrix_basis = mathutils.Matrix.Identity(4)
     
     def import_animation_data(self, animation, root_bone_obj):
         # Set the bone rotation mode to quaternion so that we can assign directly the rotation data
