@@ -6749,7 +6749,9 @@ class MCow_ImportPipeline:
 
     def read_collision_mesh(self, has_collision, json_vertices, json_triangles):
         
-        if not has_collision:
+        # If the collision is set to false, then we have no collision.
+        # If the collision is set to true but we have 0 collision vertices, then we don't have collision either.
+        if not has_collision or len(json_vertices) <= 0:
             return (False, [], [])
 
         mesh_vertices = [self.read_point(vert) for vert in json_vertices]
@@ -7386,18 +7388,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Import animated level part model mesh
         root_bone_obj = self.import_animated_model(model, parent)
 
-        # Temporary Hack to set the transform of the bones to that of the first frame of the animation
-        # NOTE : This part is a hacky workaround and should NOT be used in the final version.
-        # Remove this piece of shit code once full animation import support is added, since that will also fix this issue!
-        # NOTE : The transform operations applied in Blender to objects through their .location .rotation_quaternion / .rotation_euler and .scale are all performed relative to the parent, so no need to handle matrix_basis or matrix_world to ensure that we get the correct results.
-        first_anim_frame = animation["frames"][0]["pose"]
-        faf_pos = self.read_point(first_anim_frame["translation"])
-        faf_rot = self.read_quat(first_anim_frame["orientation"])
-        faf_scale = self.read_scale(first_anim_frame["scale"])
-        root_bone_obj.location = faf_pos
-        root_bone_obj.rotation_mode = "QUATERNION" # NOTE : Important to ensure that this is the rotation mode so that we can assign rotation quaternions...
-        root_bone_obj.rotation_quaternion = faf_rot
-        root_bone_obj.scale = faf_scale
+        # Import Animation
+        self.import_animation_data(animation, root_bone_obj)
 
         # Import Liquids
         self.import_animated_liquids(liquids, root_bone_obj)
@@ -7414,6 +7406,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Import collision
         self.import_animated_collision_mesh(has_collision, collision_material, collision_vertices, collision_triangles, root_bone_obj)
 
+        # Import nav mesh
+        self.import_animated_nav_mesh(has_nav_mesh, nav_mesh, root_bone_obj)
+
         # Import child animated parts
         for child_part in children:
             self.import_animated_part(child_part, root_bone_obj)
@@ -7424,7 +7419,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
     # region Import Methods - Internal - Animated
 
-    # TODO : Maybe in the future, make it so thatthese read functions become members of the base Importer Pipeline class so that the PhysicsEntity Importer can use it as well.
+    # TODO : Maybe in the future, make it so that these read functions become members of the base Importer Pipeline class so that the PhysicsEntity Importer can use it as well.
     
     def import_animated_model(self, model, parent_bone_obj):
         # Get model properties
@@ -7603,6 +7598,57 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
                 obj.parent = parent_obj
                 obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
                 obj.matrix_basis = mathutils.Matrix.Identity(4)
+
+    def import_animated_nav_mesh(self, has_nav_mesh, nav_mesh, root_bone_obj):
+        # TODO : Implement
+        pass
+    
+    def import_animation_data(self, animation, root_bone_obj):
+        # Set the bone rotation mode to quaternion so that we can assign directly the rotation data
+        root_bone_obj.rotation_mode = "QUATERNION"
+
+        # Hack to set the default pose of the bone to the same as the first animation keyframe
+        # This can be removed later on, but for now it's ok to keep this around
+        # Note that this should never have any issues since in theory, an animated level part must have at least 1 single keyframe with its default pose for Magicka to not crash on level load.
+        # All this hack does is set the default pose of the mesh to the same as the first keyframe for visualization in Blender, since the "wrong" pose would be seen until after playing the first anim keyframe.
+        # Not a big deal, but just a bit of quality of life for people who care I guess.
+        first_keyframe_pose_hack_enabled = True
+        if first_keyframe_pose_hack_enabled:
+            first_anim_frame = animation["frames"][0]["pose"]
+            faf_pos = self.read_point(first_anim_frame["translation"])
+            faf_rot = self.read_quat(first_anim_frame["orientation"])
+            faf_scale = self.read_scale(first_anim_frame["scale"])
+            root_bone_obj.location = faf_pos
+            root_bone_obj.rotation_mode = "QUATERNION" # NOTE : Important to ensure that this is the rotation mode so that we can assign rotation quaternions...
+            root_bone_obj.rotation_quaternion = faf_rot
+            root_bone_obj.scale = faf_scale
+        
+        # Select a framerate for the translation from Magicka's time-based keyframes format to Blender's keyframe format.
+        # For now, the FPS is fixed to Blender's default 24 fps, but this can be configured later on to use whatever the user has defined on the render output FPS config window.
+        # It could also be configured with a custom import FPS option for mcow or something like that.
+        fps = 24
+
+        # Read the animation data keyframes and assign the properties to the Blender root bone object
+        frames = animation["frames"]
+        for frame in frames:
+            # Read the keyframe data
+            time = frame["time"] # The time in seconds at which the frame takes place within Magicka's animation format
+            pose = frame["pose"]
+            location = self.read_point(pose["translation"])
+            rotation = self.read_quat(pose["orientation"])
+            scale = self.read_scale(pose["scale"])
+            keyframe = int(round(time * fps)) # The Blender integer keyframe value
+
+            # Assign the data
+            root_bone_obj.location = location
+            root_bone_obj.rotation_quaternion = rotation
+            root_bone_obj.scale = scale
+
+            # Store the keyframe
+            root_bone_obj.keyframe_insert(data_path="location", frame=keyframe)
+            root_bone_obj.keyframe_insert(data_path="rotation_quaternion", frame=keyframe)
+            root_bone_obj.keyframe_insert(data_path="scale", frame=keyframe)
+
 
     # endregion
 
