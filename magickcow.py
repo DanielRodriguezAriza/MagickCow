@@ -6878,10 +6878,184 @@ class MCow_ImportPipeline:
 
 # endregion
 
+# ../mcow/functions/generation/import/ContentImporter.py
+# region Import Data Pipeline class - Generic Content Importer
+
+# TODO : Implement here an importer class that will be in charge of implementing the generic import logic that the base pipeline class handles as of now.
+# NOTE : Maybe this is not a good idea, so it is bound to get scrapped in the future if the current setup is good enough and works just fine.
+
+# endregion
+
+# ../mcow/functions/generation/import/derived/BufferMesh.py
+# region Import Pipeline - Buffer Mesh
+
+# NOTE : This region refers to functions required for importing "buffer meshes", aka, meshes constructed from a vertex buffer and an index buffer.
+
+# region Comment - mcow_import_buffer_mesh()
+
+# This function reads the data of an input vertex buffer and index buffer and generates an object according to the input data.
+# The generated object and data block are returned.
+
+# endregion
+def mcow_import_buffer_mesh(name, vertex_stride, vertex_declaration, vertex_buffer, index_buffer):
+    # Read the vertex and index buffer data
+    mesh_vertices, mesh_triangles, mesh_normals = mcow_read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
+
+    # Create mesh data and mesh object
+    mesh = bpy.data.meshes.new(name = name)
+    obj = bpy.data.objects.new(name = name, object_data = mesh)
+
+    # Link the object to the scene
+    bpy.context.collection.objects.link(obj)
+
+    # Generate the mesh data from the vertex buffer and index buffer
+    mesh.from_pydata(mesh_vertices, [], mesh_triangles)
+    mesh.update()
+
+    # Select the object so that we can use bpy.ops over this mesh
+    obj.select_set(state=True)
+    bpy.context.view_layer.objects.active = obj
+
+    # Apply smooth shading to get some default normal groups going
+    bpy.ops.object.shade_smooth()
+
+    # region Unused Content
+
+    # Set the vertex normals from the imported data
+    # Option 1: Calculate loop normals
+    # loop_normals = []
+    # for poly in mesh.polygons:
+    #     for loop_index in poly.loop_indices:
+    #         vertex_index = mesh.loops[loop_index].vertex_index
+    #         loop_normals.append(mesh_normals[vertex_index].normalized())
+    # mesh.normals_split_custom_set(loop_normals)
+    # mesh.update()
+    # Option 2: Use the per-vertex normals directly
+    # mesh.normals_split_custom_set_from_vertices(mesh_normals)
+    # mesh.update()
+    # NOTE : This code is disabled for now, since after today's Blender update, importing normals is pretty much broken AFAIK and will lead to geometry that simply crashes on edit.
+    # I guess we'll just have to wait for them to patch this out and get their shit together before we can use custom normals...
+    # For now, the split faces generate some pretty nice normals automatically, so I guess we'll live with those for now and that's it...
+
+    # Flip the normals so that their direction matches the one expected by Blender
+    # bpy.ops.object.mode_set(mode="EDIT")
+    # bpy.ops.mesh.flip_normals()
+    # bpy.ops.object.mode_set(mode="OBJECT")
+    # NOTE : This code is disabled for now, because since 4.2, flipping normals crashes the editor, so we can't fix this either unless I manually flip them myself on import!!!
+    # WOW BLENDER IS SO GOOD!!!!
+
+    # endregion
+
+    # Return the generated object and mesh data block
+    return obj, mesh
+
+# region Comment - mcow_read_buffer_data()
+
+# This function allows reading the data of an input vertex buffer and index buffer, using a vertex declaration and specifying a custom vertex stride.
+# The function returns buffers converted into a format that Blender understands.
+
+# TODO : Fix the fact that the imported mesh has inverted normals!
+# TODO : Find a way to handle input buffers that have more than one property on a given type... read up how D3D handles that and copy that behaviour.
+# Can probably be fixed either by changing the winding order or adding normal data parsing.
+
+# endregion
+def mcow_read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer):
+
+    vertex_buffer_internal = vertex_buffer["Buffer"]
+    index_buffer_internal = index_buffer["data"]
+
+    # Output variables
+    # This function will generate a vertex buffer and an index buffer in a pydata format that Blender can understand through its Python API to generate a new mesh data block.
+    vertices = []
+    indices = [index_buffer_internal[i:i+3] for i in range(0, len(index_buffer_internal), 3)] # This one is actually pretty fucking trivial, because it is already in a format that is 1:1 for what we require lol... all we have to do, is split the buffer into a list of sublists, where every sublist contains 3 elements, which are the indices of each triangle. Whether the input XNA index buffer has an index size that is 16 bit or 32 bit does not matter, since the numbers on the JSON text documented are already translated to whatever the width of Python's integers is anyway, so no need to handle that.
+    normals = []
+
+    # Vertex Attribute Offsets
+    # NOTE : If any of these offset values is negative, then that means that the value was not found on the vertex declaration, so we cannot add that information to our newly generated Blender mesh data.
+    vertex_offset_position = -1
+    vertex_offset_normal = -1
+    vertex_offset_tangent = -1
+    vertex_offset_color = -1
+    vertex_offset_uv = -1
+
+    # Parse the vertex declarations to find the offsets for each of the vertex attributes
+    vertex_declaration_entries = vertex_declaration["entries"]
+    for idx, entry in enumerate(vertex_declaration_entries):
+        # NOTE : Commented out lines are data from the entry that we do not need to compose a mesh in Blender / that we do not use yet.
+        # stream = entry["stream"]
+        offset = entry["offset"]
+        element_format = entry["elementFormat"]
+        # element_method = entry["elementMethod"]
+        element_usage = entry["elementUsage"]
+        # usage_index = entry["usageIndex"]
+        
+        # Read Attribute Offsets and handle Attribute Formats:
+        # Position
+        if element_usage == 0:
+            vertex_offset_position = offset
+            if element_format != 2:
+                raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex position!")
+        # Normal
+        elif element_usage == 3:
+            vertex_offset_normal = offset
+            if element_format != 2:
+                raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex normal!")
+        # UV
+        elif element_usage == 5:
+            vertex_offset_uv = offset
+            if element_format != 1:
+                raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex UV!")
+        # Tangent
+        elif element_usage == 6:
+            vertex_offset_tangent = offset
+            if element_format != 2:
+                raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex tangent!")
+        # Color
+        elif element_usage == 10:
+            vertex_offset_color = offset
+            if element_format == 0:
+                pass
+            elif element_format == 3:
+                pass
+            elif element_format == 4:
+                pass
+            else:
+                raise MagickCowImportException(f"Element Format {element_format} is not supported for vertex color!")
+
+        # NOTE : Supported Types / Element Formats:
+        # Only the vec2, vec3 and vec4 types / formats are supported for reading as of now, as those are the types that I have found up until now that are used by Magicka's files.
+        # Any other type will receive support for import in the future.
+
+        # NOTE : Supported Attributes / Element Usages:
+        # Only the position, normal, UV (TextureCoordinate), tangent and color properties are supported.
+        # Anything else is considered to be irrelevant as of now for importing Magicka meshes into a Blender scene, but support will come if said features are found to be useful.
+
+    # Read Vertex data into a byte array / buffer so that we can use Python's struct.unpack() to perform type-punning-like byte reinterpretations (this would be so much fucking easier in C tho! fuck my life...)
+    buffer = bytes(vertex_buffer_internal)
+
+    # If the input vertex data has a position attribute for each vertex, then read it.
+    if vertex_offset_position >= 0:
+        for offset in range(0, len(vertex_buffer_internal), vertex_stride):
+            chunk = buffer[(offset + vertex_offset_position) : (offset + vertex_offset_position + 12)] # The 12 comes from 3 * 4 = 12 bytes, because we read 3 floats for the vertex position.
+            data = struct.unpack("<fff", chunk) # NOTE : As of now, we're always assuming that vertex position is in the format vec3. In the future, when we add support for other formats (if required), then make it so that we have a vertex_attribute_fmt variable or whatever, and assign it above, when we read the attributes' description / vertex layout on the vertex declaration parsing part of the code.
+            vertices.append(point_to_z_up(data))
+
+    # If the input vertex data has a normal attribute for each vertex, then read it.
+    if vertex_offset_normal >= 0:
+        for offset in range(0, len(vertex_buffer_internal), vertex_stride):
+            chunk = buffer[(offset + vertex_offset_normal) : (offset + vertex_offset_normal + 12)] # 3 f32 * 4 bytes = 12 bytes
+            data = struct.unpack("<fff", chunk)
+            normals.append(point_to_z_up(data))
+
+    return vertices, indices, normals
+
+# endregion
+
 # ../mcow/functions/generation/import/derived/Map.py
 # region Import Data Pipeline class - LevelModel / Map
 
 # TODO : Solve the vertex winding issues on all of the mesh imports... except collisions, which actually have the correct winding as of now.
+# TODO : Implement material caching (or maybe I implemented this in the past, but I cannot recall right now).
 
 # TODO : Implement all import functions...
 class MCow_ImportPipeline_Map(MCow_ImportPipeline):
@@ -7430,6 +7604,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Apply smooth shading to get some default normal groups going
         bpy.ops.object.shade_smooth()
 
+        # region Unused Content
+
         # Set the vertex normals from the imported data
         # Option 1: Calculate loop normals
         # loop_normals = []
@@ -7452,6 +7628,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # bpy.ops.object.mode_set(mode="OBJECT")
         # NOTE : This code is disabled for now, because since 4.2, flipping normals crashes the editor, so we can't fix this either unless I manually flip them myself on import!!!
         # WOW BLENDER IS SO GOOD!!!!
+
+        # endregion
 
         # Return the generated object and mesh data block
         return obj, mesh
@@ -7711,7 +7889,9 @@ class MCow_ImportPipeline_PhysicsEntity(MCow_ImportPipeline):
 # endregion
 
 # ../mcow/functions/generation/import/derived/XnaModel.py
-# region Import Data Pipeline class - LevelModel / Map
+# region Import Data Pipeline class - Xna Model
+
+# TODO : Clean up all of the duplicated logic from the Map importer pipeline class
 
 class MCow_ImportPipeline_XnaModel(MCow_ImportPipeline):
     def __init__(self):
@@ -7723,8 +7903,113 @@ class MCow_ImportPipeline_XnaModel(MCow_ImportPipeline):
         self.import_xna_model(xna_model)
 
     def import_xna_model(self, xna_model):
-        # TODO : Implement
-        pass
+        # Get model properties
+        bones = xna_model["bones"]
+        vertex_declarations = xna_model["vertexDeclarations"]
+        model_meshes = xna_model["modelMeshes"]
+
+        # Import the root bone of the model
+        root_bone_obj = self.import_bone(bones[0], None)
+
+        # Import the child meshes of this animated level part
+        self.import_model_meshes(root_bone_obj, bones, vertex_declarations, model_meshes)
+
+        return root_bone_obj
+    
+    def import_bone(self, bone_data, parent_bone_obj):
+        # Get bone properties
+        bone_name = bone_data["name"]
+        bone_transform = self.read_mat4x4(bone_data["transform"]) # NOTE : This transform is relative to the parent bone of this part. If no parent exists, then obviously it's in global coordinates, since it is relative to the parent, which is the world origin.
+
+        # Create bone object
+        bone_obj = bpy.data.objects.new(name=bone_name, object_data=None)
+        
+        # Set bone transform and attach to parent if there's a parent bone object
+        if parent_bone_obj is None:
+            bone_obj.matrix_world = bone_transform # Set the matrix world transform matrix
+        else:
+            bone_obj.parent = parent_bone_obj # Attach the generate bone to the existing parent bone
+            bone_obj.matrix_parent_inverse = mathutils.Matrix.Identity(4) # Clear the parent inverse matrix that Blender calculates.
+            bone_obj.matrix_basis = bone_transform # Set the relative transform
+            # region Comment - Clearing out parent inverse matrix
+            
+            # We clear the parent inverse matrix that Blender calculates.
+            # This way, the relative offset behaviour we get is what we would expect in literally any other 3D software on planet Earth.
+            # Note that I'm NOT saying that Blender's parent inverse is useless... no, it's pretty nice... sometimes... but in this case? it's a fucking pain in the ass. So we clear it out.
+            # We also could clear it with bpy.ops, but that's a pain in the butt, so easier to just do what bpy.ops does under the hood, which is setting the inverse matrix to the identity,
+            # which is the same as having no inverse parent matrix.
+            # For more information regarding the parent inverse matrix, read: https://en.wikibooks.org/wiki/Blender_3D:_Noob_to_Pro/Parenting#Clear_Parent_Inverse_Clarified
+            # It will all make sense...
+            
+            # NOTE : Quote from the article (copy-pasted here just in case the link goes dead at some point in the future):
+            # Normally, when a parent relationship is set up, if the parent has already had an object transformation applied, the child does not immediately inherit that.
+            # Instead, it only picks up subsequent changes to the parent’s object transformation. What happens is that, at the time the parent relationship is set up, the inverse of the current parent
+            # object transformation is calculated and henceforth applied before passing the parent transformation onto the child.
+            # This cancels out the initial transformation, leaving the child where it is to start with.
+            # This inverse is not recomputed when the parent object is subsequently moved or subject to other object transformations, so the child follows along thereafter.
+            # The "Clear Parent Inverse" function sets this inverse transformation to the identity transformation, so the child picks up the full parent object transformation.
+
+            # endregion
+        
+        # Link the object to the scene
+        bpy.context.collection.objects.link(bone_obj)
+
+        # Set mcow properties
+        bone_obj.magickcow_empty_type = "BONE"
+
+        # TODO : Refine the handling of the bounding sphere, maybe fully figure out what it does and maybe even auto-generate it like the bounding box for static mesh level parts.
+
+        return bone_obj
+
+    def import_model_meshes(self, root_bone_obj, bones, vertex_declarations, model_meshes):
+        for model_mesh in model_meshes:
+            
+            parent_bone_index = model_mesh["parentBone"]
+            parent_bone_data = bones[parent_bone_index]
+
+            json_vertex_buffer = model_mesh["vertexBuffer"]
+            json_index_buffer = model_mesh["indexBuffer"]
+            
+            mesh_parts = model_mesh["meshParts"]
+
+            total_vertices = 0
+            for mesh_part in mesh_parts:
+                total_vertices += mesh_part["numVertices"]
+            vertex_stride = len(json_vertex_buffer["Buffer"]) // total_vertices
+
+            for mesh_part in mesh_parts:
+                
+                # region Comment - Mesh Parts Handling
+
+                # TODO : Add proper mesh part handling in the future in the event that any of the vanilla maps have model meshes with multiple mesh parts rather than just 1.
+                # Note that all mesh parts share the same vertex and index buffers, but they allow assigning different share resource indices (different material effects) to a segment of the mesh,
+                # as well as different vertex declarations.
+
+                # endregion
+                
+                vertex_declaration_index = mesh_part["vertexDeclarationIndex"]
+                json_vertex_declaration = vertex_declarations[vertex_declaration_index]
+
+                self.import_model_mesh(root_bone_obj, parent_bone_data, vertex_stride, json_vertex_declaration, json_vertex_buffer, json_index_buffer)
+
+                share_resource_index = mesh_part["sharedResourceIndex"] # TODO : Add shared resource handling
+
+    def import_model_mesh(self, obj_root_bone, json_parent_bone, vertex_stride, json_vertex_declaration, json_vertex_buffer, json_index_buffer):
+        # Generate mesh data, create mesh data block and create Blender mesh object
+        obj, mesh = mcow_import_buffer_mesh(json_parent_bone["name"], vertex_stride, json_vertex_declaration, json_vertex_buffer, json_index_buffer)
+
+        # Assign mcow properties
+        mesh.magickcow_mesh_type = "GEOMETRY"
+
+        # Attach to parent bone object and set relative object transform
+        transform = self.read_mat4x4(json_parent_bone["transform"])
+        obj.parent = obj_root_bone
+        obj.matrix_parent_inverse = mathutils.Matrix.Identity(4)
+        obj.matrix_basis = transform
+
+        # Create material data
+        # TODO : Implement material handling
+
 
 # endregion
 
