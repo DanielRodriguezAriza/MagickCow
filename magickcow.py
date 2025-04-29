@@ -6660,6 +6660,7 @@ class MCow_ImportPipeline:
     # region Read Methods - Vertex Buffer, Index Buffer, Vertex Declaration
     
     # TODO : Fix the fact that the imported mesh has inverted normals!
+    # TODO : Find a way to handle input buffers that have more than one property on a given type... read up how D3D handles that and copy that behaviour.
     # Can probably be fixed either by changing the winding order or adding normal data parsing.
     def read_mesh_buffer_data(self, vertex_stride, vertex_declaration, vertex_buffer, index_buffer):
 
@@ -6670,6 +6671,7 @@ class MCow_ImportPipeline:
         # This function will generate a vertex buffer and an index buffer in a pydata format that Blender can understand through its Python API to generate a new mesh data block.
         vertices = []
         indices = [index_buffer_internal[i:i+3] for i in range(0, len(index_buffer_internal), 3)] # This one is actually pretty fucking trivial, because it is already in a format that is 1:1 for what we require lol... all we have to do, is split the buffer into a list of sublists, where every sublist contains 3 elements, which are the indices of each triangle. Whether the input XNA index buffer has an index size that is 16 bit or 32 bit does not matter, since the numbers on the JSON text documented are already translated to whatever the width of Python's integers is anyway, so no need to handle that.
+        normals = []
 
         # Vertex Attribute Offsets
         # NOTE : If any of these offset values is negative, then that means that the value was not found on the vertex declaration, so we cannot add that information to our newly generated Blender mesh data.
@@ -6737,11 +6739,18 @@ class MCow_ImportPipeline:
         # If the input vertex data has a position attribute for each vertex, then read it.
         if vertex_offset_position >= 0:
             for offset in range(0, len(vertex_buffer_internal), vertex_stride):
-                chunk = buffer[(offset + vertex_offset_position) : (offset + 12)] # The 12 comes from 3 * 4 = 12 bytes, because we read 3 floats for the vertex position.
+                chunk = buffer[(offset + vertex_offset_position) : (offset + vertex_offset_position + 12)] # The 12 comes from 3 * 4 = 12 bytes, because we read 3 floats for the vertex position.
                 data = struct.unpack("<fff", chunk) # NOTE : As of now, we're always assuming that vertex position is in the format vec3. In the future, when we add support for other formats (if required), then make it so that we have a vertex_attribute_fmt variable or whatever, and assign it above, when we read the attributes' description / vertex layout on the vertex declaration parsing part of the code.
                 vertices.append(point_to_z_up(data))
 
-        return vertices, indices
+        # If the input vertex data has a normal attribute for each vertex, then read it.
+        if vertex_offset_normal >= 0:
+            for offset in range(0, len(vertex_buffer_internal), vertex_stride):
+                chunk = buffer[(offset + vertex_offset_normal) : (offset + vertex_offset_normal + 12)] # 3 f32 * 4 bytes = 12 bytes
+                data = struct.unpack("<fff", chunk)
+                normals.append(point_to_z_up(data))
+
+        return vertices, indices, normals
 
     # endregion
 
@@ -7202,17 +7211,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # endregion
 
         # Read the vertex and index buffer data
-        mesh_vertices, mesh_triangles = self.read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
-
-        # Create mesh data and mesh object
-        name = f"mesh_{idx}"
-        mesh = bpy.data.meshes.new(name=name)
-        obj = bpy.data.objects.new(name=name, object_data=mesh)
-
-        bpy.context.collection.objects.link(obj)
-
-        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
-        mesh.update()
+        obj, mesh = self.import_buffer_mesh(vertex_stride, vertex_declaration, vertex_buffer, index_buffer, f"mesh_{idx}")
 
         # Asign the mcow mesh properties to the generated mesh data
         mesh.magickcow_mesh_is_visible = is_visible
@@ -7249,17 +7248,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         effect = liquid["effect"]
 
         # Read vertex buffer data and index buffer data
-        mesh_vertices, mesh_triangles = self.read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
-
-        # Create mesh data and mesh object
-        name = f"liquid_{idx}_{liquid_type}"
-        mesh = bpy.data.meshes.new(name=name)
-        obj = bpy.data.objects.new(name=name, object_data=mesh)
-
-        bpy.context.collection.objects.link(obj)
-
-        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
-        mesh.update()
+        obj, mesh = self.import_buffer_mesh(vertex_stride, vertex_declaration, vertex_buffer, index_buffer, f"liquid_{idx}_{liquid_type}")
 
         # Get mcow mesh type from input liquid type.
         # NOTE : In the future, this may be modified / removed, IF / when the WATER / LAVA system is deprecated / modified (if it ever happens)
@@ -7291,18 +7280,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         vertex_declaration = force_field["declaration"]
         vertex_stride = force_field["vertexStride"]
 
-        # Compute mesh data
-        mesh_vertices, mesh_triangles = self.read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
-
         # Generate object and mesh data
-        name = f"force_field_{idx}"
-        mesh = bpy.data.meshes.new(name = name)
-        obj = bpy.data.objects.new(name = name, object_data = mesh)
-
-        bpy.context.collection.objects.link(obj)
-
-        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
-        mesh.update()
+        obj, mesh = self.import_buffer_mesh(vertex_stride, vertex_declaration, vertex_buffer, index_buffer, f"force_field_{idx}")
 
         # Assign mcow properties to mesh
         mesh.magickcow_mesh_type = "FORCE_FIELD"
@@ -7422,6 +7401,55 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         return obj
 
+    def import_buffer_mesh(self, vertex_stride, vertex_declaration, vertex_buffer, index_buffer, name):
+        
+        # Read the vertex and index buffer data
+        mesh_vertices, mesh_triangles, mesh_normals = self.read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
+
+        # Create mesh data and mesh object
+        mesh = bpy.data.meshes.new(name = name)
+        obj = bpy.data.objects.new(name = name, object_data = mesh)
+
+        # Link the object to the scene
+        bpy.context.collection.objects.link(obj)
+
+        # Generate the mesh data from the vertex buffer and index buffer
+        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
+        mesh.update()
+
+        # Select the object so that we can use bpy.ops over this mesh
+        obj.select_set(state=True)
+        bpy.context.view_layer.objects.active = obj
+
+        # Apply smooth shading to get some default normal groups going
+        bpy.ops.object.shade_smooth()
+
+        # Set the vertex normals from the imported data
+        # Option 1: Calculate loop normals
+        # loop_normals = []
+        # for poly in mesh.polygons:
+        #     for loop_index in poly.loop_indices:
+        #         vertex_index = mesh.loops[loop_index].vertex_index
+        #         loop_normals.append(mesh_normals[vertex_index].normalized())
+        # mesh.normals_split_custom_set(loop_normals)
+        # mesh.update()
+        # Option 2: Use the per-vertex normals directly
+        # mesh.normals_split_custom_set_from_vertices(mesh_normals)
+        # mesh.update()
+        # NOTE : This code is disabled for now, since after today's Blender update, importing normals is pretty much broken AFAIK and will lead to geometry that simply crashes on edit.
+        # I guess we'll just have to wait for them to patch this out and get their shit together before we can use custom normals...
+        # For now, the split faces generate some pretty nice normals automatically, so I guess we'll live with those for now and that's it...
+
+        # Flip the normals so that their direction matches the one expected by Blender
+        # bpy.ops.object.mode_set(mode="EDIT")
+        # bpy.ops.mesh.flip_normals()
+        # bpy.ops.object.mode_set(mode="OBJECT")
+        # NOTE : This code is disabled for now, because since 4.2, flipping normals crashes the editor, so we can't fix this either unless I manually flip them myself on import!!!
+        # WOW BLENDER IS SO GOOD!!!!
+
+        # Return the generated object and mesh data block
+        return obj, mesh
+
     # endregion
 
     # region Import Methods - Internal - Animated
@@ -7527,18 +7555,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
                 share_resource_index = mesh_part["sharedResourceIndex"] # TODO : Add shared resource handling
 
     def import_model_mesh(self, obj_root_bone, json_parent_bone, vertex_stride, json_vertex_declaration, json_vertex_buffer, json_index_buffer):
-        # Generate mesh data
-        mesh_vertices, mesh_triangles = self.read_mesh_buffer_data(vertex_stride, json_vertex_declaration, json_vertex_buffer, json_index_buffer)
-
-        # Create mesh data block and Blender object
-        name = json_parent_bone["name"]
-        mesh = bpy.data.meshes.new(name=name)
-        obj = bpy.data.objects.new(name=name, object_data=mesh)
-
-        bpy.context.collection.objects.link(obj)
-
-        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
-        mesh.update()
+        # Generate mesh data, create mesh data block and create Blender mesh object
+        obj, mesh = self.import_buffer_mesh(vertex_stride, json_vertex_declaration, json_vertex_buffer, json_index_buffer, json_parent_bone["name"])
 
         # Assign mcow properties
         mesh.magickcow_mesh_type = "GEOMETRY"
