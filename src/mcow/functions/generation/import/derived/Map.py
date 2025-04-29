@@ -336,17 +336,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # endregion
 
         # Read the vertex and index buffer data
-        mesh_vertices, mesh_triangles = self.read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
-
-        # Create mesh data and mesh object
-        name = f"mesh_{idx}"
-        mesh = bpy.data.meshes.new(name=name)
-        obj = bpy.data.objects.new(name=name, object_data=mesh)
-
-        bpy.context.collection.objects.link(obj)
-
-        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
-        mesh.update()
+        obj, mesh = self.import_buffer_mesh(vertex_stride, vertex_declaration, vertex_buffer, index_buffer, f"mesh_{idx}")
 
         # Asign the mcow mesh properties to the generated mesh data
         mesh.magickcow_mesh_is_visible = is_visible
@@ -383,17 +373,7 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         effect = liquid["effect"]
 
         # Read vertex buffer data and index buffer data
-        mesh_vertices, mesh_triangles = self.read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
-
-        # Create mesh data and mesh object
-        name = f"liquid_{idx}_{liquid_type}"
-        mesh = bpy.data.meshes.new(name=name)
-        obj = bpy.data.objects.new(name=name, object_data=mesh)
-
-        bpy.context.collection.objects.link(obj)
-
-        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
-        mesh.update()
+        obj, mesh = self.import_buffer_mesh(vertex_stride, vertex_declaration, vertex_buffer, index_buffer, f"liquid_{idx}_{liquid_type}")
 
         # Get mcow mesh type from input liquid type.
         # NOTE : In the future, this may be modified / removed, IF / when the WATER / LAVA system is deprecated / modified (if it ever happens)
@@ -425,18 +405,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         vertex_declaration = force_field["declaration"]
         vertex_stride = force_field["vertexStride"]
 
-        # Compute mesh data
-        mesh_vertices, mesh_triangles = self.read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
-
         # Generate object and mesh data
-        name = f"force_field_{idx}"
-        mesh = bpy.data.meshes.new(name = name)
-        obj = bpy.data.objects.new(name = name, object_data = mesh)
-
-        bpy.context.collection.objects.link(obj)
-
-        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
-        mesh.update()
+        obj, mesh = self.import_buffer_mesh(vertex_stride, vertex_declaration, vertex_buffer, index_buffer, f"force_field_{idx}")
 
         # Assign mcow properties to mesh
         mesh.magickcow_mesh_type = "FORCE_FIELD"
@@ -556,6 +526,35 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
 
         return obj
 
+    def import_buffer_mesh(self, vertex_stride, vertex_declaration, vertex_buffer, index_buffer, name):
+        
+        # Read the vertex and index buffer data
+        mesh_vertices, mesh_triangles, mesh_normals = self.read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
+
+        # Create mesh data and mesh object
+        mesh = bpy.data.meshes.new(name = name)
+        obj = bpy.data.objects.new(name = name, object_data = mesh)
+
+        # Link the object to the scene
+        bpy.context.collection.objects.link(obj)
+
+        # Generate the mesh data from the vertex buffer and index buffer
+        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
+        mesh.update()
+
+        # Set the vertex normals
+        loop_normals = []
+        for poly in mesh.polygons:
+            for loop_index in poly.loop_indices:
+                vertex_index = mesh.loops[loop_index].vertex_index
+                loop_normals.append(mesh_normals[vertex_index])
+        mesh.normals_split_custom_set(loop_normals)
+        mesh.use_auto_smooth = True
+        mesh.update()
+
+        # Return the generated object and mesh data block
+        return obj, mesh
+
     # endregion
 
     # region Import Methods - Internal - Animated
@@ -661,18 +660,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
                 share_resource_index = mesh_part["sharedResourceIndex"] # TODO : Add shared resource handling
 
     def import_model_mesh(self, obj_root_bone, json_parent_bone, vertex_stride, json_vertex_declaration, json_vertex_buffer, json_index_buffer):
-        # Generate mesh data
-        mesh_vertices, mesh_triangles = self.read_mesh_buffer_data(vertex_stride, json_vertex_declaration, json_vertex_buffer, json_index_buffer)
-
-        # Create mesh data block and Blender object
-        name = json_parent_bone["name"]
-        mesh = bpy.data.meshes.new(name=name)
-        obj = bpy.data.objects.new(name=name, object_data=mesh)
-
-        bpy.context.collection.objects.link(obj)
-
-        mesh.from_pydata(mesh_vertices, [], mesh_triangles)
-        mesh.update()
+        # Generate mesh data, create mesh data block and create Blender mesh object
+        obj, mesh = self.import_buffer_mesh(vertex_stride, json_vertex_declaration, json_vertex_buffer, json_index_buffer, json_parent_bone["name"])
 
         # Assign mcow properties
         mesh.magickcow_mesh_type = "GEOMETRY"
