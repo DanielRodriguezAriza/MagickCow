@@ -1,6 +1,7 @@
 # region Import Data Pipeline class - LevelModel / Map
 
 # TODO : Solve the vertex winding issues on all of the mesh imports... except collisions, which actually have the correct winding as of now.
+# TODO : Implement material caching (or maybe I implemented this in the past, but I cannot recall right now).
 
 # TODO : Implement all import functions...
 class MCow_ImportPipeline_Map(MCow_ImportPipeline):
@@ -549,6 +550,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # Apply smooth shading to get some default normal groups going
         bpy.ops.object.shade_smooth()
 
+        # region Unused Content
+
         # Set the vertex normals from the imported data
         # Option 1: Calculate loop normals
         # loop_normals = []
@@ -571,6 +574,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # bpy.ops.object.mode_set(mode="OBJECT")
         # NOTE : This code is disabled for now, because since 4.2, flipping normals crashes the editor, so we can't fix this either unless I manually flip them myself on import!!!
         # WOW BLENDER IS SO GOOD!!!!
+
+        # endregion
 
         # Return the generated object and mesh data block
         return obj, mesh
