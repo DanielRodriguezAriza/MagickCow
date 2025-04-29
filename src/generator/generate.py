@@ -148,6 +148,7 @@ def main():
         # Import Data Generation
         # TODO : Rename all of the pipleine classes and files to use the "ImportPipeline" prefix or something like that...
         "../mcow/functions/generation/import/Pipeline.py", # ImportPipeline Base
+        "../mcow/functions/generation/import/ContentImporter.py", # Generic Content Importer # TODO : Figure out if this is good enough and should stay or if we're going to remove this and go back to the old way of doing things...
         "../mcow/functions/generation/import/derived/Map.py", # LevelModel ImportPipeline
         "../mcow/functions/generation/import/derived/PhysicsEntity.py", # PhysicsEntity ImportPipeline
         "../mcow/functions/generation/import/derived/XnaModel.py", # XnaModel ImportPipeline
