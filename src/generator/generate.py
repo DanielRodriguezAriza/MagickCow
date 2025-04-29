@@ -150,6 +150,7 @@ def main():
         "../mcow/functions/generation/import/Pipeline.py", # ImportPipeline Base
         "../mcow/functions/generation/import/derived/Map.py", # LevelModel ImportPipeline
         "../mcow/functions/generation/import/derived/PhysicsEntity.py", # PhysicsEntity ImportPipeline
+        "../mcow/functions/generation/import/derived/XnaModel.py", # XnaModel ImportPipeline
 
         # Main entry point
         "../mcow/Main.py",
