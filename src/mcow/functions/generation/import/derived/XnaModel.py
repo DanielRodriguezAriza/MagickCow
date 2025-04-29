@@ -1,6 +1,8 @@
 # region Import Data Pipeline class - Xna Model
 
 # TODO : Clean up all of the duplicated logic from the Map importer pipeline class
+# TODO : Implement bone hierarchy handling
+# TODO : Maybe clean up the exporter's way of working so that it is more generic in the bone hierarchy, so that we can share all of the code from XNA model importer and exporter with the level model as well for animated level parts?
 
 class MCow_ImportPipeline_XnaModel(MCow_ImportPipeline):
     def __init__(self):
