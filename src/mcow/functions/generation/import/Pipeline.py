@@ -188,14 +188,14 @@ class MCow_ImportPipeline:
         # If the input vertex data has a position attribute for each vertex, then read it.
         if vertex_offset_position >= 0:
             for offset in range(0, len(vertex_buffer_internal), vertex_stride):
-                chunk = buffer[(offset + vertex_offset_position) : (offset + 12)] # The 12 comes from 3 * 4 = 12 bytes, because we read 3 floats for the vertex position.
+                chunk = buffer[(offset + vertex_offset_position) : (offset + vertex_offset_position + 12)] # The 12 comes from 3 * 4 = 12 bytes, because we read 3 floats for the vertex position.
                 data = struct.unpack("<fff", chunk) # NOTE : As of now, we're always assuming that vertex position is in the format vec3. In the future, when we add support for other formats (if required), then make it so that we have a vertex_attribute_fmt variable or whatever, and assign it above, when we read the attributes' description / vertex layout on the vertex declaration parsing part of the code.
                 vertices.append(point_to_z_up(data))
 
         # If the input vertex data has a normal attribute for each vertex, then read it.
         if vertex_offset_normal >= 0:
             for offset in range(0, len(vertex_buffer_internal), vertex_stride):
-                chunk = buffer[(offset + vertex_offset_normal) : (offset + 12)] # 3 f32 * 4 bytes = 12 bytes
+                chunk = buffer[(offset + vertex_offset_normal) : (offset + vertex_offset_normal + 12)] # 3 f32 * 4 bytes = 12 bytes
                 data = struct.unpack("<fff", chunk)
                 normals.append(point_to_z_up(data))
 
