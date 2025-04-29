@@ -542,15 +542,35 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         mesh.from_pydata(mesh_vertices, [], mesh_triangles)
         mesh.update()
 
-        # Set the vertex normals
-        loop_normals = []
-        for poly in mesh.polygons:
-            for loop_index in poly.loop_indices:
-                vertex_index = mesh.loops[loop_index].vertex_index
-                loop_normals.append(mesh_normals[vertex_index])
-        mesh.normals_split_custom_set(loop_normals)
-        mesh.use_auto_smooth = True
-        mesh.update()
+        # Select the object so that we can use bpy.ops over this mesh
+        obj.select_set(state=True)
+        bpy.context.view_layer.objects.active = obj
+
+        # Apply smooth shading to get some default normal groups going
+        bpy.ops.object.shade_smooth()
+
+        # Set the vertex normals from the imported data
+        # Option 1: Calculate loop normals
+        # loop_normals = []
+        # for poly in mesh.polygons:
+        #     for loop_index in poly.loop_indices:
+        #         vertex_index = mesh.loops[loop_index].vertex_index
+        #         loop_normals.append(mesh_normals[vertex_index].normalized())
+        # mesh.normals_split_custom_set(loop_normals)
+        # mesh.update()
+        # Option 2: Use the per-vertex normals directly
+        # mesh.normals_split_custom_set_from_vertices(mesh_normals)
+        # mesh.update()
+        # NOTE : This code is disabled for now, since after today's Blender update, importing normals is pretty much broken AFAIK and will lead to geometry that simply crashes on edit.
+        # I guess we'll just have to wait for them to patch this out and get their shit together before we can use custom normals...
+        # For now, the split faces generate some pretty nice normals automatically, so I guess we'll live with those for now and that's it...
+
+        # Flip the normals so that their direction matches the one expected by Blender
+        # bpy.ops.object.mode_set(mode="EDIT")
+        # bpy.ops.mesh.flip_normals()
+        # bpy.ops.object.mode_set(mode="OBJECT")
+        # NOTE : This code is disabled for now, because since 4.2, flipping normals crashes the editor, so we can't fix this either unless I manually flip them myself on import!!!
+        # WOW BLENDER IS SO GOOD!!!!
 
         # Return the generated object and mesh data block
         return obj, mesh
