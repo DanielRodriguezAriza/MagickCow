@@ -91,6 +91,8 @@ class MagickCowImportOperator(bpy.types.Operator, bpy_extras.io_utils.ImportHelp
                 ans = self.import_data_map(json_data)
             elif type_string == "PhysicsEntity":
                 ans = self.import_data_physics_entity(json_data)
+            elif type_string == "xna_model": # TODO : Same thing here...
+                ans = self.import_data_xna_model(json_data)
             else:
                 ans = self.import_data_unknown(type_string)
 
@@ -111,6 +113,10 @@ class MagickCowImportOperator(bpy.types.Operator, bpy_extras.io_utils.ImportHelp
         self.report({"ERROR"}, "Import operations for Physics Entity are not supported yet!")
         return {"CANCELLED"}
     
+    def import_data_xna_model(self, data):
+        self.import_data_internal(data, MCow_ImportPipeline_XnaModel())
+        return {"FINISHED"}
+
     def import_data_unknown(self, type_string):
         self.report({"ERROR"}, f"Content of type \"{type_string}\" is not supported by MagickCow!")
         return {"CANCELLED"}
