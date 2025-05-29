@@ -1,7 +1,7 @@
 import bpy
 
 bl_info = {
-    "name" : "MagickCow Experimental Features Addon",
+    "name" : "MagickCow Experimental Features Addon - Materials",
     "blender" : (3, 0, 0),
     "category" : "Export",
     "description" : "Adds some experimental stuff to MagickCow",
