@@ -226,23 +226,31 @@ class MCow_ImportPipeline:
         mat = bpy.data.materials.new(name = name)
         mat.use_nodes = True
 
+        effect_type = None
+        effect_reader = None
+        effect_generator = None
+
         if "$type" in effect:
             effect_type_json = effect["$type"]
             if effect_type_json == "effect_deferred":
                 effect_type = "EFFECT_DEFERRED"
                 effect_reader = self.read_effect_deferred
+                effect_generator = self.generate_effect_deferred
             
             elif effect_type_json == "effect_deferred_liquid":
                 effect_type = "EFFECT_LIQUID_WATER"
                 effect_reader = self.read_effect_liquid_water
+                effect_generator = None
             
             elif effect_type_json == "effect_lava":
                 effect_type = "EFFECT_LIQUID_LAVA"
                 effect_reader = self.read_effect_liquid_lava
+                effect_generator = None
             
             elif effect_type_json == "effect_additive":
                 effect_type = "EFFECT_ADDITIVE"
                 effect_reader = self.read_effect_additive
+                effect_generator = None
             
             else:
                 raise MagickCowImportException(f"Unknown material effect type : \"{effect_type_json}\"")
@@ -254,8 +262,13 @@ class MCow_ImportPipeline:
         else:
             raise MagickCowImportException("The input data does not contain a valid material effect")
 
-        mat.mcow_effect_type = effect_type
-        effect_reader(mat, effect)
+        # Assign the values and execute the selected functions
+        if effect_type is not None:
+            mat.mcow_effect_type = effect_type
+        if effect_reader is not None:
+            effect_reader(mat, effect)
+        if effect_generator is not None:
+            effect_generator(mat, effect)
 
         return mat
 
@@ -266,7 +279,7 @@ class MCow_ImportPipeline:
         texture_node.image = bpy.data.images.load(path)
         return texture_node
 
-    def create_effect_material_nodes(self, material, path_texture_diffuse):
+    def create_effect_material_nodes(self, material, texture_diffuse):
         # Get nodes and links
         nodes = material.node_tree.nodes
         links = material.node_tree.links
@@ -288,16 +301,15 @@ class MCow_ImportPipeline:
         links.new(bsdf_node.outputs["BSDF"], output_node.inputs["Surface"])
 
         # Diffuse Texture
-        path_full_texture_diffuse = path_join(self._cached_import_path, path_texture_diffuse)
-        if os.path.isfile(path_full_texture_diffuse): # We check if the path exists AND if it's a file before doing anything with it
-            texture_diffuse_node = create_effect_material_node_texture(nodes, (-200, -200), path_full_texture_diffuse)
+        path_texture_diffuse = path_join(self._cached_import_path, texture_diffuse)
+        if os.path.isfile(path_texture_diffuse): # We check if the path exists AND if it's a file before doing anything with it
+            texture_diffuse_node = create_effect_material_node_texture(nodes, (-200, -200), path_texture_diffuse)
             links.new(texture_diffuse_node.outputs["Color"], bsdf_node.inputs["Base Color"])
 
         # TODO : Maybe implement support for normal textures? doesn't really matter, it's just for visualization and stuff...
         # Although in the future we COULD modify it so that we reference these nodes for the actual values? idk, maybe the visualization being synced up with custom mats should just be the user's responsibility...
 
     def read_effect_deferred(self, material, effect):
-        # Step 1: Read all of the properties from the material effect JSON and assign them to the mcow_effect props
         material.mcow_effect_deferred_alpha = effect["Alpha"]
         material.mcow_effect_deferred_sharpness = effect["Sharpness"]
         material.mcow_effect_deferred_vertex_color_enabled = effect["VertexColorEnabled"]
@@ -330,10 +342,6 @@ class MCow_ImportPipeline:
             material.mcow_effect_deferred_diffuse_texture_1 = effect["DiffuseTexture1"]
             material.mcow_effect_deferred_material_texture_1 = effect["MaterialTexture1"]
             material.mcow_effect_deferred_normal_texture_1 = effect["NormalTexture1"]
-        
-        # Step 2: Create nodes for the textures and other visual material properties for visualization in Blender
-        # TODO : Add logic here... use the create_effect_material_nodes() function for this. Maybe we could just make it a generic function later on.
-
 
     def read_effect_liquid_water(self, material, effect):
         pass
@@ -359,6 +367,10 @@ class MCow_ImportPipeline:
         material.mcow_effect_additive_texture_enabled = effect["textureEnabled"]
         if material.mcow_effect_additive_texture_enabled: # NOTE : Same note as the deferred material reading code.
             material.mcow_effect_additive_texture = effect["texture"]
+
+    def generate_effect_deferred(self, material, effect):
+        diffuse = effect["DiffuseTexture0"]
+        self.create_effect_material_nodes(material, diffuse)
 
     # endregion
 
