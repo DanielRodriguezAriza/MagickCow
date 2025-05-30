@@ -103,7 +103,7 @@ class MagickCowImportOperator(bpy.types.Operator, bpy_extras.io_utils.ImportHelp
         return ans
     
     def import_data_internal(self, data, importer):
-        importer.exec(data)
+        importer.exec(data, self.filepath)
     
     def import_data_map(self, data):
         self.import_data_internal(data, MCow_ImportPipeline_Map())

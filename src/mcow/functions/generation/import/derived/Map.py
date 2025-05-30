@@ -10,7 +10,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         self._cached_lights = {} # Cache object that stores the lights that have been generated so that they can be referenced on the animated level parts import side of the code. Remember that in Magicka's file format, lights are stored on the static level data, but the animated level data can move lights by referencing them through their ID.
         return
     
-    def exec(self, data):
+    def exec(self, data, path):
+        self._cached_import_path = path
         level_model = data["XnbFileData"]["PrimaryObject"]
         self.import_level_model(level_model)
     
