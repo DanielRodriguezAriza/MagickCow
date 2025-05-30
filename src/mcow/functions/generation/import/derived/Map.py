@@ -1,7 +1,7 @@
 # region Import Data Pipeline class - LevelModel / Map
 
 # TODO : Solve the vertex winding issues on all of the mesh imports... except collisions, which actually have the correct winding as of now.
-# TODO : Implement material caching (or maybe I implemented this in the past, but I cannot recall right now).
+# TODO : Implement material caching (or maybe I implemented this in the past, but I cannot recall right now). NOTE : This will be trivial to implement once we move to the ctx var with free functions import pipeline system...
 
 # TODO : Implement all import functions...
 class MCow_ImportPipeline_Map(MCow_ImportPipeline):
