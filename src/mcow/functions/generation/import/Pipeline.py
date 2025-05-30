@@ -258,7 +258,51 @@ class MCow_ImportPipeline:
 
         return mat
 
+    def create_effect_material_node_texture(self, nodes, location, path):
+        # Create the texture node and return it so that the caller can use it and link it up
+        texture_node = nodes.new(type="ShaderNodeTexImage")
+        texture_node.location = location
+        texture_node.image = bpy.data.images.load(path)
+        return texture_node
+
+    def create_effect_material_nodes(self, material, path_texture_diffuse):
+        # Check if the path exists
+        # if os.path.isfile(path_texture_diffuse):
+            # etc...
+            # TODO : Implement logic to prevent loading the material nodes if the path does not exist.
+            # NOTE : The path to the texture is assumed to be relative to the path of the json file we're importing, so we need to handle that later on...
+
+        # Get nodes and links
+        nodes = material.node_tree.nodes
+        links = material.node_tree.links
+
+        # Clear out the default nodes from the node graph (we could skip this step, but just in case)
+        nodes.clear()
+
+        # Basic BSDF material setup:
+        
+        # 1) Material Output:
+        output_node = nodes.new(type = "ShaderNodeOutputMaterial")
+        output_node.location = (400, 0)
+        
+        # 2) Principled BSDF:
+        bsdf_node = nodes.new(type = "ShaderNodeBsdfPrincipled")
+        bsdf_node.location = (0, 0)
+
+        # 3) Link BSDF node to output node
+        links.new(bsdf_node.outputs["BSDF"], output_node.inputs["Surface"])
+
+        # TODO : Add path handling here with some "if path_exists: then create the texture and link, otherwise do nothing" kind of logic...
+
+        # Diffuse Texture
+        texture_diffuse_node = create_effect_material_node_texture(nodes, (-200, -200), path_texture_diffuse) # TODO : Handle the fact that the path is NOT absolute in here!!! need to compute a proper path later on with the bpy.context's current import path!
+        links.new(texture_diffuse_node.outputs["Color"], bsdf_node.inputs["Base Color"])
+
+        # TODO : Maybe implement support for normal textures? doesn't really matter, it's just for visualization and stuff...
+        # Although in the future we COULD modify it so that we reference these nodes for the actual values? idk, maybe the visualization being synced up with custom mats should just be the user's responsibility...
+
     def read_effect_deferred(self, material, effect):
+        # Step 1: Read all of the properties from the material effect JSON and assign them to the mcow_effect props
         material.mcow_effect_deferred_alpha = effect["Alpha"]
         material.mcow_effect_deferred_sharpness = effect["Sharpness"]
         material.mcow_effect_deferred_vertex_color_enabled = effect["VertexColorEnabled"]
@@ -291,6 +335,10 @@ class MCow_ImportPipeline:
             material.mcow_effect_deferred_diffuse_texture_1 = effect["DiffuseTexture1"]
             material.mcow_effect_deferred_material_texture_1 = effect["MaterialTexture1"]
             material.mcow_effect_deferred_normal_texture_1 = effect["NormalTexture1"]
+        
+        # Step 2: Create nodes for the textures and other visual material properties for visualization in Blender
+        # TODO : Add logic here... use the create_effect_material_nodes() function for this. Maybe we could just make it a generic function later on.
+
 
     def read_effect_liquid_water(self, material, effect):
         pass
