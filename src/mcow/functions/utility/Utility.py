@@ -110,7 +110,7 @@ def path_append(path1, path2):
     separator = ""
     
     if path1_has_separator and path2_has_separator:
-        separator = "."
+        separator = "." # NOTE : This is non-standard behaviour path strings. When the second path starts with "/" rather than "./", the meaning is "start at the root of the file system", but we take it to mean "start relative to the current path" just as "./" by adding the extra "." so that we can prevent any weird issues from happening from slightly malformed paths, which would be bound to breaking stuff severely... I would rather fetch a path that does not exist relative to the working dir rather than trying to break stuff by accessing some system file relative to the system root... In short, this is the reason why I don't use os.path.join() instead...
     elif path1_has_separator or path2_has_separator:
         separator = ""
     else:
