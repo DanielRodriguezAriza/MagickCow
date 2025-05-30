@@ -118,6 +118,16 @@ def path_append(path1, path2):
     
     return path1 + separator + path2
 
+# Functions to join paths
+def path_join(path1, path2):
+    return path_append(path1, path2)
+
+def path_join_many(paths):
+    ans = ""
+    for path in paths:
+        ans += path_join(ans, path)
+    return ans
+
 
 # Returns a tuple with forward, up and right vectors.
 # Better to think of them as local-x-vector, local-y-vector and local-z-vector since we don't really know what is "forward" and "right" in Magicka, we only know that y is up.
