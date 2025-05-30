@@ -101,6 +101,24 @@ def get_all_children(obj):
 
 # Append 2 paths together
 def path_append(path1, path2):
+    # region Comments - Behaviour of path_append() vs os.path.join()
+
+    # NOTE : Behaviour of joining 2 paths mixing windows separators and unix separators:
+    # python's os.path.join() function has a severe issue on certain implementations when mixing '\' and '/' for path separators.
+    # The issue basically is that joining a path that ends with "\\" to another path in unix systems will add the "/" separator, leading to a path that looks like "\\/", rather than the correct "\\./".
+    # This is important since XNA uses windows separators, and that's what Magicka will use internally, but windows also supports forward slash separators, so yeah.
+
+    # NOTE : Behaviour of adding a dot when the second path starts with "/":
+    # What this path_append() function does is non-standard behaviour for path strings, but it is preferable to the potential issues that could come up with the actual expected behaviour.
+    # When the second path starts with "/" rather than "./", the meaning is "start at the root of the file system", so standard functions such as os.path.join() will discard path1 and just return path2, since
+    # it starts at the root of the filesystem, but we take it to mean "start relative to the current path" instead, just as "./" by adding the extra "." in between, so that we can prevent any weird issues
+    # from happening from slightly malformed paths, which would be bound to breaking stuff severely...
+    # I would rather fetch a path that does not exist relative to the working dir rather than trying to break stuff by accessing some system file relative to the system root...
+    # In short, this is one of the many reasons why I don't want to use os.path.join() instead on the Blender side of the code... to prevent any accidental issues where we break files we should not touch in the
+    # first place! Basically, this is a form of custom file sanitization logic that we have going on...
+
+    # endregion
+    
     c1 = path1[-1]
     c2 = path2[0]
     
@@ -110,7 +128,7 @@ def path_append(path1, path2):
     separator = ""
     
     if path1_has_separator and path2_has_separator:
-        separator = "." # NOTE : This is non-standard behaviour path strings. When the second path starts with "/" rather than "./", the meaning is "start at the root of the file system", but we take it to mean "start relative to the current path" just as "./" by adding the extra "." so that we can prevent any weird issues from happening from slightly malformed paths, which would be bound to breaking stuff severely... I would rather fetch a path that does not exist relative to the working dir rather than trying to break stuff by accessing some system file relative to the system root... In short, this is the reason why I don't use os.path.join() instead...
+        separator = "."
     elif path1_has_separator or path2_has_separator:
         separator = ""
     else:
