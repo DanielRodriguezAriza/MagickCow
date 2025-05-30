@@ -267,12 +267,6 @@ class MCow_ImportPipeline:
         return texture_node
 
     def create_effect_material_nodes(self, material, path_texture_diffuse):
-        # Check if the path exists
-        # if os.path.isfile(path_texture_diffuse):
-            # etc...
-            # TODO : Implement logic to prevent loading the material nodes if the path does not exist.
-            # NOTE : The path to the texture is assumed to be relative to the path of the json file we're importing, so we need to handle that later on...
-
         # Get nodes and links
         nodes = material.node_tree.nodes
         links = material.node_tree.links
@@ -293,11 +287,11 @@ class MCow_ImportPipeline:
         # 3) Link BSDF node to output node
         links.new(bsdf_node.outputs["BSDF"], output_node.inputs["Surface"])
 
-        # TODO : Add path handling here with some "if path_exists: then create the texture and link, otherwise do nothing" kind of logic...
-
         # Diffuse Texture
-        texture_diffuse_node = create_effect_material_node_texture(nodes, (-200, -200), path_texture_diffuse) # TODO : Handle the fact that the path is NOT absolute in here!!! need to compute a proper path later on with the bpy.context's current import path!
-        links.new(texture_diffuse_node.outputs["Color"], bsdf_node.inputs["Base Color"])
+        path_full_texture_diffuse = path_join(self._cached_import_path, path_texture_diffuse)
+        if os.path.isfile(path_full_texture_diffuse): # We check if the path exists AND if it's a file before doing anything with it
+            texture_diffuse_node = create_effect_material_node_texture(nodes, (-200, -200), path_full_texture_diffuse)
+            links.new(texture_diffuse_node.outputs["Color"], bsdf_node.inputs["Base Color"])
 
         # TODO : Maybe implement support for normal textures? doesn't really matter, it's just for visualization and stuff...
         # Although in the future we COULD modify it so that we reference these nodes for the actual values? idk, maybe the visualization being synced up with custom mats should just be the user's responsibility...
