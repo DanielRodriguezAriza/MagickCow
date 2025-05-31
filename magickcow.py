@@ -101,6 +101,8 @@ import mathutils
 import time
 from collections import namedtuple # TODO : Get rid of this fucker, namedtuples are way slower than regular tuples AND run of the mill classes, so this module was pretty much a waste of time...
 
+import pathlib
+
 # endregion
 
 # ../mcow/classes/MagickCow/Exception.py
@@ -799,7 +801,7 @@ class MagickCowImportOperator(bpy.types.Operator, bpy_extras.io_utils.ImportHelp
         return ans
     
     def import_data_internal(self, data, importer):
-        importer.exec(data)
+        importer.exec(data, self.filepath)
     
     def import_data_map(self, data):
         self.import_data_internal(data, MCow_ImportPipeline_Map())
@@ -2600,27 +2602,6 @@ def get_all_children(obj):
     get_all_children_rec(ans, obj)
     return ans
 
-
-# Append 2 paths together
-def path_append(path1, path2):
-    c1 = path1[-1]
-    c2 = path2[0]
-    
-    path1_has_separator = (c1 == '/' or c1 == '\\')
-    path2_has_separator = (c2 == '/' or c2 == '\\')
-    
-    separator = ""
-    
-    if path1_has_separator and path2_has_separator:
-        separator = "."
-    elif path1_has_separator or path2_has_separator:
-        separator = ""
-    else:
-        separator = "/"
-    
-    return path1 + separator + path2
-
-
 # Returns a tuple with forward, up and right vectors.
 # Better to think of them as local-x-vector, local-y-vector and local-z-vector since we don't really know what is "forward" and "right" in Magicka, we only know that y is up.
 # When we deal with the animated mesh format, we might eventually figure out what the "true" right and forward vectors are according to the devs of the game (what I mean with this is which axes are considered "forward" and "right" in the assets and in game code as they were created... maybe this is not even consistent between assets!)... for now, pfff... who knows!
@@ -3040,6 +3021,103 @@ class material_utility:
         return ans
 
     # endregion
+
+# endregion
+
+# ../mcow/functions/utility/Path.py
+# region Path Utility Functions
+
+# All path related utility functions go here
+
+# Append 2 paths together
+# region Comments - Behaviour of path_append() vs os.path.join()
+
+# NOTE : Behaviour of joining 2 paths mixing windows separators and unix separators:
+# python's os.path.join() function has a severe issue on certain implementations when mixing '\' and '/' for path separators.
+# The issue basically is that joining a path that ends with "\\" to another path in unix systems will add the "/" separator, leading to a path that looks like "\\/", rather than the correct "\\./".
+# This is important since XNA uses windows separators, and that's what Magicka will use internally, but windows also supports forward slash separators, so yeah.
+
+# NOTE : Behaviour of adding a dot when the second path starts with "/":
+# What this path_append() function does is non-standard behaviour for path strings, but it is preferable to the potential issues that could come up with the actual expected behaviour.
+# When the second path starts with "/" rather than "./", the meaning is "start at the root of the file system", so standard functions such as os.path.join() will discard path1 and just return path2, since
+# it starts at the root of the filesystem, but we take it to mean "start relative to the current path" instead, just as "./" by adding the extra "." in between, so that we can prevent any weird issues
+# from happening from slightly malformed paths, which would be bound to breaking stuff severely...
+# I would rather fetch a path that does not exist relative to the working dir rather than trying to break stuff by accessing some system file relative to the system root...
+# In short, this is one of the many reasons why I don't want to use os.path.join() instead on the Blender side of the code... to prevent any accidental issues where we break files we should not touch in the
+# first place! Basically, this is a form of custom file sanitization logic that we have going on...
+
+# endregion
+def path_append(path1, path2):
+
+    if len(path1) <= 0:
+        return path2
+    
+    if len(path2) <= 0:
+        return path1
+
+    c1 = path1[-1]
+    c2 = path2[0]
+    
+    path1_has_separator = (c1 == '/' or c1 == '\\')
+    path2_has_separator = (c2 == '/' or c2 == '\\')
+    
+    separator = ""
+    
+    if path1_has_separator and path2_has_separator:
+        separator = "."
+    elif path1_has_separator or path2_has_separator:
+        separator = ""
+    else:
+        separator = "/"
+    
+    return path1 + separator + path2
+
+# Functions to join 2 paths
+def path_join(path1, path2):
+    return path_append(path1, path2)
+
+# Function to join multiple paths
+def path_join_many(paths):
+    ans = ""
+    for path in paths:
+        ans += path_join(ans, path)
+    return ans
+
+# Get all matching paths (complex impl)
+# region Comments - Behaviour of path_match_internal
+# NOTE : The extension matching token is something like ".*".
+# As an important side note, here's the behaviour of the 2 following cases used within this codebase:
+# 1) ".*" -> returns all strings that match path_str_base/path_str_stem.any_extension
+# 2) "*" -> same as above, but also includes the entry (if it exists) that has the name path_str_stem and is followed by any string or no string at all
+# Basically, standard path matching tokens and wildcards, like any file system would use. But the explanation is here just in case any doubts appear in the future as for why we use ".*" rather than just "*",
+# and that's because we mostly want to match for files with specific extensions, not just any random name that happens to match part of the path.
+# endregion
+def path_match_internal(path_str_base, path_str_stem, path_str_extension):
+    path = pathlib.Path(path_str_base)
+    return list(path.glob(path_str_stem + path_str_extension))
+
+# Returns a list with all paths that match the queried string
+def path_match(path_str, path_str_extension = ".*"):
+    path = pathlib.Path(path_str)
+    matches = list(path.parent.glob(str(path.stem) + path_str_extension))
+    ans = [str(s) for s in matches] # This step is to convert from whatever operating system string struct type is used by PathLib (eg: WindowsPath) to the basic string type used by python (which can be casted to any other type later on)
+    return ans
+
+# Returns a list with all the files that match the queried string
+def path_match_files(path_str):
+    return [x for x in path_match(path_str) if os.path.isfile(x)]
+
+# Returns a list with all the directories that match the queried string
+def path_match_directories(path_str):
+    return [x for x in path_match(path_str) if os.path.isdir(x)]
+
+# endregion
+
+# ../mcow/functions/utility/Texture.py
+# region Utility Functions for handling Texture data
+
+# NOTE : In the future, maybe move the texture loading utility functions here, once they become free functions and we pass around the CTX var instead of "self."
+# Either that or get rid of this file.
 
 # endregion
 
@@ -6559,9 +6637,11 @@ class MCow_Data_Pipeline_Cache:
 
 class MCow_ImportPipeline:
     def __init__(self):
+        self._cached_import_path = ""
+        self._cached_textures = {}
         return
     
-    def exec(self, data):
+    def exec(self, data, path):
         # The base class should never be used because it does not implement any specific type of pipeline for any kind of object, so it literally cannot import any sort of data...
         raise MagickCowImportException("Cannot execute base import pipeline!")
         return None
@@ -6782,23 +6862,31 @@ class MCow_ImportPipeline:
         mat = bpy.data.materials.new(name = name)
         mat.use_nodes = True
 
+        effect_type = None
+        effect_reader = None
+        effect_generator = None
+
         if "$type" in effect:
             effect_type_json = effect["$type"]
             if effect_type_json == "effect_deferred":
                 effect_type = "EFFECT_DEFERRED"
                 effect_reader = self.read_effect_deferred
+                effect_generator = self.generate_effect_deferred
             
             elif effect_type_json == "effect_deferred_liquid":
                 effect_type = "EFFECT_LIQUID_WATER"
                 effect_reader = self.read_effect_liquid_water
+                effect_generator = None
             
             elif effect_type_json == "effect_lava":
                 effect_type = "EFFECT_LIQUID_LAVA"
                 effect_reader = self.read_effect_liquid_lava
+                effect_generator = None
             
             elif effect_type_json == "effect_additive":
                 effect_type = "EFFECT_ADDITIVE"
                 effect_reader = self.read_effect_additive
+                effect_generator = None
             
             else:
                 raise MagickCowImportException(f"Unknown material effect type : \"{effect_type_json}\"")
@@ -6810,10 +6898,79 @@ class MCow_ImportPipeline:
         else:
             raise MagickCowImportException("The input data does not contain a valid material effect")
 
-        mat.mcow_effect_type = effect_type
-        effect_reader(mat, effect)
+        # Assign the values and execute the selected functions
+        if effect_type is not None:
+            mat.mcow_effect_type = effect_type
+        if effect_reader is not None:
+            effect_reader(mat, effect)
+        if effect_generator is not None:
+            effect_generator(mat, effect)
 
         return mat
+
+    def create_effect_material_node_texture(self, nodes, location, texture_data):
+        # Create the texture node and return it so that the caller can use it and link it up
+        texture_node = nodes.new(type="ShaderNodeTexImage")
+        texture_node.location = location
+        texture_node.image = texture_data
+        return texture_node
+
+    def texture_load(self, texture_path_relative):
+        
+        # Compute the absolute path
+        texture_path_absolute = path_join(self._cached_import_path, texture_path_relative)
+        
+        # If the texture is already cached, then return it
+        if texture_path_absolute in self._cached_textures:
+            return self._cached_textures[texture_path_absolute]
+        
+        # If the texture is not already cached, then we try to load it and cache it
+        
+        # Get all matching texture files
+        matching_texture_files = path_match_files(texture_path_absolute)
+        
+        # If no matches were found, then cache "None", since that means that the file was not found this time around
+        if len(matching_texture_files) <= 0:
+            self._cached_textures[texture_path_absolute] = None
+            return None
+        
+        # If matches were found, then pick the first one and use it
+        chosen_texture_file = matching_texture_files[0]
+
+        # Cache the chosen texture file and return the generated texture data
+        texture_data = bpy.data.images.load(chosen_texture_file)
+        self._cached_textures[texture_path_absolute] = texture_data
+        return texture_data
+
+    def create_effect_material_nodes(self, material, texture_diffuse):
+        # Get nodes and links
+        nodes = material.node_tree.nodes
+        links = material.node_tree.links
+
+        # Clear out the default nodes from the node graph (we could skip this step, but just in case)
+        nodes.clear()
+
+        # Basic BSDF material setup:
+        
+        # 1) Material Output:
+        output_node = nodes.new(type = "ShaderNodeOutputMaterial")
+        output_node.location = (400, 0)
+        
+        # 2) Principled BSDF:
+        bsdf_node = nodes.new(type = "ShaderNodeBsdfPrincipled")
+        bsdf_node.location = (0, 0)
+
+        # 3) Link BSDF node to output node
+        links.new(bsdf_node.outputs["BSDF"], output_node.inputs["Surface"])
+
+        # Diffuse Texture
+        texture_data_diffuse = self.texture_load(texture_diffuse)
+        if texture_data_diffuse is not None:
+            texture_diffuse_node = self.create_effect_material_node_texture(nodes, (-200, -200), texture_data_diffuse)
+            links.new(texture_diffuse_node.outputs["Color"], bsdf_node.inputs["Base Color"])
+
+        # TODO : Maybe implement support for normal textures? doesn't really matter, it's just for visualization and stuff...
+        # Although in the future we COULD modify it so that we reference these nodes for the actual values? idk, maybe the visualization being synced up with custom mats should just be the user's responsibility...
 
     def read_effect_deferred(self, material, effect):
         material.mcow_effect_deferred_alpha = effect["Alpha"]
@@ -6873,6 +7030,10 @@ class MCow_ImportPipeline:
         material.mcow_effect_additive_texture_enabled = effect["textureEnabled"]
         if material.mcow_effect_additive_texture_enabled: # NOTE : Same note as the deferred material reading code.
             material.mcow_effect_additive_texture = effect["texture"]
+
+    def generate_effect_deferred(self, material, effect):
+        diffuse = effect["DiffuseTexture0"]
+        self.create_effect_material_nodes(material, diffuse)
 
     # endregion
 
@@ -7055,7 +7216,7 @@ def mcow_read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer,
 # region Import Data Pipeline class - LevelModel / Map
 
 # TODO : Solve the vertex winding issues on all of the mesh imports... except collisions, which actually have the correct winding as of now.
-# TODO : Implement material caching (or maybe I implemented this in the past, but I cannot recall right now).
+# TODO : Implement material caching (or maybe I implemented this in the past, but I cannot recall right now). NOTE : This will be trivial to implement once we move to the ctx var with free functions import pipeline system...
 
 # TODO : Implement all import functions...
 class MCow_ImportPipeline_Map(MCow_ImportPipeline):
@@ -7064,7 +7225,8 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         self._cached_lights = {} # Cache object that stores the lights that have been generated so that they can be referenced on the animated level parts import side of the code. Remember that in Magicka's file format, lights are stored on the static level data, but the animated level data can move lights by referencing them through their ID.
         return
     
-    def exec(self, data):
+    def exec(self, data, path):
+        self._cached_import_path = path
         level_model = data["XnbFileData"]["PrimaryObject"]
         self.import_level_model(level_model)
     
@@ -7892,6 +8054,8 @@ class MCow_ImportPipeline_PhysicsEntity(MCow_ImportPipeline):
 # region Import Data Pipeline class - Xna Model
 
 # TODO : Clean up all of the duplicated logic from the Map importer pipeline class
+# TODO : Implement bone hierarchy handling
+# TODO : Maybe clean up the exporter's way of working so that it is more generic in the bone hierarchy, so that we can share all of the code from XNA model importer and exporter with the level model as well for animated level parts?
 
 class MCow_ImportPipeline_XnaModel(MCow_ImportPipeline):
     def __init__(self):
