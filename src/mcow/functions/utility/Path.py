@@ -38,14 +38,28 @@ def path_append(path1, path2):
     
     return path1 + separator + path2
 
-# Functions to join paths
+# Functions to join 2 paths
 def path_join(path1, path2):
     return path_append(path1, path2)
 
+# Function to join multiple paths
 def path_join_many(paths):
     ans = ""
     for path in paths:
         ans += path_join(ans, path)
     return ans
+
+# Get all matching paths
+# region Comments - Behaviour of path_match_internal
+# NOTE : The extension matching token is something like ".*".
+# As an important side note, here's the behaviour of the 2 following cases used within this codebase:
+# 1) ".*" -> returns all strings that match path_str_base/path_str_stem.any_extension
+# 2) "*" -> same as above, but also includes the entry (if it exists) that has the name path_str_stem and is followed by any string or no string at all
+# Basically, standard path matching tokens and wildcards, like any file system would use. But the explanation is here just in case any doubts appear in the future as for why we use ".*" rather than just "*",
+# and that's because we mostly want to match for files with specific extensions, not just any random name that happens to match part of the path.
+# endregion
+def path_match_internal(path_str_base, path_str_stem, path_str_extension):
+    path = pathlib.Path(path_str_base)
+    return list(path.glob(path_str_stem + path_str_extension))
 
 # endregion
