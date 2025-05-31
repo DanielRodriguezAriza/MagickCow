@@ -281,11 +281,31 @@ class MCow_ImportPipeline:
         return texture_node
 
     def texture_load(self, texture_path_relative):
+        
+        # Compute the absolute path
         texture_path_absolute = path_join(self._cached_import_path, texture_path_relative)
-        if texture_path_absolute not in self._cached_textures:
-            texture_data = bpy.data.images.load(path)
-            self._cached_textures[texture_path_absolute] = texture_data
-        return self._cached_textures[texture_path_absolute]
+        
+        # If the texture is already cached, then return it
+        if texture_path_absolute in self._cached_textures:
+            return self._cached_textures[texture_path_absolute]
+        
+        # If the texture is not already cached, then we try to load it and cache it
+        
+        # Get all matching texture files
+        matching_texture_files = path_match_files(texture_path_absolute)
+        
+        # If no matches were found, then cache "None", since that means that the file was not found this time around
+        if len(matching_texture_files) <= 0:
+            self._cached_textures[texture_path_absolute] = None
+            return None
+        
+        # If matches were found, then pick the first one and use it
+        chosen_texture_file = matching_texture_files[0]
+
+        # Cache the chosen texture file and return the generated texture data
+        texture_data = bpy.data.images.load(chosen_texture_file)
+        self._cached_textures[texture_path_absolute] = texture_data
+        return texture_data
 
     def create_effect_material_nodes(self, material, texture_diffuse):
         # Get nodes and links
