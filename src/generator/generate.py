@@ -115,6 +115,9 @@ def main():
         "../mcow/BlenderInfo.py",
         "../mcow/Imports.py",
 
+        # Globals
+        "../mcow/globals/Globals.py", # Global constants and other global values
+
         # Classes - MagickCow
         "../mcow/classes/MagickCow/Exception.py",
         "../mcow/classes/MagickCow/Mesh.py",
