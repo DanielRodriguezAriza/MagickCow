@@ -16,4 +16,6 @@ import mathutils
 import time
 from collections import namedtuple # TODO : Get rid of this fucker, namedtuples are way slower than regular tuples AND run of the mill classes, so this module was pretty much a waste of time...
 
+import pathlib
+
 # endregion
