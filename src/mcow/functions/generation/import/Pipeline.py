@@ -277,7 +277,7 @@ class MCow_ImportPipeline:
         # Create the texture node and return it so that the caller can use it and link it up
         texture_node = nodes.new(type="ShaderNodeTexImage")
         texture_node.location = location
-        texture_node.image = bpy.data.images.load(path)
+        texture_node.image = texture_load(path)
         return texture_node
 
     def texture_load(self, texture_path_relative):
