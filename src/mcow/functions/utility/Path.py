@@ -49,7 +49,7 @@ def path_join_many(paths):
         ans += path_join(ans, path)
     return ans
 
-# Get all matching paths
+# Get all matching paths (complex impl)
 # region Comments - Behaviour of path_match_internal
 # NOTE : The extension matching token is something like ".*".
 # As an important side note, here's the behaviour of the 2 following cases used within this codebase:
@@ -61,5 +61,10 @@ def path_join_many(paths):
 def path_match_internal(path_str_base, path_str_stem, path_str_extension):
     path = pathlib.Path(path_str_base)
     return list(path.glob(path_str_stem + path_str_extension))
+
+# Get all matching paths (simple impl)
+def path_match(path_str):
+    path = pathlib.Path(path_str)
+    return list(path.parent.glob(path.stem + ".*"))
 
 # endregion
