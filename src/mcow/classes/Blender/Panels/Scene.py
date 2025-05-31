@@ -14,7 +14,8 @@ class MagickCowScenePanel(bpy.types.Panel):
     bl_region_type = "WINDOW"
     bl_context = "scene" # This makes the panel appear on under the Scene Properties.
 
-    def draw(self, context):
+    # TODO : Remove this. It's just kept around as of now as reference code.
+    def draw_old(self, context):
         layout = self.layout
         scene = context.scene
 
@@ -33,6 +34,36 @@ class MagickCowScenePanel(bpy.types.Panel):
             layout.prop(scene, "mcow_scene_json_char")
             if scene.mcow_scene_json_char == "SPACE":
                 layout.prop(scene, "mcow_scene_json_indent")
+    
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+
+        boxA = layout.box()
+        boxA.label(text="Scene Display Settings")
+        boxA.prop(scene, "mcow_scene_display_tags")
+        boxA.prop(scene, "mcow_scene_display_sync")
+
+        boxB = layout.box()
+        boxB.label(text="Scene Export Settings")
+        boxB.prop(scene, "mcow_scene_mode")
+        boxB.prop(scene, "mcow_scene_base_path")
+        boxB.prop(scene, "mcow_scene_animation")
+
+        boxC = layout.box()
+        boxC.label(text="JSON Export Settings")
+        boxC.prop(scene, "mcow_scene_json_pretty")
+        if scene.mcow_scene_json_pretty:
+            boxC.prop(scene, "mcow_scene_json_char")
+            if scene.mcow_scene_json_char == "SPACE":
+                boxC.prop(scene, "mcow_scene_json_indent")
+
+        boxD = layout.box()
+        boxD.label(text="Scene Import Settings")
+        boxD.prop(scene, "mcow_scene_import_textures")
+        # TODO : Add support for enabling and disabling import support for these features. Still need to create these props at some point in the future.
+        # boxD.prop(scene, "mcow_scene_import_animation") # Determine whether animation data is imported or not.
+        # boxD.prop(scene, "mcow_scene_import_material_data") # Determine whether material data (the "logical" one stored within the final JSON file) is imported or not.
 
 # endregion
 
@@ -151,6 +182,12 @@ def register_properties_scene():
         description = "Synchronize the displayed state with the internal state of MagickCow object configuration. Useful for visualization purposes.",
         default = True,
         update = update_properties_scene
+    )
+
+    bpy.types.Scene.mcow_scene_import_textures = bpy.props.BoolProperty(
+        name = "Import Textures",
+        description = "Determine whether to import or not texture files referenced by the imported scene file",
+        default = False # TODO : Maybe make this True by default in the future?
     )
 
     # Register the scene panel itself
