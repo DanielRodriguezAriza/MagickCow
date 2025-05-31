@@ -283,7 +283,7 @@ class MCow_ImportPipeline:
     def texture_load(self, texture_path_relative):
         
         # Compute the absolute path
-        texture_path_absolute = path_join(self._cached_import_path, texture_path_relative)
+        texture_path_absolute = path_join(path_get_str_directory(self._cached_import_path), texture_path_relative)
         
         # If the texture is already cached, then return it
         if texture_path_absolute in self._cached_textures:
