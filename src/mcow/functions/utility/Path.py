@@ -21,6 +21,13 @@
 
 # endregion
 def path_append(path1, path2):
+
+    if len(path1) <= 0:
+        return path2
+    
+    if len(path2) <= 0:
+        return path1
+
     c1 = path1[-1]
     c2 = path2[0]
     
