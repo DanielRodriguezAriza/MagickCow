@@ -329,9 +329,9 @@ class MCow_ImportPipeline:
         links.new(bsdf_node.outputs["BSDF"], output_node.inputs["Surface"])
 
         # Diffuse Texture
-        texture_data_diffuse = texture_load(texture_diffuse)
+        texture_data_diffuse = self.texture_load(texture_diffuse)
         if texture_data_diffuse is not None:
-            texture_diffuse_node = create_effect_material_node_texture(nodes, (-200, -200), texture_data_diffuse)
+            texture_diffuse_node = self.create_effect_material_node_texture(nodes, (-200, -200), texture_data_diffuse)
             links.new(texture_diffuse_node.outputs["Color"], bsdf_node.inputs["Base Color"])
 
         # TODO : Maybe implement support for normal textures? doesn't really matter, it's just for visualization and stuff...
