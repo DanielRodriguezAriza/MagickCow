@@ -62,9 +62,17 @@ def path_match_internal(path_str_base, path_str_stem, path_str_extension):
     path = pathlib.Path(path_str_base)
     return list(path.glob(path_str_stem + path_str_extension))
 
-# Get all matching paths (simple impl)
-def path_match(path_str):
+# Returns a list with all paths that match the queried string
+def path_match(path_str, path_str_extension = ".*"):
     path = pathlib.Path(path_str)
-    return list(path.parent.glob(path.stem + ".*"))
+    return list(path.parent.glob(path.stem + path_str_extension))
+
+# Returns a list with all the files that match the queried string
+def path_match_files(path_str):
+    return [x for x in path_match(path_str) if os.path.isfile(x)]
+
+# Returns a list with all the directories that match the queried string
+def path_match_directories(path_str):
+    return [x for x in path_match(path_str) if os.path.isdir(x)]
 
 # endregion
