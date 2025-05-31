@@ -3111,6 +3111,27 @@ def path_match_files(path_str):
 def path_match_directories(path_str):
     return [x for x in path_match(path_str) if os.path.isdir(x)]
 
+# Function to get the string of the base name of a directory or file from a given path string
+def path_get_str_basename(path_str, include_extension = False):
+    path = pathlib.Path(path_str)
+    if include_extension:
+        return str(path.stem) + "." + path_get_str_extension(path_str)
+    else:
+        return str(path.stem)
+
+# Function to get the parent directory of a given path string
+def path_get_str_directory(path_str):
+    path = pathlib.Path(path_str)
+    return str(path.parent)
+
+# Function to get the extension of a given path string
+def path_get_str_extension(path_str):
+    splits_segments = path_str.split('.')
+    if len(splits_segments) > 1:
+        return splits_segments[-1]
+    else:
+        return ""
+
 # endregion
 
 # ../mcow/functions/utility/Texture.py
@@ -6918,7 +6939,7 @@ class MCow_ImportPipeline:
     def texture_load(self, texture_path_relative):
         
         # Compute the absolute path
-        texture_path_absolute = path_join(self._cached_import_path, texture_path_relative)
+        texture_path_absolute = path_join(path_get_str_directory(self._cached_import_path), texture_path_relative)
         
         # If the texture is already cached, then return it
         if texture_path_absolute in self._cached_textures:
