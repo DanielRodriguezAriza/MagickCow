@@ -3,6 +3,7 @@
 class MCow_ImportPipeline:
     def __init__(self):
         self._cached_import_path = ""
+        self._cached_textures = {}
         return
     
     def exec(self, data, path):
@@ -278,6 +279,13 @@ class MCow_ImportPipeline:
         texture_node.location = location
         texture_node.image = bpy.data.images.load(path)
         return texture_node
+
+    def texture_load(self, texture_path_relative):
+        texture_path_absolute = path_join(self._cached_import_path, texture_path_relative)
+        if texture_path_absolute not in self._cached_textures:
+            texture_data = bpy.data.images.load(path)
+            self._cached_textures[texture_path_absolute] = texture_data
+        return self._cached_textures[texture_path_absolute]
 
     def create_effect_material_nodes(self, material, texture_diffuse):
         # Get nodes and links
