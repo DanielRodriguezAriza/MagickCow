@@ -268,8 +268,8 @@ class MCow_ImportPipeline:
             mat.mcow_effect_type = effect_type
         if effect_reader is not None:
             effect_reader(mat, effect)
-        if effect_generator is not None:
-            effect_generator(mat, effect)
+        if bpy.context.scene.mcow_scene_import_textures and effect_generator is not None:
+            effect_generator(mat, effect) # Only generate material nodes in the event that texture import is enabled. Note that this needs to be cleaned up in the future for more complex support. This is kind of a hacky workaround, mostly due to the meaning the weird nomenclature used gives to this...
 
         return mat
 
