@@ -273,11 +273,11 @@ class MCow_ImportPipeline:
 
         return mat
 
-    def create_effect_material_node_texture(self, nodes, location, path):
+    def create_effect_material_node_texture(self, nodes, location, texture_data):
         # Create the texture node and return it so that the caller can use it and link it up
         texture_node = nodes.new(type="ShaderNodeTexImage")
         texture_node.location = location
-        texture_node.image = texture_load(path)
+        texture_node.image = texture_data
         return texture_node
 
     def texture_load(self, texture_path_relative):
@@ -329,10 +329,8 @@ class MCow_ImportPipeline:
         links.new(bsdf_node.outputs["BSDF"], output_node.inputs["Surface"])
 
         # Diffuse Texture
-        path_texture_diffuse = path_join(self._cached_import_path, texture_diffuse)
-        if os.path.isfile(path_texture_diffuse): # We check if the path exists AND if it's a file before doing anything with it
-            texture_diffuse_node = create_effect_material_node_texture(nodes, (-200, -200), path_texture_diffuse)
-            links.new(texture_diffuse_node.outputs["Color"], bsdf_node.inputs["Base Color"])
+        texture_diffuse_node = create_effect_material_node_texture(nodes, (-200, -200), path_texture_diffuse)
+        links.new(texture_diffuse_node.outputs["Color"], bsdf_node.inputs["Base Color"])
 
         # TODO : Maybe implement support for normal textures? doesn't really matter, it's just for visualization and stuff...
         # Although in the future we COULD modify it so that we reference these nodes for the actual values? idk, maybe the visualization being synced up with custom mats should just be the user's responsibility...
