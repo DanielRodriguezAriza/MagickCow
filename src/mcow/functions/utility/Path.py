@@ -72,7 +72,9 @@ def path_match_internal(path_str_base, path_str_stem, path_str_extension):
 # Returns a list with all paths that match the queried string
 def path_match(path_str, path_str_extension = ".*"):
     path = pathlib.Path(path_str)
-    return list(path.parent.glob(path.stem + path_str_extension))
+    matches = list(path.parent.glob(str(path.stem) + path_str_extension))
+    ans = [str(s) for s in matches] # This step is to convert from whatever operating system string struct type is used by PathLib (eg: WindowsPath) to the basic string type used by python (which can be casted to any other type later on)
+    return ans
 
 # Returns a list with all the files that match the queried string
 def path_match_files(path_str):
