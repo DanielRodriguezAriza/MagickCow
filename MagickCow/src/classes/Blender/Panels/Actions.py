@@ -82,7 +82,6 @@ def mcow_action_generate_asset_library():
     # TODO : Implement
     pass
 
-
 # endregion
 
 # region Blender Panel: N-Key Panel: MagickCow Actions

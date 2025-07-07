@@ -192,10 +192,6 @@ def mcow_build():
         "../src/functions/generation/import/derived/PhysicsEntity.py", # PhysicsEntity ImportPipeline
         "../src/functions/generation/import/derived/XnaModel.py", # XnaModel ImportPipeline
 
-        # App Templates
-        # NOTE : These are the startup app template files that blender uses when creating a new scene.
-        "../src/functions/generation/extra/AppTemplate.py",
-
         # Main entry point
         "../src/Main.py",
     ]
