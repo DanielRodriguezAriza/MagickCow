@@ -1,4 +1,4 @@
 #!/bin/bash
-python3 generate.py
+python3 build.py
 echo "Press <ENTER> to terminate process"
 read
