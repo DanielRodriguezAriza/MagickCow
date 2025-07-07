@@ -144,7 +144,7 @@ def mcow_build():
         "../src/Imports.py",
 
         # Globals
-        "globals/Globals.py", # Global constants and other global values
+        "../src/globals/Globals.py", # Global constants and other global values
 
         # Classes - MagickCow
         "../src/classes/MagickCow/Exception.py",
@@ -206,7 +206,7 @@ def mcow_build():
     mcow_directory_copy("./magickcow/data", "../data")
 
     # Put everything into a ZIP archive
-    mcow_archive_create("./magickcow.zip", "./magickcow")
+    mcow_archive_create("./magickcow", "./magickcow")
 
 def main():
     # Ensure ANSI escape sequence support is enabled for colored text to work
