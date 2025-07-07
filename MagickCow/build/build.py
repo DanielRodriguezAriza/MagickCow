@@ -126,6 +126,10 @@ def mcow_directory_copy(dst, src):
     except Exception as e:
         mcow_debug_log_error(f"There was an error generating the data : {e}")
 
+def mcow_directory_delete(path):
+    if os.path.exists(path):
+        shutil.rmtree(path)
+
 def mcow_archive_create(dst, src):
     mcow_debug_log(f"Generating Archive : \"{dst}\"")
     try:
@@ -135,7 +139,7 @@ def mcow_archive_create(dst, src):
 
 def mcow_build():
     # Define file names
-    ofilename = "./magickcow/__init__.py"
+    ofilename = "./magickcow/magickcow/__init__.py"
     ifilenames = [
         # Top
         "../src/License.py",
@@ -195,15 +199,19 @@ def mcow_build():
         "../src/Main.py",
     ]
 
+    # Delete old contents of the output directory if it exists
+    mcow_directory_delete("./magickcow")
+
     # Ensure directories exist
     mcow_directory_create("./magickcow")
-    mcow_directory_create("./magickcow/data")
+    mcow_directory_create("./magickcow/magickcow")
+    mcow_directory_create("./magickcow/magickcow/data")
     
     # Create the __init__.py file
     mcow_file_generate(ofilename, ifilenames)
 
     # Copy data directory
-    mcow_directory_copy("./magickcow/data", "../data")
+    mcow_directory_copy("./magickcow/magickcow/data", "../data")
 
     # Put everything into a ZIP archive
     mcow_archive_create("./magickcow", "./magickcow")
