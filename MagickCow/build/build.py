@@ -84,6 +84,12 @@ def mcow_file_get_size(file):
 def mcow_debug_log(message):
     print(f"[Generator] : {message}")
 
+def mcow_debug_log_error(message):
+    print(f"[Generator] : {cli_ansi.color.fg.bright_red}ERROR! {message}{cli_ansi.color.end}")
+
+def mcow_debug_log_success(message):
+    print(f"[Generator] : {cli_ansi.color.fg.green}SUCCESS! {message}{cli_ansi.color.end}")
+
 def mcow_file_append(write_file, filename):
     mcow_debug_log(f"Appending File : \"{filename}\"")
     with open(filename, "r") as read_file:
@@ -93,27 +99,39 @@ def mcow_file_append(write_file, filename):
         write_file.write("\n") # I would write \r\n in Windows, but doing so leads to \r\r\n since \n is translated to \r\n automatically when working with "r" and "w" modes rather than "rb" and "wb". In short, python handles text mode operations for us already so we don't have anything to worry about.
 
 def mcow_file_generate(out_filename, in_filenames):
-    mcow_debug_log(f"Generating File : \"{out_filename}\"")
+    mcow_debug_log(f"Generating Python File : \"{out_filename}\"")
     try:
         size = 0
         with open(out_filename, "w") as file:
             for filename in in_filenames:
                 mcow_file_append(file, filename)
             size = mcow_file_get_size(file)
-        mcow_debug_log(f"{cli_ansi.color.fg.green}Data successfully generated!{cli_ansi.color.end}")
-        mcow_debug_log(f"Generated File : ( name = \"{out_filename}\", size = {size} bytes )")
+        mcow_debug_log_success("Data successfully generated!")
+        mcow_debug_log(f"Generated Python File : ( name = \"{out_filename}\", size = {size} bytes )")
     except Exception as e:
-        mcow_debug_log(f"{cli_ansi.color.fg.bright_red}There was an error generating the output file: {e}{cli_ansi.color.end}")
+        mcow_debug_log_error(f"There was an error generating the output file: {e}")
 
 def mcow_directory_create(dir_name):
-    if not os.path.exists(dir_name):
-        os.path.makedirs(dir_name)
+    mcow_debug_log(f"Generating Directory : \"{dir_name}\"")
+    try:
+        if not os.path.exists(dir_name):
+            os.path.makedirs(dir_name)
+    except Exception as e:
+        mcow_debug_log_error(f"There was an error generating the directory: {e}")
 
 def mcow_directory_copy(dst, src):
-    shutil.copytree(src, dst, dirs_exist_ok=True)
+    mcow_debug_log(f"Generating Data : \"{src}\"")
+    try:
+        shutil.copytree(src, dst, dirs_exist_ok=True)
+    except Exception as e:
+        mcow_debug_log_error(f"There was an error generating the data : {e}")
 
 def mcow_archive_create(dst, src):
-    shutil.make_archive(dst, "zip", src)
+    mcow_debug_log(f"Generating Archive : \"{dst}\"")
+    try:
+        shutil.make_archive(dst, "zip", src)
+    except Exception as e:
+        mcow_debug_log_error(f"There was an error generating the archive : {e}")
 
 def mcow_build():
     # Define file names
@@ -195,7 +213,10 @@ def main():
     cli_ansi.init()
 
     # Invoke the build process
-    mcow_build()
+    try:
+        mcow_build()
+    except:
+        mcow_debug_log("Aborting mcow_build()")
 
 if __name__ == "__main__":
     main()
