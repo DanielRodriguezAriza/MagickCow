@@ -35,14 +35,14 @@ class MagickCow_PT_Action_InstallTemplates(bpy.types.Operator):
     bl_label = "Install Templates"
     def execute(self, context):
         try:
-            mcow_action_install_templates(context)
+            mcow_action_install_templates()
             self.report({"INFO"}, "Successfully installed scene templates!")
             return {"FINISHED"}
         except Exception as e:
             self.report({"ERROR"}, "Failed to install scene templates!")
             return {"CANCELLED"}
 
-def mcow_action_install_templates(context):
+def mcow_action_install_templates():
     path_addon = os.path.dirname(__file__)
     path_local = bpy.utils.script_path_user()
 
@@ -59,7 +59,7 @@ class MagickCow_PT_Action_UninstallTemplates(bpy.types.Operator):
     bl_label = "Uninstall Templates"
     def execute(self, context):
         try:
-            mcow_action_uninstall_templates(context)
+            mcow_action_uninstall_templates()
             self.report({"INFO"}, "Successfully uninstalled scene templates!")
             return {"FINISHED"}
         except Exception as e:
