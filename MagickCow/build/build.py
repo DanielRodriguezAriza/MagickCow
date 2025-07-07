@@ -105,68 +105,94 @@ def mcow_file_generate(out_filename, in_filenames):
     except Exception as e:
         mcow_debug_log(f"{cli_ansi.color.fg.bright_red}There was an error generating the output file: {e}{cli_ansi.color.end}")
 
-def main():
-    cli_ansi.init()
-    ofilename = "../../magickcow.py"
+def mcow_directory_create(dir_name):
+    if not os.path.exists(dir_name):
+        os.path.makedirs(dir_name)
+
+def mcow_directory_copy(dst, src):
+    shutil.copytree(src, dst, dirs_exist_ok=True)
+
+def mcow_build():
+    # Define file names
+    ofilename = "./magickcow/__init__.py"
     ifilenames = [
         # Top
-        "../mcow/License.py",
-        "../mcow/Comments.py",
-        "../mcow/BlenderInfo.py",
-        "../mcow/Imports.py",
+        "../src/License.py",
+        "../src/Comments.py",
+        "../src/BlenderInfo.py",
+        "../src/Imports.py",
 
         # Globals
-        "../mcow/globals/Globals.py", # Global constants and other global values
+        "globals/Globals.py", # Global constants and other global values
 
         # Classes - MagickCow
-        "../mcow/classes/MagickCow/Exception.py",
-        "../mcow/classes/MagickCow/Mesh.py",
-        "../mcow/classes/MagickCow/Map/Scene.py",
-        "../mcow/classes/MagickCow/PhysicsEntity/PhysicsEntity.py",
+        "../src/classes/MagickCow/Exception.py",
+        "../src/classes/MagickCow/Mesh.py",
+        "../src/classes/MagickCow/Map/Scene.py",
+        "../src/classes/MagickCow/PhysicsEntity/PhysicsEntity.py",
 
         # Classes - XNA
-        "../mcow/classes/XNA/Matrix.py",
-        "../mcow/classes/XNA/Model.py",
+        "../src/classes/XNA/Matrix.py",
+        "../src/classes/XNA/Model.py",
 
         # Classes - Blender
-        "../mcow/classes/Blender/Data/Data.py",
-        "../mcow/classes/Blender/Operators/Exporter.py",
-        "../mcow/classes/Blender/Operators/Importer.py",
-        "../mcow/classes/Blender/Panels/Materials.py",
-        "../mcow/classes/Blender/Panels/Objects.py",
-        "../mcow/classes/Blender/Panels/Scene.py",
+        "../src/classes/Blender/Data/Data.py",
+        "../src/classes/Blender/Operators/Exporter.py",
+        "../src/classes/Blender/Operators/Importer.py",
+        "../src/classes/Blender/Panels/Materials.py",
+        "../src/classes/Blender/Panels/Objects.py",
+        "../src/classes/Blender/Panels/Scene.py",
 
         # Utility functions
-        "../mcow/functions/utility/Utility.py", # TODO : Further subdivide this code maybe?
-        "../mcow/functions/utility/Effect.py", # Material-Effect related utility functions
-        "../mcow/functions/utility/Path.py", # Path related utility functions
-        "../mcow/functions/utility/Texture.py", # Texture related utility functions
+        "../src/functions/utility/Utility.py", # TODO : Further subdivide this code maybe?
+        "../src/functions/utility/Effect.py", # Material-Effect related utility functions
+        "../src/functions/utility/Path.py", # Path related utility functions
+        "../src/functions/utility/Texture.py", # Texture related utility functions
 
         # Export Data Generation (The 3 stages of data transformation pipeline for export in MagickCow: Blender Data -> Get Stage -> Generate Stage -> Make Stage -> Final JSON file)
         # TODO : Rename all of the Pipeline classes to use some "ExportPipeline" prefix or whatever...
-        "../mcow/functions/generation/export/Get.py",
-        "../mcow/functions/generation/export/Generate.py",
-        "../mcow/functions/generation/export/Make.py",
-        "../mcow/functions/generation/export/Pipeline.py",
-        "../mcow/functions/generation/export/PipelineCache.py",
+        "../src/functions/generation/export/Get.py",
+        "../src/functions/generation/export/Generate.py",
+        "../src/functions/generation/export/Make.py",
+        "../src/functions/generation/export/Pipeline.py",
+        "../src/functions/generation/export/PipelineCache.py",
         
         # Import Data Generation
         # TODO : Rename all of the pipleine classes and files to use the "ImportPipeline" prefix or something like that...
-        "../mcow/functions/generation/import/Pipeline.py", # ImportPipeline Base
-        "../mcow/functions/generation/import/ContentImporter.py", # Generic Content Importer # TODO : Figure out if this is good enough and should stay or if we're going to remove this and go back to the old way of doing things...
-        "../mcow/functions/generation/import/derived/BufferMesh.py", # Importer for meshes made from vertex buffers and index buffers.
-        "../mcow/functions/generation/import/derived/Map.py", # LevelModel ImportPipeline
-        "../mcow/functions/generation/import/derived/PhysicsEntity.py", # PhysicsEntity ImportPipeline
-        "../mcow/functions/generation/import/derived/XnaModel.py", # XnaModel ImportPipeline
+        "../src/functions/generation/import/Pipeline.py", # ImportPipeline Base
+        "../src/functions/generation/import/ContentImporter.py", # Generic Content Importer # TODO : Figure out if this is good enough and should stay or if we're going to remove this and go back to the old way of doing things...
+        "../src/functions/generation/import/derived/BufferMesh.py", # Importer for meshes made from vertex buffers and index buffers.
+        "../src/functions/generation/import/derived/Map.py", # LevelModel ImportPipeline
+        "../src/functions/generation/import/derived/PhysicsEntity.py", # PhysicsEntity ImportPipeline
+        "../src/functions/generation/import/derived/XnaModel.py", # XnaModel ImportPipeline
 
         # App Templates
         # NOTE : These are the startup app template files that blender uses when creating a new scene.
-        "../mcow/functions/generation/extra/AppTemplate.py",
+        "../src/functions/generation/extra/AppTemplate.py",
 
         # Main entry point
-        "../mcow/Main.py",
+        "../src/Main.py",
     ]
+
+    # Ensure directories exist
+    mcow_directory_create("./magickcow")
+    mcow_directory_create("./magickcow/data")
+    
+    # Create the __init__.py file
     mcow_file_generate(ofilename, ifilenames)
+
+    # Copy data directory
+    mcow_directory_copy("./magickcow/data", "../data")
+
+    # Put everything into a ZIP archive
+    # TODO : Implement
+
+def main():
+    # Ensure ANSI escape sequence support is enabled for colored text to work
+    cli_ansi.init()
+
+    # Invoke the build process
+    mcow_build()
 
 if __name__ == "__main__":
     main()
