@@ -1,4 +1,6 @@
 import bpy
+import os
+import shutil
 
 bl_info = {
     "name" : "MagickCow Experimental Features Addon - Startup Scene",
@@ -14,8 +16,13 @@ bl_info = {
 # when installing and uninstalling mcow.
 
 def register_custom_startup_file():
-    # TODO : Implement
-    pass
+    path_addon = os.path.dirname(__file__)
+    path_local = bpy.utils.script_path_user()
+
+    path_addon_startup = os.path.join(path_addon, "startup")
+    path_local_startup = os.path.join(path_addon, "startup")
+
+    shutil.copytree(path_addon_startup, path_local_startup)
 
 def unregister_custom_startup_file():
     # TODO : Implement
