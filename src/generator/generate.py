@@ -12,6 +12,7 @@
 # region Imports
 
 import os
+import shutil
 
 # endregion
 
@@ -68,7 +69,6 @@ class cli_ansi:
     def init():
         if os.name == "nt":
             os.system("chcp 65001 > nul")
-
 
 # endregion
 
