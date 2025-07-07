@@ -25,8 +25,8 @@ def register_custom_startup_file():
     shutil.copytree(path_addon_startup, path_local_startup)
 
 def unregister_custom_startup_file():
-    # TODO : Implement
-    pass
+    path_to_remove = os.path.join(bpy.utils.script_path_user(), "startup", "bl_app_templates_user", "Magicka")
+    shutil.rmtree(path_to_remove)
 
 def register():
     register_custom_startup_file()
