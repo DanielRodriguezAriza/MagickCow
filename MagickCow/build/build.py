@@ -115,7 +115,7 @@ def mcow_directory_create(dir_name):
     mcow_debug_log(f"Generating Directory : \"{dir_name}\"")
     try:
         if not os.path.exists(dir_name):
-            os.path.makedirs(dir_name)
+            os.makedirs(dir_name)
     except Exception as e:
         mcow_debug_log_error(f"There was an error generating the directory: {e}")
 
