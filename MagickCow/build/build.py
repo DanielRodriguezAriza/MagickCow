@@ -112,6 +112,9 @@ def mcow_directory_create(dir_name):
 def mcow_directory_copy(dst, src):
     shutil.copytree(src, dst, dirs_exist_ok=True)
 
+def mcow_archive_create(dst, src):
+    shutil.make_archive(dst, "zip", src)
+
 def mcow_build():
     # Define file names
     ofilename = "./magickcow/__init__.py"
@@ -185,7 +188,7 @@ def mcow_build():
     mcow_directory_copy("./magickcow/data", "../data")
 
     # Put everything into a ZIP archive
-    # TODO : Implement
+    mcow_archive_create("./magickcow.zip", "./magickcow")
 
 def main():
     # Ensure ANSI escape sequence support is enabled for colored text to work
