@@ -167,6 +167,7 @@ def mcow_build():
         "../src/classes/Blender/Panels/Materials.py",
         "../src/classes/Blender/Panels/Objects.py",
         "../src/classes/Blender/Panels/Scene.py",
+        "../src/classes/Blender/Panels/Actions.py",
 
         # Utility functions
         "../src/functions/utility/Utility.py", # TODO : Further subdivide this code maybe?
