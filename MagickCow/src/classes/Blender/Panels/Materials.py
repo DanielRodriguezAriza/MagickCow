@@ -129,7 +129,7 @@ def register_properties_material_generic(material):
         description = "Determines the type of origin for the configuration for this material",
         items = [
             ("DOC_JSON", "JSON Document", "The configuration for this material will be obtained from the selected JSON file."), # Origin : Json Document data.
-            ("MAT_DICT", "Blender Material (Dictionary)", "The configuration for this material will be obtained from the material configuration as laid out on the Blender panel.") # Origin : Blender panel data. This is a sort of "inline dict" mode
+            ("MAT_DICT", "Blender Material (Dictionary)", "The configuration for this material will be obtained from the material configuration as laid out on the Blender panel."), # Origin : Blender panel data. This is a sort of "inline dict" mode
             ("MAT_JSON", "Blender Material (inline JSON)", "The configuration for this material will be obtained from the material configuration as laid out on the inline JSON.") # Origin : Blender panel, inline JSON.
         ],
         default = "MAT_JSON" # NOTE : Probably this should become the only way to do it in the future. Or at least this is what I think right now. We'll see what people like the most.
@@ -145,7 +145,7 @@ def register_properties_material_generic(material):
         name = "Json Data",
         description = "Determines the inline data for the material JSON",
         default = "",
-        options={"MULTILINE"}
+        # options={"MULTILINE"}
     )
 
 def unregister_properties_material_generic(material):
