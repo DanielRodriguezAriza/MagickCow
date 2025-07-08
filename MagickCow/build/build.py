@@ -129,6 +129,7 @@ def mcow_file_generate(out_filename, in_filenames):
 
 def mcow_build_cleanup():
     # Delete old contents of the output directory if it exists
+    # NOTE : This may be a little bit too destructive. Hopefully no users will have an already existing "magickcow" subdirectory sitting here with important data...
     mcow_debug_log("Cleaning up old data...")
     mcow_directory_delete("./magickcow")
 
@@ -237,9 +238,11 @@ def main():
     try:
         mcow_build()
         mcow_debug_log_success("Data successfully generated!")
+        mcow_debug_log("Generated archive : \"magickcow.zip\"")
     except:
         mcow_debug_log_error(f"There was an error building MagickCow : {e}")
         mcow_debug_log("Aborting mcow_build()")
+        mcow_build_cleanup() # Clean up just in case the process was aborted half way through. This may come to bite us in the ass in the future tho! Because MAYBE it would be good to leave behind the generated build files for debugging purposes... but I don't want to clutter the user's machine with shit, so yeah.
 
 if __name__ == "__main__":
     main()
