@@ -13,9 +13,6 @@ def register():
     register_properties_object()
     register_properties_scene()
     register_actions_panel()
-    
-    # Register custom startup files for Magicka
-    register_startup_app_templates()
 
 def unregister():
     # Register custom property classes
@@ -30,9 +27,6 @@ def unregister():
     unregister_properties_object()
     unregister_properties_scene()
     unregister_actions_panel()
-    
-    # Unregister custom startup files for Magicka
-    unregister_startup_app_templates()
 
 if __name__ == "__main__":
     register()
