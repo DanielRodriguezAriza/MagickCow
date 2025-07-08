@@ -32,7 +32,9 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
 
             layout.prop(material, "mcow_effect_mode")
 
-            if material_mode == "MAT":
+            if material_mode == "DOC_JSON":
+                layout.prop(material, "mcow_effect_path")
+            elif material_mode == "MAT_DICT":
                 layout.prop(material, "mcow_effect_type")
                 if material_type == "EFFECT_DEFERRED":
                     self.draw_effect_deferred(layout, material)
@@ -44,8 +46,8 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
                     self.draw_effect_force_field(layout, material)
                 elif material_type == "EFFECT_ADDITIVE":
                     self.draw_effect_additive(layout, material)
-            elif material_mode == "DOC":
-                layout.prop(material, "mcow_effect_path")
+            elif material_mode == "MAT_JSON":
+                layout.prop(material, "mcow_effect_json")
     
     # From here on out, we have custom draw methods for each type of material
     def draw_effect_deferred(self, layout, material):
@@ -132,7 +134,7 @@ def register_properties_material_generic(material):
             ("MAT_DICT", "Blender Material (Dictionary)", "The configuration for this material will be obtained from the material configuration as laid out on the Blender panel."), # Origin : Blender panel data. This is a sort of "inline dict" mode
             ("MAT_JSON", "Blender Material (inline JSON)", "The configuration for this material will be obtained from the material configuration as laid out on the inline JSON.") # Origin : Blender panel, inline JSON.
         ],
-        default = "MAT_JSON" # NOTE : Probably this should become the only way to do it in the future. Or at least this is what I think right now. We'll see what people like the most.
+        default = "MAT_DICT"
     )
 
     material.mcow_effect_path = bpy.props.StringProperty(
@@ -141,11 +143,12 @@ def register_properties_material_generic(material):
         default = ""
     )
 
+    # NOTE : If this field could be made to be multiline in Blender, this would be the superior choice out of them all... but alas, the Blender Foundation has yet to figure out how to make fucking multiline
+    # input text fields. This has literally been a topic of debate since 2014. How the fuck can we be living in the year 2025 and still not have official support for these on Blender, what the fuck.
     material.mcow_effect_json = bpy.props.StringProperty(
         name = "Json Data",
         description = "Determines the inline data for the material JSON",
         default = "",
-        # options={"MULTILINE"}
     )
 
 def unregister_properties_material_generic(material):
