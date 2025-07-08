@@ -260,20 +260,29 @@ class material_utility:
 
     @staticmethod
     def get_material_data_instance(material):
-        if material.mcow_effect_mode == "DOC":
-            return material_utility.get_material_data_instance_json(material)
-        else:
-            return material_utility.get_material_data_instance_blend(material)
+        mode = material.mcow_effect_mode
+        if mode == "DOC_JSON":
+            return material_utility.get_material_data_instance_doc_json(material)
+        elif mode == "MAT_DICT":
+            return material_utility.get_material_data_instance_mat_dict(material)
+        elif mode == "MAT_JSON":
+            return material_utility.get_material_data_instance_mat_json(material)
 
     @staticmethod
-    def get_material_data_instance_json(material):
+    def get_material_data_instance_doc_json(material):
         ans = get_json_object(material_utility.get_material_path(material))
         return ans
     
     @staticmethod
-    def get_material_data_instance_blend(material):
+    def get_material_data_instance_mat_dict(material):
         # TODO : Implement for each of the material types! You'll basically just need to extract the values from the blender panel and then arrange them in a json-like python dict.
         ans = {}
+        return ans
+    
+    @staticmethod
+    def get_material_data_instance_mat_json(material):
+        # NOTE : This is literally the most easy to implement out of them all. Just return the inline JSON and call it a day.
+        ans = material.mcow_effect_json
         return ans
 
     # endregion
