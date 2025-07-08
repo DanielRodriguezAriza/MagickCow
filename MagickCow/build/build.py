@@ -147,9 +147,9 @@ def mcow_build():
         "../src/BlenderInfo.py",
         "../src/Imports.py",
 
-        # Globals
-        "../src/globals/Globals.py", # Global constants and other global values
-        "../src/globals/GlobalsEffects.py",
+        # Globals (global constants and other global values of the program)
+        "../src/globals/Globals_ImageData.py",
+        "../src/globals/Globals_EffectData.py",
 
         # Classes - MagickCow
         "../src/classes/MagickCow/Exception.py",
