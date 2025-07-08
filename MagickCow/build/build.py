@@ -132,12 +132,16 @@ def mcow_build_cleanup():
     mcow_debug_log("Cleaning up old data...")
     mcow_directory_delete("./magickcow")
 
+def mcow_build_generate_dir(path):
+    # mcow_debug_log(f"    Generating directory : \"{path}\"")
+    mcow_directory_create(path)
+
 def mcow_build_generate_dirs():
     # Ensure directories exist
     mcow_debug_log("Generating directories...")
-    mcow_directory_create("./magickcow")
-    mcow_directory_create("./magickcow/magickcow")
-    mcow_directory_create("./magickcow/magickcow/data")
+    mcow_build_generate_dir("./magickcow")
+    mcow_build_generate_dir("./magickcow/magickcow")
+    mcow_build_generate_dir("./magickcow/magickcow/data")
 
 def mcow_build_generate_file():
 
