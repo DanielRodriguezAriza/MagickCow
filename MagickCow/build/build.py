@@ -149,6 +149,7 @@ def mcow_build():
 
         # Globals
         "../src/globals/Globals.py", # Global constants and other global values
+        "../src/globals/GlobalsEffects.py",
 
         # Classes - MagickCow
         "../src/classes/MagickCow/Exception.py",
