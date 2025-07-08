@@ -128,16 +128,24 @@ def register_properties_material_generic(material):
         name = "Origin Type",
         description = "Determines the type of origin for the configuration for this material",
         items = [
-            ("DOC", "JSON Document", "The configuration for this material will be obtained from the selected JSON file."), # Origin : Json Document data.
-            ("MAT", "Blender Material", "The configuration for this material will be obtained from the material configuration as laid on the Blender panel.") # Origin : Blender panel data. This is a sort of "inline" mode
+            ("DOC_JSON", "JSON Document", "The configuration for this material will be obtained from the selected JSON file."), # Origin : Json Document data.
+            ("MAT_DICT", "Blender Material (Dictionary)", "The configuration for this material will be obtained from the material configuration as laid out on the Blender panel.") # Origin : Blender panel data. This is a sort of "inline dict" mode
+            ("MAT_JSON", "Blender Material (inline JSON)", "The configuration for this material will be obtained from the material configuration as laid out on the inline JSON.") # Origin : Blender panel, inline JSON.
         ],
-        default = "MAT"
+        default = "MAT_JSON" # NOTE : Probably this should become the only way to do it in the future. Or at least this is what I think right now. We'll see what people like the most.
     )
 
     material.mcow_effect_path = bpy.props.StringProperty(
-        name = "Path",
+        name = "Json Path",
         description = "Determines the path where the JSON file is located",
         default = ""
+    )
+
+    material.mcow_effect_json = bpy.props.StringProperty(
+        name = "Json Data",
+        description = "Determines the inline data for the material JSON",
+        default = "",
+        options={"MULTILINE"}
     )
 
 def unregister_properties_material_generic(material):
