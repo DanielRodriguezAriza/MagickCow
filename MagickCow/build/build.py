@@ -16,7 +16,7 @@ import shutil
 
 # endregion
 
-# region Extra
+# region Utility - ANSI
 
 class cli_ansi:
     class color:
@@ -72,14 +72,7 @@ class cli_ansi:
 
 # endregion
 
-# region Generator
-
-def mcow_file_get_size(file):
-    current = file.tell()
-    file.seek(0, 2)
-    size = file.tell()
-    file.seek(current, 0)
-    return size
+# region Utility - Logging
 
 def mcow_debug_log(message):
     print(f"[Generator] : {message}")
@@ -90,8 +83,37 @@ def mcow_debug_log_error(message):
 def mcow_debug_log_success(message):
     print(f"[Generator] : {cli_ansi.color.fg.green}SUCCESS! {message}{cli_ansi.color.end}")
 
+# endregion
+
+# region Utility - File System Ops
+
+def mcow_file_get_size(file):
+    current = file.tell()
+    file.seek(0, 2)
+    size = file.tell()
+    file.seek(current, 0)
+    return size
+
+def mcow_directory_create(dir_name):
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
+
+def mcow_directory_copy(dst, src):
+    shutil.copytree(src, dst, dirs_exist_ok=True)
+
+def mcow_directory_delete(path):
+    if os.path.exists(path):
+        shutil.rmtree(path)
+
+def mcow_archive_create(dst, src):
+    shutil.make_archive(dst, "zip", src)
+
+# endregion
+
+# region Generator
+
 def mcow_file_append(write_file, filename):
-    mcow_debug_log(f"Appending File : \"{filename}\"")
+    mcow_debug_log(f"    Appending File : \"{filename}\"")
     with open(filename, "r") as read_file:
         contents = read_file.read()
         write_file.write(f"# {filename}\n")
@@ -99,46 +121,27 @@ def mcow_file_append(write_file, filename):
         write_file.write("\n") # I would write \r\n in Windows, but doing so leads to \r\r\n since \n is translated to \r\n automatically when working with "r" and "w" modes rather than "rb" and "wb". In short, python handles text mode operations for us already so we don't have anything to worry about.
 
 def mcow_file_generate(out_filename, in_filenames):
-    mcow_debug_log(f"Generating Python File : \"{out_filename}\"")
-    try:
-        size = 0
-        with open(out_filename, "w") as file:
-            for filename in in_filenames:
-                mcow_file_append(file, filename)
-            size = mcow_file_get_size(file)
-        mcow_debug_log_success("Data successfully generated!")
-        mcow_debug_log(f"Generated Python File : ( name = \"{out_filename}\", size = {size} bytes )")
-    except Exception as e:
-        mcow_debug_log_error(f"There was an error generating the output file: {e}")
+    size = 0
+    with open(out_filename, "w") as file:
+        for filename in in_filenames:
+            mcow_file_append(file, filename)
+        size = mcow_file_get_size(file)
 
-def mcow_directory_create(dir_name):
-    mcow_debug_log(f"Generating Directory : \"{dir_name}\"")
-    try:
-        if not os.path.exists(dir_name):
-            os.makedirs(dir_name)
-    except Exception as e:
-        mcow_debug_log_error(f"There was an error generating the directory: {e}")
+def mcow_build_cleanup():
+    # Delete old contents of the output directory if it exists
+    mcow_debug_log("Cleaning up old data...")
+    mcow_directory_delete("./magickcow")
 
-def mcow_directory_copy(dst, src):
-    mcow_debug_log(f"Generating Data : \"{src}\"")
-    try:
-        shutil.copytree(src, dst, dirs_exist_ok=True)
-    except Exception as e:
-        mcow_debug_log_error(f"There was an error generating the data : {e}")
+def mcow_build_generate_dirs():
+    # Ensure directories exist
+    mcow_debug_log("Generating directories...")
+    mcow_directory_create("./magickcow")
+    mcow_directory_create("./magickcow/magickcow")
+    mcow_directory_create("./magickcow/magickcow/data")
 
-def mcow_directory_delete(path):
-    if os.path.exists(path):
-        shutil.rmtree(path)
+def mcow_build_generate_file():
 
-def mcow_archive_create(dst, src):
-    mcow_debug_log(f"Generating Archive : \"{dst}\"")
-    try:
-        shutil.make_archive(dst, "zip", src)
-    except Exception as e:
-        mcow_debug_log_error(f"There was an error generating the archive : {e}")
-
-def mcow_build():
-    # Define file names
+    # Output file name and input files for the build
     ofilename = "./magickcow/magickcow/__init__.py"
     ifilenames = [
         # Top
@@ -197,22 +200,30 @@ def mcow_build():
         "../src/Main.py",
     ]
 
-    # Delete old contents of the output directory if it exists
-    mcow_directory_delete("./magickcow")
-
-    # Ensure directories exist
-    mcow_directory_create("./magickcow")
-    mcow_directory_create("./magickcow/magickcow")
-    mcow_directory_create("./magickcow/magickcow/data")
-    
     # Create the __init__.py file
+    mcow_debug_log("Generating addon Python script...")
     mcow_file_generate(ofilename, ifilenames)
 
+def mcow_build_generate_data():
     # Copy data directory
+    mcow_debug_log("Generating addon data...")
     mcow_directory_copy("./magickcow/magickcow/data", "../data")
 
+def mcow_build_generate_archive():
     # Put everything into a ZIP archive
     mcow_archive_create("./magickcow", "./magickcow")
+
+def mcow_build():
+    mcow_build_cleanup() # Initial cleanup, deletes the dirs with the generated data so that we don't have any leftovers from before just in case they were not properly cleaned up during the previous build, or in case users add files that do not belong there. This way, no trash can appear within the final archive.
+    mcow_build_generate_dirs()
+    mcow_build_generate_file()
+    mcow_build_generate_data()
+    mcow_build_generate_archive()
+    mcow_build_cleanup() # Final cleanup, deletes the dirs with the generated data and only leaves behind the final archive (zip file), which is what we care about.
+
+# endregion
+
+# region Main
 
 def main():
     # Ensure ANSI escape sequence support is enabled for colored text to work
@@ -221,7 +232,9 @@ def main():
     # Invoke the build process
     try:
         mcow_build()
+        mcow_debug_log_success("Data successfully generated!")
     except:
+        mcow_debug_log_error(f"There was an error building MagickCow : {e}")
         mcow_debug_log("Aborting mcow_build()")
 
 if __name__ == "__main__":
