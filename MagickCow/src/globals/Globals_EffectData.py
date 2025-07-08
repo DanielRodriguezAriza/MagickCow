@@ -1,4 +1,4 @@
-#region Globals - Effects
+#region Globals - Effect Data
 
 # Dictionary of all default material effect configs for the default shader types supported by Magicka.
 # Custom shaders and dict based shaders must be implemented by hand by users by writing directly the JSON data.
