@@ -219,7 +219,7 @@ def mcow_build():
     mcow_build_generate_file()
     mcow_build_generate_data()
     mcow_build_generate_archive()
-    mcow_build_cleanup() # Final cleanup, deletes the dirs with the generated data and only leaves behind the final archive (zip file), which is what we care about.
+    mcow_build_cleanup() # Final cleanup, deletes the dirs with the generated data and only leaves behind the final archive (zip file), which is what we care about. This maybe could be configured in the future with some preserve_directory flag or whatever, just in case users do want to preserve the generated dirs.
 
 # endregion
 
