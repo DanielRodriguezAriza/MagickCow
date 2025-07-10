@@ -62,8 +62,8 @@ class MagickCow_OT_Material_EditEffectText(bpy.types.Operator):
     bl_idname = "magickcow.edit_effect_text"
     bl_label = "Edit Effect"
     def execute(self, context):
-        name = bpy.context.object.active_material.mcow_effect_text.name
-        mcow_window_open_text_editor(name)
+        name = bpy.context.object.active_material.mcow_effect_text
+        mcow_window_open_text_editor_by_text(name)
         return {"FINISHED"}
 
 # endregion
@@ -597,6 +597,9 @@ def register_properties_operator_classes_material():
     bpy.utils.register_class(MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectLava)
     bpy.utils.register_class(MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectForceField)
 
+    # Action operators
+    bpy.utils.register_class(MagickCow_OT_Material_EditEffectText)
+
 def unregister_properties_operator_classes_material():
     # Generic operator
     bpy.utils.unregister_class(MagickCow_OT_Material_CreateAndSetTextDataBlock)
@@ -607,6 +610,9 @@ def unregister_properties_operator_classes_material():
     bpy.utils.unregister_class(MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectWater)
     bpy.utils.unregister_class(MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectLava)
     bpy.utils.unregister_class(MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectForceField)
+    
+    # Action operators
+    bpy.utils.unregister_class(MagickCow_OT_Material_EditEffectText)
 
 # endregion
 
