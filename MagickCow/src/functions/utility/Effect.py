@@ -141,7 +141,7 @@ class material_utility:
     def get_material_data_instance_mat_json(material):
         # NOTE : This is literally the most easy to implement out of them all, as well as the most generic with support for any new type of custom dict-based, user-defined materials in the future.
         # Just return the Json stored within the text data block as a dict and call it a day.
-        ans = get_material_text(material)
+        ans = material_utility.get_material_text(material)
         return ans
 
     # endregion
@@ -164,7 +164,7 @@ class material_utility:
         text_data_block = material.mcow_effect_text
         ans_str = "{}"
         if text_data_block is not None:
-            ans_str = text_data_block.to_string()
+            ans_str = text_data_block.as_string()
         ans_dict = json.loads(ans_str)
         return ans_dict
     
