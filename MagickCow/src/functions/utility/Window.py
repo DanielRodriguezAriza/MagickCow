@@ -12,8 +12,14 @@ def mcow_window_open(window_name):
     area.type = window_name
     return area
 
-def mcow_window_open_text_editor(text_to_select):
+def mcow_window_open_text_editor_by_name(text_to_select):
     area = mcow_window_open("TEXT_EDITOR")
     area.spaces.active.text = bpy.data.texts.get(text_to_select)
+    return area
+
+def mcow_window_open_text_editor_by_text(text_to_select):
+    area = mcow_window_open("TEXT_EDITOR")
+    area.spaces.active.text = text_to_select
+    return area
 
 # endregion
