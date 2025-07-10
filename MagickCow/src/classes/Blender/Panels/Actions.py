@@ -30,7 +30,7 @@
 
 # endregion
 
-class MagickCow_PT_Action_InstallTemplates(bpy.types.Operator):
+class MagickCow_OT_Action_InstallTemplates(bpy.types.Operator):
     bl_idname = "magickcow.action_install_templates"
     bl_label = "Install Templates"
     def execute(self, context):
@@ -54,7 +54,7 @@ def mcow_action_install_templates():
 
     shutil.copytree(path_addon_startup, path_local_startup, dirs_exist_ok=True)
 
-class MagickCow_PT_Action_UninstallTemplates(bpy.types.Operator):
+class MagickCow_OT_Action_UninstallTemplates(bpy.types.Operator):
     bl_idname = "magickcow.action_uninstall_templates"
     bl_label = "Uninstall Templates"
     def execute(self, context):
@@ -71,7 +71,7 @@ def mcow_action_uninstall_templates():
     # print(f"The path to remove is : {path_to_remove}")
     shutil.rmtree(path_to_remove)
 
-class MagickCow_PT_Action_GenerateAssetLibrary(bpy.types.Operator):
+class MagickCow_OT_Action_GenerateAssetLibrary(bpy.types.Operator):
     bl_idname = "magickcow.action_generate_asset_library"
     bl_label = "Generate Vanilla Assets"
     def execute(self, context):
@@ -113,18 +113,18 @@ class OBJECT_PT_MagickCowActionsPanel(bpy.types.Panel):
 
 def register_actions_panel():
     # Register the operators
-    bpy.utils.register_class(MagickCow_PT_Action_InstallTemplates)
-    bpy.utils.register_class(MagickCow_PT_Action_UninstallTemplates)
-    bpy.utils.register_class(MagickCow_PT_Action_GenerateAssetLibrary)
+    bpy.utils.register_class(MagickCow_OT_Action_InstallTemplates)
+    bpy.utils.register_class(MagickCow_OT_Action_UninstallTemplates)
+    bpy.utils.register_class(MagickCow_OT_Action_GenerateAssetLibrary)
 
     # Register the panel
     bpy.utils.register_class(OBJECT_PT_MagickCowActionsPanel)
 
 def unregister_actions_panel():
     # Unregister the operators
-    bpy.utils.unregister_class(MagickCow_PT_Action_InstallTemplates)
-    bpy.utils.unregister_class(MagickCow_PT_Action_UninstallTemplates)
-    bpy.utils.unregister_class(MagickCow_PT_Action_GenerateAssetLibrary)
+    bpy.utils.unregister_class(MagickCow_OT_Action_InstallTemplates)
+    bpy.utils.unregister_class(MagickCow_OT_Action_UninstallTemplates)
+    bpy.utils.unregister_class(MagickCow_OT_Action_GenerateAssetLibrary)
 
     # Unregister the panel
     bpy.utils.unregister_class(OBJECT_PT_MagickCowActionsPanel)
