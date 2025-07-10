@@ -52,6 +52,11 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
                 row = layout.row()
                 row.prop(material, "mcow_effect_text")
                 row.label(text="", icon=icon)
+                row2 = layout.row()
+                row2.label(text="una prueba")
+                row3 = layout.row()
+                row2.operator("text.new", text="", icon="ADD")
+
 
     # From here on out, we have custom draw methods for each type of material
     def draw_effect_deferred(self, layout, material):
@@ -140,7 +145,7 @@ def register_properties_material_generic(material):
         name = "Origin Type",
         description = "Determines the type of origin for the configuration for this material",
         items = [
-            ("DOC_JSON", "External JSON Document", "The configuration for this material will be obtained from the selected External JSON Document."), # Origin : Json Document data.
+            ("DOC_JSON", "External Json Document", "The configuration for this material will be obtained from the selected External JSON Document."), # Origin : Json Document data.
             ("MAT_DICT", "Internal Material Panel", "The configuration for this material will be obtained from the material configuration as laid out on the Blender panel."), # Origin : Blender panel data. This is a sort of "inline dict" mode
             ("MAT_JSON", "Internal Json Document", "The configuration for this material will be obtained from the selected Internal JSON Document.") # Origin : Blender Text Data Block.
         ],
@@ -165,7 +170,7 @@ def register_properties_material_generic(material):
     # )
 
     material.mcow_effect_text = bpy.props.PointerProperty(
-        name = "JSON Text",
+        name = "Json Text",
         description = "Determines the Text Data Block that contains the script for the material effect configuration file.",
         type = bpy.types.Text
     )
