@@ -65,15 +65,25 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
                 elif material_type == "EFFECT_ADDITIVE":
                     self.draw_effect_additive(layout, material)
             elif material_mode == "MAT_JSON":
-                # layout.prop(material, "mcow_effect_json")
-                icon = "CHECKMARK" if material.mcow_effect_text is not None else "ERROR"
-                
-                row = layout.row()
-                
-                row.prop(material, "mcow_effect_text")
-                row.label(text="", icon=icon)
-                row.operator("magickcow.create_and_set_text_data_block", text="", icon="ADD")
 
+                if material.mcow_effect_text is None:
+                    text_selected = False
+                    text_icon = "ERROR"
+                    text_text = "No Text Data Block was selected!" # "No Text is selected!"
+                else:
+                    # NOTE : This is not used for now, because I think it looks better if we just don't display anything when the text is properly selected.
+                    # Showing the warning when it is not selected is enough, I think so at least...
+                    text_selected = True
+                    text_icon = "CHECKMARK"
+                    text_text = "Text is selected!"
+                
+                rowA = layout.row()
+                rowA.prop(material, "mcow_effect_text")
+                rowA.operator("magickcow.create_and_set_text_data_block", text="", icon="ADD")
+
+                if not text_selected:
+                    rowB = layout.row()
+                    rowB.label(text=text_text, icon=text_icon)
 
     # From here on out, we have custom draw methods for each type of material
     def draw_effect_deferred(self, layout, material):
