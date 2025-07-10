@@ -136,9 +136,9 @@ def register_properties_material_generic(material):
         name = "Origin Type",
         description = "Determines the type of origin for the configuration for this material",
         items = [
-            ("DOC_JSON", "JSON Document", "The configuration for this material will be obtained from the selected JSON file."), # Origin : Json Document data.
-            ("MAT_DICT", "Blender Material (Dictionary)", "The configuration for this material will be obtained from the material configuration as laid out on the Blender panel."), # Origin : Blender panel data. This is a sort of "inline dict" mode
-            ("MAT_JSON", "Blender Material (inline JSON)", "The configuration for this material will be obtained from the material configuration as laid out on the inline JSON.") # Origin : Blender panel, inline JSON.
+            ("DOC_JSON", "External JSON Document", "The configuration for this material will be obtained from the selected External JSON Document."), # Origin : Json Document data.
+            ("MAT_DICT", "Internal Material Panel", "The configuration for this material will be obtained from the material configuration as laid out on the Blender panel."), # Origin : Blender panel data. This is a sort of "inline dict" mode
+            ("MAT_JSON", "Internal Json Document", "The configuration for this material will be obtained from the selected Internal JSON Document.") # Origin : Blender Text Data Block.
         ],
         default = "MAT_DICT"
     )
@@ -151,16 +151,27 @@ def register_properties_material_generic(material):
 
     # NOTE : If this field could be made to be multiline in Blender, this would be the superior choice out of them all... but alas, the Blender Foundation has yet to figure out how to make fucking multiline
     # input text fields. This has literally been a topic of debate since 2014. How the fuck can we be living in the year 2025 and still not have official support for these on Blender, what the fuck.
-    material.mcow_effect_json = bpy.props.StringProperty(
-        name = "Json Data",
-        description = "Determines the inline data for the material JSON",
-        default = "",
+    # In any case, this has been replaced with the Text Data Block option, which actually makes editing a bit nicer, but I feel like it sucks donkey dick that we need to link shit up with text data blocks rather
+    # than allowing material-local and self-contained fucking string properties with multiple lines that are easy to edit in a fucking Blender panel...
+    # At least the text editor looks cool and all that...
+    # material.mcow_effect_json = bpy.props.StringProperty(
+    #     name = "Json Data",
+    #     description = "Determines the inline data for the material JSON",
+    #     default = "",
+    # )
+
+    material.mcow_effect_text = bpy.props.PointerProperty(
+        name = "JSON Text",
+        description = "Determines the Text Data Block that contains the script for the material effect configuration file.",
+        type = bpy.types.Text
     )
 
 def unregister_properties_material_generic(material):
     del material.mcow_effect_type
     del material.mcow_effect_mode
     del material.mcow_effect_path
+    # del material.mcow_effect_json
+    del material.mcow_effect_text
 
 def register_properties_material_geometry(material): # NOTE : Maybe this should be renamed to deferred or something? we could also add transparent mats in the future I suppose.
     material.mcow_effect_deferred_alpha = bpy.props.FloatProperty(
