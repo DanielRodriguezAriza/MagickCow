@@ -183,6 +183,7 @@ def mcow_build_generate_file():
         "../src/functions/utility/Effect.py", # Material-Effect related utility functions
         "../src/functions/utility/Path.py", # Path related utility functions
         "../src/functions/utility/Texture.py", # Texture related utility functions
+        "../src/functions/utility/Window.py", # Window management utility functions
 
         # Export Data Generation (The 3 stages of data transformation pipeline for export in MagickCow: Blender Data -> Get Stage -> Generate Stage -> Make Stage -> Final JSON file)
         # TODO : Rename all of the Pipeline classes to use some "ExportPipeline" prefix or whatever...
