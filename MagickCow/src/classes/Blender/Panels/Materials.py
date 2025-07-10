@@ -47,7 +47,8 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
                 elif material_type == "EFFECT_ADDITIVE":
                     self.draw_effect_additive(layout, material)
             elif material_mode == "MAT_JSON":
-                layout.prop(material, "mcow_effect_json")
+                # layout.prop(material, "mcow_effect_json")
+                layout.prop(material, "mcow_effect_text")
     
     # From here on out, we have custom draw methods for each type of material
     def draw_effect_deferred(self, layout, material):
