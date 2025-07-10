@@ -46,46 +46,58 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
         material = context.material
         if material:
             material_mode = material.mcow_effect_mode
-            material_type = material.mcow_effect_type
 
             layout.prop(material, "mcow_effect_mode")
 
             if material_mode == "DOC_JSON":
-                layout.prop(material, "mcow_effect_path")
+                self.draw_effect_json_external(layout, material)
             elif material_mode == "MAT_DICT":
-                layout.prop(material, "mcow_effect_type")
-                if material_type == "EFFECT_DEFERRED":
-                    self.draw_effect_deferred(layout, material)
-                elif material_type == "EFFECT_LIQUID_WATER":
-                    self.draw_effect_water(layout, material)
-                elif material_type == "EFFECT_LIQUID_LAVA":
-                    self.draw_effect_lava(layout, material)
-                elif material_type == "EFFECT_FORCE_FIELD":
-                    self.draw_effect_force_field(layout, material)
-                elif material_type == "EFFECT_ADDITIVE":
-                    self.draw_effect_additive(layout, material)
+                self.draw_effect_blend_panel(layout, material)
             elif material_mode == "MAT_JSON":
+                self.draw_effect_json_internal(layout, material)
 
-                if material.mcow_effect_text is None:
-                    text_selected = False
-                    text_icon = "ERROR"
-                    text_text = "No Text Data Block was selected!" # "No Text is selected!"
-                else:
-                    # NOTE : This is not used for now, because I think it looks better if we just don't display anything when the text is properly selected.
-                    # Showing the warning when it is not selected is enough, I think so at least...
-                    text_selected = True
-                    text_icon = "CHECKMARK"
-                    text_text = "Text is selected!"
-                
-                rowA = layout.row()
-                rowA.prop(material, "mcow_effect_text")
-                rowA.operator("magickcow.create_and_set_text_data_block", text="", icon="ADD")
+    # Function to draw the properties of external JSON document mode
+    def draw_effect_json_external(self, layout, material):
+        layout.prop(material, "mcow_effect_path")
 
-                if not text_selected:
-                    rowB = layout.row()
-                    rowB.label(text=text_text, icon=text_icon)
+    # Function to draw the properties of internal JSON document mode
+    def draw_effect_json_internal(self, layout, material):
+        if material.mcow_effect_text is None:
+            text_selected = False
+            text_icon = "ERROR"
+            text_text = "No Text Data Block was selected!" # "No Text is selected!"
+        else:
+            # NOTE : This is not used for now, because I think it looks better if we just don't display anything when the text is properly selected.
+            # Showing the warning when it is not selected is enough, I think so at least...
+            text_selected = True
+            text_icon = "CHECKMARK"
+            text_text = "Text is selected!"
+        
+        rowA = layout.row()
+        rowA.prop(material, "mcow_effect_text")
+        rowA.operator("magickcow.create_and_set_text_data_block", text="", icon="ADD")
 
-    # From here on out, we have custom draw methods for each type of material
+        # If the text is not selected, then we need to report the issue to the user so that they can visually know that something is wrong.
+        if not text_selected:
+            rowB = layout.row()
+            rowB.label(text=text_text, icon=text_icon)
+
+    # Function to draw the properties of Blender panel material mode
+    def draw_effect_blend_panel(self, layout, material):
+        material_type = material.mcow_effect_type
+        layout.prop(material, "mcow_effect_type")
+        if material_type == "EFFECT_DEFERRED":
+            self.draw_effect_deferred(layout, material)
+        elif material_type == "EFFECT_LIQUID_WATER":
+            self.draw_effect_water(layout, material)
+        elif material_type == "EFFECT_LIQUID_LAVA":
+            self.draw_effect_lava(layout, material)
+        elif material_type == "EFFECT_FORCE_FIELD":
+            self.draw_effect_force_field(layout, material)
+        elif material_type == "EFFECT_ADDITIVE":
+            self.draw_effect_additive(layout, material)
+
+    # From here on out, we have custom draw methods for each type of material for the Blender panel material mode
     def draw_effect_deferred(self, layout, material):
         layout.prop(material, "mcow_effect_deferred_alpha")
         layout.prop(material, "mcow_effect_deferred_sharpness")
