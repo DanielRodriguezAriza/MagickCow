@@ -110,21 +110,28 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
             text_icon = "CHECKMARK"
             text_text = "Text is selected!"
         
-        rowA = layout.row()
-        rowA.prop(material, "mcow_effect_text")
-        rowA.operator("magickcow.create_and_set_text_data_block", text="", icon="ADD")
+        boxText = layout.box()
+
+        rowTextA = boxText.row()
+        rowTextA.prop(material, "mcow_effect_text")
+        rowTextA.operator("magickcow.create_and_set_text_data_block", text="", icon="ADD")
 
         # If the text is not selected, then we need to report the issue to the user so that they can visually know that something is wrong.
         if not text_selected:
-            rowB = layout.row()
-            rowB.label(text=text_text, icon=text_icon)
+            rowTextB = boxText.row()
+            rowTextB.label(text=text_text, icon=text_icon)
         
-        layout.operator("magickcow.create_and_set_text_data_block", icon="ADD")
-        layout.operator("magickcow.create_and_set_text_data_block_effect_deferred", icon="ADD")
-        layout.operator("magickcow.create_and_set_text_data_block_effect_additive", icon="ADD")
-        layout.operator("magickcow.create_and_set_text_data_block_effect_water", icon="ADD")
-        layout.operator("magickcow.create_and_set_text_data_block_effect_lava", icon="ADD")
-        layout.operator("magickcow.create_and_set_text_data_block_effect_force_field", icon="ADD")
+        boxActs = layout.box()
+        boxActs.label(text="Actions")
+
+        boxOps = layout.box()
+        boxOps.label(text="Create New Effects")
+        boxOps.operator("magickcow.create_and_set_text_data_block", icon="ADD")
+        boxOps.operator("magickcow.create_and_set_text_data_block_effect_deferred", icon="ADD")
+        boxOps.operator("magickcow.create_and_set_text_data_block_effect_additive", icon="ADD")
+        boxOps.operator("magickcow.create_and_set_text_data_block_effect_water", icon="ADD")
+        boxOps.operator("magickcow.create_and_set_text_data_block_effect_lava", icon="ADD")
+        boxOps.operator("magickcow.create_and_set_text_data_block_effect_force_field", icon="ADD")
 
     # Function to draw the properties of Blender panel material mode
     def draw_effect_blend_panel(self, layout, material):
