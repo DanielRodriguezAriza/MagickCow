@@ -5,6 +5,24 @@
 # As for materials, there needs to be a distinction because the type of the class used for the material effect is different.
 # Maybe in the future I could improve the behaviour so that less edge cases exist where users can input wrong data (eg: deffered effect / geometry material for a geometry marked as liquid, that would crash, but the UI allows it...)
 
+# region Operator classes
+
+class MagickCow_OT_Material_CreateAndSetTextDataBlock(bpy.types.Operator):
+    bl_idname = "magickcow.create_and_set_text_data_block"
+    bl_label = "New Text"
+    def execute(self, context):
+        # Create a new text data block
+        text = bpy.data.texts.new("MyText")
+
+        # Assign the text data block to the selected text prop
+        material = bpy.context.object.active_material
+        material.mcow_effect_text = text
+
+        # Operator return value. Should pretty much never fail, so we always return "FINISHED" and call it a day...
+        return {"FINISHED"}
+
+# endregion
+
 # region Panel Class
 
 class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
@@ -55,7 +73,7 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
                 row2 = layout.row()
                 row2.label(text="una prueba")
                 row3 = layout.row()
-                row2.operator("text.new", text="", icon="ADD")
+                row2.operator("magickcow.create_and_set_text_data_block", text="", icon="ADD")
 
 
     # From here on out, we have custom draw methods for each type of material
@@ -487,6 +505,12 @@ def register_properties_panel_class_material():
 def unregister_properties_panel_class_material():
     bpy.utils.unregister_class(MATERIAL_PT_MagickCowPanel)
 
+def register_properties_operator_class_material():
+    bpy.utils.register_class(MagickCow_OT_Material_CreateAndSetTextDataBlock)
+
+def unregister_properties_operator_class_material():
+    bpy.utils.unregister_class(MagickCow_OT_Material_CreateAndSetTextDataBlock)
+
 # endregion
 
 # region Register and Unregister Functions - Main
@@ -509,6 +533,9 @@ def register_properties_material():
     # Register the material properties panel
     register_properties_panel_class_material()
 
+    # Register the mcow material operator classes
+    register_properties_operator_class_material()
+
 def unregister_properties_material():
     # Get reference to Blender material type
     material = bpy.types.Material
@@ -526,6 +553,9 @@ def unregister_properties_material():
 
     # Unregister the material properties panel
     unregister_properties_panel_class_material()
+
+    # Unregister the mcow material operator classes
+    unregister_properties_operator_class_material()
 
 # endregion
 
