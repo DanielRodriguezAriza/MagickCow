@@ -15,31 +15,31 @@ class MagickCow_OT_Material_CreateAndSetTextDataBlock(bpy.types.Operator):
 
 class MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectDeferred(bpy.types.Operator):
     bl_idname = "magickcow.create_and_set_text_data_block_effect_deferred"
-    bl_label = "New Deferred Effect"
+    bl_label = "New Effect - Deferred"
     def execute(self, context):
         return mcow_ot_material_create_and_set_text_data_block_internal("EffectDeferred", "GEOMETRY") # TODO : Change to use DEFERRED
 
 class MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectAdditive(bpy.types.Operator):
     bl_idname = "magickcow.create_and_set_text_data_block_effect_additive"
-    bl_label = "New Deferred Effect"
+    bl_label = "New Effect - Additive"
     def execute(self, context):
         return mcow_ot_material_create_and_set_text_data_block_internal("EffectAdditive", "GEOMETRY") # TODO : Change to use ADDITIVE
 
 class MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectWater(bpy.types.Operator):
     bl_idname = "magickcow.create_and_set_text_data_block_effect_water"
-    bl_label = "New Deferred Effect"
+    bl_label = "New Effect - Water"
     def execute(self, context):
         return mcow_ot_material_create_and_set_text_data_block_internal("EffectWater", "WATER")
 
 class MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectLava(bpy.types.Operator):
     bl_idname = "magickcow.create_and_set_text_data_block_effect_lava"
-    bl_label = "New Deferred Effect"
+    bl_label = "New Effect - Lava"
     def execute(self, context):
         return mcow_ot_material_create_and_set_text_data_block_internal("EffectLava", "LAVA")
 
 class MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectForceField(bpy.types.Operator):
     bl_idname = "magickcow.create_and_set_text_data_block_effect_force_field"
-    bl_label = "New Deferred Effect"
+    bl_label = "New Effect - Force Field"
     def execute(self, context):
         return mcow_ot_material_create_and_set_text_data_block_internal("EffectForceField", "FORCE_FIELD")
 
@@ -49,7 +49,7 @@ def mcow_ot_material_create_and_set_text_data_block_internal(str_name, str_type)
 
     # Change the contents of the text data block
     text.clear()
-    text.write(MCOW_EFFECTS[str_type])
+    text.write(json.dumps(MCOW_EFFECTS[str_type], indent=4))
 
     # Assign the text data block to the selected text prop
     material = bpy.context.object.active_material
@@ -118,6 +118,13 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
         if not text_selected:
             rowB = layout.row()
             rowB.label(text=text_text, icon=text_icon)
+        
+        layout.operator("magickcow.create_and_set_text_data_block", icon="ADD")
+        layout.operator("magickcow.create_and_set_text_data_block_effect_deferred", icon="ADD")
+        layout.operator("magickcow.create_and_set_text_data_block_effect_additive", icon="ADD")
+        layout.operator("magickcow.create_and_set_text_data_block_effect_water", icon="ADD")
+        layout.operator("magickcow.create_and_set_text_data_block_effect_lava", icon="ADD")
+        layout.operator("magickcow.create_and_set_text_data_block_effect_force_field", icon="ADD")
 
     # Function to draw the properties of Blender panel material mode
     def draw_effect_blend_panel(self, layout, material):
@@ -563,11 +570,27 @@ def register_properties_panel_class_material():
 def unregister_properties_panel_class_material():
     bpy.utils.unregister_class(MATERIAL_PT_MagickCowPanel)
 
-def register_properties_operator_class_material():
+def register_properties_operator_classes_material():
+    # Generic operator
     bpy.utils.register_class(MagickCow_OT_Material_CreateAndSetTextDataBlock)
 
-def unregister_properties_operator_class_material():
+    # Specific operators
+    bpy.utils.register_class(MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectDeferred)
+    bpy.utils.register_class(MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectAdditive)
+    bpy.utils.register_class(MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectWater)
+    bpy.utils.register_class(MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectLava)
+    bpy.utils.register_class(MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectForceField)
+
+def unregister_properties_operator_classes_material():
+    # Generic operator
     bpy.utils.unregister_class(MagickCow_OT_Material_CreateAndSetTextDataBlock)
+
+    # Specific operators
+    bpy.utils.unregister_class(MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectDeferred)
+    bpy.utils.unregister_class(MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectAdditive)
+    bpy.utils.unregister_class(MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectWater)
+    bpy.utils.unregister_class(MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectLava)
+    bpy.utils.unregister_class(MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectForceField)
 
 # endregion
 
@@ -592,7 +615,7 @@ def register_properties_material():
     register_properties_panel_class_material()
 
     # Register the mcow material operator classes
-    register_properties_operator_class_material()
+    register_properties_operator_classes_material()
 
 def unregister_properties_material():
     # Get reference to Blender material type
@@ -613,7 +636,7 @@ def unregister_properties_material():
     unregister_properties_panel_class_material()
 
     # Unregister the mcow material operator classes
-    unregister_properties_operator_class_material()
+    unregister_properties_operator_classes_material()
 
 # endregion
 
