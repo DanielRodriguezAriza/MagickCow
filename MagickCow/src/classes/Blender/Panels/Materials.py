@@ -58,6 +58,14 @@ def mcow_ot_material_create_and_set_text_data_block_internal(str_name, str_type)
     # Operator return value. Should pretty much never fail, so we always return "FINISHED" and call it a day...
     return {"FINISHED"}
 
+class MagickCow_OT_Material_EditEffectText(bpy.types.Operator):
+    bl_idname = "magickcow.edit_effect_text"
+    bl_label = "Edit Effect"
+    def execute(self, context):
+        name = bpy.context.object.active_material.mcow_effect_text.name
+        mcow_window_open_text_editor(name)
+        return {"FINISHED"}
+
 # endregion
 
 # region Panel Class
