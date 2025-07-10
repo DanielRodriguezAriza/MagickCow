@@ -112,6 +112,12 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
 
 # region Register and Unregister Functions - Internal
 
+def register_properties_material_text(material):
+    pass
+
+def unregister_properties_material_text(material):
+    pass
+
 def register_properties_material_generic(material):
     material.mcow_effect_type = bpy.props.EnumProperty(
         name = "Material Type",
@@ -477,6 +483,9 @@ def register_properties_material():
     register_properties_material_force_field(material)
     register_properties_material_additive(material)
 
+    # Register the material text data block style props
+    register_properties_material_text(material)
+
     # Register the material properties panel
     register_properties_panel_class_material()
 
@@ -491,6 +500,9 @@ def unregister_properties_material():
     unregister_properties_material_lava(material)
     unregister_properties_material_force_field(material)
     unregister_properties_material_additive(material)
+
+    # Unregister the material text data block style props
+    unregister_properties_material_text(material)
 
     # Unregister the material properties panel
     unregister_properties_panel_class_material()
