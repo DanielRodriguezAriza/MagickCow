@@ -7,6 +7,11 @@
 # NOTE : No default fallback for additive effects exists in JSON mode, since geometry objects can have both deferred effects and additive effects, and for performance and logical reasons,
 # level geometry (mcow type "GEOMETRY") meshes with non-specified or non-valid materials are assumed to use deferred effects as fallback by default
 
+# TODO : Relative to the previous NOTE, it is important to modify ALL of the export and import code to change the fallback_type usage to be something like DEFERRED or whatever, so that I can add an ADDITIVE
+# default effect. That way, we can add some buttons to generate default additive effects in text data blocks and stuff like that... altough it's still useful to have the GEOMETRY fallback since this will work
+# that way out of the box fully automatically with the naming scheme I made for geometry types (GEOMETRY, WATER, LAVA, etc...), so maybe just add the DEFERRED one being a copy of GEOMETRY, and then
+# an ADDITIVE one as well...
+
 MCOW_EFFECTS = {
     "GEOMETRY" : {
         "$type": "effect_deferred",
