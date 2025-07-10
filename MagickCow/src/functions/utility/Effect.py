@@ -83,11 +83,30 @@ class material_utility:
 
     # region Material Data
 
+    # This is the top level function for getting material data.
+    # All other functions are "internal" methods that should be called by this one.
+    # Users call this function, and whatever internal processing is required will be performed automatically by its internal logic and call stack.
+    # TODO : Clean up this messy implementation in the future... this is pretty shit ngl.
     @staticmethod
     def get_material_data(material, fallback_type = "GEOMETRY"):
-        if material is not None:
-            return material_utility.get_material_data_instance(material)
-        else:
+        try: # This try is here just in case we have an exception when loading the JSON data. That way, we can silently fail by just skipping to using the default generated data instead.
+        
+            # If the material is valid, then generate data from the material instance
+            if material is not None:
+                ans = material_utility.get_material_data_instance(material)
+            
+            # If the length of the generated dict is 0, then that means that we did not generate a proper dict
+            if len(ans) <= 0:
+                raise Exception("")
+
+            # If the generated dict is not empty, then that means we successfully found data within this object, so we use this
+            return ans
+
+        except Exception as e:
+
+            # Otherwise, that means that the data within those files was not found or was not a proper json structure, so we discard it and generate a default material instead.
+            # NOTE : This means that we "silently fail" in the sense that non-valid material effects will be converted to valid ones, but not necessarily the one we wanted.
+            # TODO : In the future, maybe add a warning or something like that?
             return material_utility.get_material_data_default(fallback_type)
     
     @staticmethod
