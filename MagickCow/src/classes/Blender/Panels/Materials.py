@@ -13,6 +13,36 @@ class MagickCow_OT_Material_CreateAndSetTextDataBlock(bpy.types.Operator):
     def execute(self, context):
         return mcow_ot_material_create_and_set_text_data_block_internal("Effect", "NONE")
 
+class MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectDeferred(bpy.types.Operator):
+    bl_idname = "magickcow.create_and_set_text_data_block_effect_deferred"
+    bl_label = "New Deferred Effect"
+    def execute(self, context):
+        return mcow_ot_material_create_and_set_text_data_block_internal("EffectDeferred", "GEOMETRY") # TODO : Change to use DEFERRED
+
+class MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectAdditive(bpy.types.Operator):
+    bl_idname = "magickcow.create_and_set_text_data_block_effect_additive"
+    bl_label = "New Deferred Effect"
+    def execute(self, context):
+        return mcow_ot_material_create_and_set_text_data_block_internal("EffectAdditive", "GEOMETRY") # TODO : Change to use ADDITIVE
+
+class MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectWater(bpy.types.Operator):
+    bl_idname = "magickcow.create_and_set_text_data_block_effect_water"
+    bl_label = "New Deferred Effect"
+    def execute(self, context):
+        return mcow_ot_material_create_and_set_text_data_block_internal("EffectWater", "WATER")
+
+class MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectLava(bpy.types.Operator):
+    bl_idname = "magickcow.create_and_set_text_data_block_effect_lava"
+    bl_label = "New Deferred Effect"
+    def execute(self, context):
+        return mcow_ot_material_create_and_set_text_data_block_internal("EffectLava", "LAVA")
+
+class MagickCow_OT_Material_CreateAndSetTextDataBlock_EffectForceField(bpy.types.Operator):
+    bl_idname = "magickcow.create_and_set_text_data_block_effect_force_field"
+    bl_label = "New Deferred Effect"
+    def execute(self, context):
+        return mcow_ot_material_create_and_set_text_data_block_internal("EffectForceField", "FORCE_FIELD")
+
 def mcow_ot_material_create_and_set_text_data_block_internal(str_name, str_type):
     # Create a new text data block
     text = bpy.data.texts.new(str_name)
