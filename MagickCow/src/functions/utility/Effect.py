@@ -107,6 +107,8 @@ class material_utility:
 
     @staticmethod
     def get_material_data_instance_doc_json(material):
+        # NOTE : "Classic" mode. This is the first one that was ever implemented.
+        # Loads the data from a file on disk.
         ans = get_json_object(material_utility.get_material_path(material))
         return ans
     
@@ -118,8 +120,9 @@ class material_utility:
     
     @staticmethod
     def get_material_data_instance_mat_json(material):
-        # NOTE : This is literally the most easy to implement out of them all. Just return the inline JSON and call it a day.
-        ans = material.mcow_effect_json
+        # NOTE : This is literally the most easy to implement out of them all, as well as the most generic with support for any new type of custom dict-based, user-defined materials in the future.
+        # Just return the Json stored within the text data block as a dict and call it a day.
+        ans = get_material_text(material)
         return ans
 
     # endregion
@@ -133,6 +136,19 @@ class material_utility:
             ans = ans + ".json"
         return ans
 
+    # endregion
+
+    # region Material Text Data Block
+
+    @staticmethod
+    def get_material_text(material):
+        text_data_block = material.mcow_effect_text
+        ans_str = "{}"
+        if text_data_block is not None:
+            ans_str = text_data_block.to_string()
+        ans_dict = json.loads(ans_str)
+        return ans_dict
+    
     # endregion
 
 # endregion
