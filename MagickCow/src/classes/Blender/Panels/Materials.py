@@ -131,6 +131,7 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
         
         boxActs = layout.box()
         boxActs.label(text="Actions")
+        boxActs.operator("magickcow.edit_effect_text", icon="GREASEPENCIL")
 
         boxOps = layout.box()
         boxOps.label(text="Create New Effects")
