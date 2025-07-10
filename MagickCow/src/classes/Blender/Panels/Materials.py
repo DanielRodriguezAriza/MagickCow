@@ -67,13 +67,12 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
             elif material_mode == "MAT_JSON":
                 # layout.prop(material, "mcow_effect_json")
                 icon = "CHECKMARK" if material.mcow_effect_text is not None else "ERROR"
+                
                 row = layout.row()
+                
                 row.prop(material, "mcow_effect_text")
                 row.label(text="", icon=icon)
-                row2 = layout.row()
-                row2.label(text="una prueba")
-                row3 = layout.row()
-                row2.operator("magickcow.create_and_set_text_data_block", text="", icon="ADD")
+                row.operator("magickcow.create_and_set_text_data_block", text="", icon="ADD")
 
 
     # From here on out, we have custom draw methods for each type of material
