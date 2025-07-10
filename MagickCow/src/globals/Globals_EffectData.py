@@ -13,6 +13,9 @@
 # an ADDITIVE one as well...
 
 MCOW_EFFECTS = {
+    "NONE" : {
+        # This one is quite literally an empty fallback for "none" types of data (not to be confused with Python's None type lol). Useful for some niche usecases, but mostly useless lmao.
+    },
     "GEOMETRY" : {
         "$type": "effect_deferred",
         "Alpha": 0.400000006,
