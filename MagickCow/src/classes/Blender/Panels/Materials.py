@@ -48,8 +48,11 @@ class MATERIAL_PT_MagickCowPanel(bpy.types.Panel):
                     self.draw_effect_additive(layout, material)
             elif material_mode == "MAT_JSON":
                 # layout.prop(material, "mcow_effect_json")
-                layout.prop(material, "mcow_effect_text")
-    
+                icon = "CHECKMARK" if material.mcow_effect_text is not None else "ERROR"
+                row = layout.row()
+                row.prop(material, "mcow_effect_text")
+                row.label(text="", icon=icon)
+
     # From here on out, we have custom draw methods for each type of material
     def draw_effect_deferred(self, layout, material):
         layout.prop(material, "mcow_effect_deferred_alpha")
