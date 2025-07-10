@@ -11,15 +11,7 @@ class MagickCow_OT_Material_CreateAndSetTextDataBlock(bpy.types.Operator):
     bl_idname = "magickcow.create_and_set_text_data_block"
     bl_label = "New Effect"
     def execute(self, context):
-        # Create a new text data block
-        text = bpy.data.texts.new("Effect")
-
-        # Assign the text data block to the selected text prop
-        material = bpy.context.object.active_material
-        material.mcow_effect_text = text
-
-        # Operator return value. Should pretty much never fail, so we always return "FINISHED" and call it a day...
-        return {"FINISHED"}
+        return mcow_ot_material_create_and_set_text_data_block_internal("Effect", "NONE")
 
 def mcow_ot_material_create_and_set_text_data_block_internal(str_name, str_type):
     # Create a new text data block
