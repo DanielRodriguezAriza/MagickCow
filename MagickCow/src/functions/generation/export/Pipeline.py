@@ -195,6 +195,7 @@ class MCow_Data_Pipeline:
     # TODO : Get rid of this when proper despgraph support is added, which will take more work, but will probably lead to far better performance and reduced memory consumption, as well as not needing to save before export...
 
     def _make_scene_objects_local(self):
+        
         # If no objects are on the scene, just bail out, no work to be done here
         if len(bpy.data.objects) <= 0:
             return
@@ -202,14 +203,18 @@ class MCow_Data_Pipeline:
         # Deselect all objects
         bpy.ops.object.select_all(action="DESELECT")
 
-        # Select the first object to guarantee that we have a "primary" / active selection (mark it as active in the bpy context)
-        bpy.context.view_layer.objects.active = bpy.data.objects[0] # Do not confuse with obj.select_set(True), which selects it (orange), but does not mark it as active (yellow)
+        # Step 1: Make all of the instances real
+        for obj in bpy.data.objects:
+            if obj.instance_type == "COLLECTION" and obj.instance_collection:
+                obj.select_set(True)
+                bpy.context.view_layer.objects.active = obj
+                bpy.ops.object.duplicates_make_real()
+                obj.select_set(False)
+        bpy.context.view_layer.update() # Update the view layer
 
-        # Make all of the instances real (as long as we have an object as the active selection, then all selected objects will have the duplicates_make_real() instruction applied, which is why we do what we do above)
-        bpy.ops.object.duplicates_make_real()
-
-        # Make all of the data blocks local
+        # Step 2: Make all of the data blocks local
         bpy.ops.object.make_local(type="ALL")
+        bpy.context.view_layer.update() # Update the view layer
 
 
     # endregion
