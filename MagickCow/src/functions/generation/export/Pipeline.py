@@ -188,6 +188,32 @@ class MCow_Data_Pipeline:
 
     # endregion
 
+    # region Scene Destructive Apply
+
+    # This region contains functions dedicated toward applying destructive changes such as making instances real and linked objects local.
+    # This will allow the exporter to be capable of processing linked objects without much effort.
+    # TODO : Get rid of this when proper despgraph support is added, which will take more work, but will probably lead to far better performance and reduced memory consumption, as well as not needing to save before export...
+
+    def _make_scene_objects_local():
+        # If no objects are on the scene, just bail out, no work to be done here
+        if len(bpy.data.objects) <= 0:
+            return
+        
+        # Deselect all objects
+        bpy.ops.object.select_all(action="DESELECT")
+
+        # Select the first object to guarantee that we have a "primary" / active selection (mark it as active in the bpy context)
+        bpy.context.view_layer.objects.active = bpy.data.objects[0] # Do not confuse with obj.select_set(True), which selects it (orange), but does not mark it as active (yellow)
+
+        # Make all of the instances real (as long as we have an object as the active selection, then all selected objects will have the duplicates_make_real() instruction applied, which is why we do what we do above)
+        bpy.ops.object.duplicates_make_real()
+
+        # Make all of the data blocks local
+        bpy.ops.object.make_local(type="ALL")
+
+
+    # endregion
+
 class MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
     def __init__(self):
         super().__init__()
@@ -198,6 +224,7 @@ class MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
         return
     
     def process_scene_data(self):
+        self._make_scene_objects_local()
         self._rotate_scene()
         data_get = self._get.get()
         data_gen = self._gen.generate(data_get)
@@ -214,6 +241,7 @@ class MCow_Data_Pipeline_PhysicsEntity(MCow_Data_Pipeline):
         return
     
     def process_scene_data(self):
+        self._make_scene_objects_local()
         self._rotate_scene()
         data_get = self._get.get()
         data_gen = self._gen.generate(data_get)
