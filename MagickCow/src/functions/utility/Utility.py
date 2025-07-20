@@ -76,8 +76,12 @@ def get_all_objects():
     objs = bpy.data.objects
     return objs
 
+def get_all_objects_in_view_layer():
+    objs = bpy.context.view_layer.objects
+    return objs
+
 def get_scene_root_objects():
-    objs = get_all_objects()
+    objs = get_all_objects_in_view_layer()
     ans = []
     for obj in objs:
         if obj.parent is None:
