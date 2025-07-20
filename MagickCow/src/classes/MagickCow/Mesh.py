@@ -1,5 +1,8 @@
 # region Mesh Class
 
+# TODO : Change logic to use despgraph and .to_mesh() on instances instead of copying entire data blocks... will make things faster and avoid the problem described in the comment below,
+# within MCow_Mesh's constructor function, "__init__()".
+
 class MCow_Mesh:
     def __init__(self, obj, transform):
 
