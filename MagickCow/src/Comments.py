@@ -38,4 +38,18 @@ mcow_props : {
 
 # TODO : Fix Make stage material getting step by adding material cache dict as input tuple ok mk stage
 
+"""
+TODOs @20/07/2025:
+    - Refactor the export pipeline to work using:
+        - Free functions
+        - Coordinate transform functions (remove the retarded 90º rotation stuff...)
+        - Use despgraph evaluation rather than converting objects into real instances and applying modifiers in place...
+            - NOTE : This may allow us to get rid of the fucking dumb ass shit that forces us to save scenes before we can export!
+    
+    - Refactor the import pipeline to work the same way...
+    
+    - Modify the scene creation options to allow generating the data in-place rather than having stupid new scene file creation stuff...
+        - NOTE : This may actually still need the scene to be saved somewhere so that we can link up textures of the default / example scenes stuff without any issues... or maybe we can make them asset library files so that users can add them at will? kinda wonky and hacky, but better than nothing...
+"""
+
 # endregion
