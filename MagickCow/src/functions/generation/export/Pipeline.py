@@ -194,7 +194,7 @@ class MCow_Data_Pipeline:
     # This will allow the exporter to be capable of processing linked objects without much effort.
     # TODO : Get rid of this when proper despgraph support is added, which will take more work, but will probably lead to far better performance and reduced memory consumption, as well as not needing to save before export...
 
-    def _make_scene_objects_local():
+    def _make_scene_objects_local(self):
         # If no objects are on the scene, just bail out, no work to be done here
         if len(bpy.data.objects) <= 0:
             return
@@ -214,6 +214,14 @@ class MCow_Data_Pipeline:
 
     # endregion
 
+    # region Scene Pre-Processing
+
+    def preprocess_scene(self):
+        self._make_scene_objects_local()
+        self._rotate_scene()
+
+    # endregion
+
 class MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
     def __init__(self):
         super().__init__()
@@ -224,8 +232,7 @@ class MCow_Data_Pipeline_Map(MCow_Data_Pipeline):
         return
     
     def process_scene_data(self):
-        self._make_scene_objects_local()
-        self._rotate_scene()
+        self.preprocess_scene()
         data_get = self._get.get()
         data_gen = self._gen.generate(data_get)
         data_mkr = self._mkr.make(data_gen)
@@ -241,8 +248,7 @@ class MCow_Data_Pipeline_PhysicsEntity(MCow_Data_Pipeline):
         return
     
     def process_scene_data(self):
-        self._make_scene_objects_local()
-        self._rotate_scene()
+        self.preprocess_scene()
         data_get = self._get.get()
         data_gen = self._gen.generate(data_get)
         data_mkr = self._mkr.make(data_gen)
