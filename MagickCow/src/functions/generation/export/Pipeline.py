@@ -208,7 +208,7 @@ class MCow_Data_Pipeline:
             if obj.instance_type == "COLLECTION" and obj.instance_collection:
                 obj.select_set(True)
                 bpy.context.view_layer.objects.active = obj
-                bpy.ops.object.duplicates_make_real()
+                bpy.ops.object.duplicates_make_real(use_base_parent=True, use_hierarchy=True) # These flags ensure that when we make the instance real, the generated objects are placed under the empty object the collection was attached to. Otherwise, they would be placed at the root of the scene (the default behaviour), which would obviously break the export of animated objects, so yeah, this change prevents that by preserving the hierarchy to an acceptable degree.
                 obj.select_set(False)
         bpy.context.view_layer.update() # Update the view layer
 
