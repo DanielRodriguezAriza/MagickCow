@@ -53,6 +53,8 @@ TODOs @20/07/2025:
     
     - Change material caching to use id(mat) instead of mat.name once we have implemented the despgraph export system rather than the currently destructive one.
         - This will be useful because with the destructive method, linked objects are made into local copies, so the material names, text file names, etc... basically, all data block names are fixed up by adding .00x suffixes to prevent name collisions. This is done automatically by Blender, so it all comes together quite naturally. Once the despgraph method is used, this will obviously break the current caching system. Since linked objects are still technically referencing unique objects in memory, and we don't care about the fact that their memory address is different on every single program execution, we can then very easily determine that using id(obj), which gets the memory address of the object, is a good way to implement caching once the name based system stops working with the future planned despgraph based export system, which should be faster and consume less memory, we'll see if the need ever comes...
+    
+    - Maybe add the possibility of making all mcow bpy props library overridable, just in case that becomes useful in the future... some user is bound to have an usecase for that!
 """
 
 # endregion
