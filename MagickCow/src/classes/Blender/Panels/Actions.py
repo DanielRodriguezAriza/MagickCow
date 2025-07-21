@@ -151,7 +151,16 @@ def unregister_actions_panel():
 
 # region MagickCow Actions - Exporter Operators
 
-# TODO : Implement
+class MagickCow_OT_Action_GenerateBlendFile(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
+    
+    bl_idname = "magickcow.action_generate_blend_file"
+    bl_label = "Generate .blend file"
+
+    filename_ext = ".blend"
+    filter_glob : bpy.props.StringProperty(default = "*.blend", options = {'HIDDEN'})
+
+    def execute(self, context):
+        pass
 
 # endregion
 
