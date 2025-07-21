@@ -90,6 +90,12 @@ class MagickCow_OT_Action_AppendBlendFile_Example_LevelModel(bpy.types.Operator)
     def execute(self, context):
         return mcow_action_append_blend_file_example(self, "Level Model", "level_model.blend")
 
+class MagickCow_OT_Action_AppendBlendFile_Example_PhysicsEntity(bpy.types.Operator):
+    bl_idname = "magickcow.action_generate_blend_file_example_physics_entity"
+    bl_label = "Generate Physics Entity"
+    def execute(self, context):
+        return mcow_action_append_blend_file_example(self, "Physics Entity", "physics_entity.blend")
+
 def mcow_action_append_blend_file_example_internal(file_name):
     # Compute the path where the blend file is located
     path_addon = os.path.dirname(__file__)
@@ -112,12 +118,14 @@ def register_actions_operators():
     bpy.utils.register_class(MagickCow_OT_Action_UninstallTemplates)
     bpy.utils.register_class(MagickCow_OT_Action_GenerateAssetLibrary)
     bpy.utils.register_class(MagickCow_OT_Action_AppendBlendFile_Example_LevelModel)
+    bpy.utils.register_class(MagickCow_OT_Action_AppendBlendFile_Example_PhysicsEntity)
 
 def unregister_actions_operators():
     bpy.utils.unregister_class(MagickCow_OT_Action_InstallTemplates)
     bpy.utils.unregister_class(MagickCow_OT_Action_UninstallTemplates)
     bpy.utils.unregister_class(MagickCow_OT_Action_GenerateAssetLibrary)
     bpy.utils.unregister_class(MagickCow_OT_Action_AppendBlendFile_Example_LevelModel)
+    bpy.utils.unregister_class(MagickCow_OT_Action_AppendBlendFile_Example_PhysicsEntity)
 
 # endregion
 
@@ -147,6 +155,7 @@ class OBJECT_PT_MagickCowActionsPanel(bpy.types.Panel):
         boxA = layout.box()
         boxA.label(text="Example Scene Generator")
         boxA.operator("magickcow.action_generate_blend_file_example_level_model")
+        boxA.operator("magickcow.action_generate_blend_file_example_physics_entity")
 
         # Asset library generator menu (create assets library from Magicka files, etc...)
         boxB = layout.box()
