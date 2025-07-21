@@ -84,16 +84,26 @@ def mcow_action_generate_asset_library():
 
 # TODO : Add an operator for every single other type of scene model (Physics Entities, Character Models, etc...)
 # Basically, just have this evolve as time goes on...
-class MagickCow_OT_Action_GenerateBlendFile_Example_LevelModel(bpy.types.Operator):
+class MagickCow_OT_Action_AppendBlendFile_Example_LevelModel(bpy.types.Operator):
     bl_idname = "magickcow.action_generate_blend_file_example_level_model"
     bl_label = "Generate LevelModel"
     def execute(self, context):
         self.report({"ERROR"}, "This feature is not implemented yet!")
         return {"CANCELLED"}
 
-def mcow_action_generate_blend_file_example(file_name):
-    # TODO : Implement basic logic that all exporters should use
-    pass
+def mcow_action_append_blend_file_example(file_name):
+    # Compute the path where the blend file is located
+    path_addon = os.path.dirname(__file__)
+    path_file = os.path.join(path_addon, "data", "examples", file_name, ".blend")
+
+    # Select all of the data we want to extract from the blend file
+    with bpy.data.libraries.load(path_file, link=False) as (data_from, data_to):
+        data_to.objects = data_from.objects
+
+    # Append it to the current scene
+    for obj in data_to.objects:
+        if obj is not None:
+            bpy.context.collection.objects.link(obj)
 
 def register_actions_operators():
     bpy.utils.register_class(MagickCow_OT_Action_InstallTemplates)
