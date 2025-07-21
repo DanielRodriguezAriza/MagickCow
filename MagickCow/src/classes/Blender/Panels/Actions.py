@@ -1,4 +1,4 @@
-# region MagickCow Actions Operators
+# region MagickCow Actions - Operators
 
 # region Comment - Scene Templates
 
@@ -82,9 +82,22 @@ def mcow_action_generate_asset_library():
     # TODO : Implement
     pass
 
+# TODO : Add an operator for every single other type of scene model (Physics Entities, Character Models, etc...)
+# Basically, just have this evolve as time goes on...
+class MagickCow_OT_Action_GenerateBlendFile_Example_LevelModel(bpy.types.Operator):
+    bl_idname = "magickcow.action_generate_blend_file_example_level_model"
+    bl_label = "Generate LevelModel"
+    def execute(self, context):
+        self.report({"ERROR"}, "This feature is not implemented yet!")
+        return {"CANCELLED"}
+
+def mcow_action_generate_blend_file_example(file_name):
+    # TODO : Implement basic logic that all exporters should use
+    pass
+
 # endregion
 
-# region Blender Panel: N-Key Panel: MagickCow Actions
+# region MagickCow Actions - N-Key Panel
 
 # This class is the one that controls the N-Key panel for MagickCow Actions.
 class OBJECT_PT_MagickCowActionsPanel(bpy.types.Panel):
@@ -98,13 +111,18 @@ class OBJECT_PT_MagickCowActionsPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         
-        layout.label(text = "No available actions yet!")
+        # layout.label(text = "No available actions yet!")
 
         # App templates handler menu ("scene prefabs / presets")
         boxA = layout.box()
         boxA.label(text="Scene Templates Generator")
         boxA.operator("magickcow.action_install_templates")
         boxA.operator("magickcow.action_uninstall_templates")
+
+        # Create .blend files with example scenes
+        boxA = layout.box()
+        boxA.label(text="Example Scene Generator")
+        boxA.operator("magickcow.action_generate_blend_file_example_level_model")
 
         # Asset library generator menu (create assets library from Magicka files, etc...)
         boxB = layout.box()
@@ -128,5 +146,11 @@ def unregister_actions_panel():
 
     # Unregister the panel
     bpy.utils.unregister_class(OBJECT_PT_MagickCowActionsPanel)
+
+# endregion
+
+# region MagickCow Actions - Exporter Operators
+
+# TODO : Implement
 
 # endregion
