@@ -153,28 +153,6 @@ def unregister_actions_panel():
 
 # endregion
 
-# region MagickCow Actions - Exporter Operators
-
-class MagickCow_OT_Action_GenerateBlendFile(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
-    
-    bl_idname = "magickcow.action_generate_blend_file"
-    bl_label = "Generate .blend file"
-
-    filename_ext = ".blend"
-    filter_glob : bpy.props.StringProperty(default = "*.blend", options = {'HIDDEN'})
-
-    def execute(self, context):
-        # TODO : Implement
-        pass
-
-def register_actions_export_operator():
-    bpy.utils.register_class(MagickCow_OT_Action_GenerateBlendFile)
-
-def unregister_actions_export_operator():
-    bpy.utils.unregister_class(MagickCow_OT_Action_GenerateBlendFile)
-
-# endregion
-
 # region MagickCowA Actions - Register Functions
 
 # This region contains the top-level function to register and unregister all MagickCow Actions related classes, data and properties.
@@ -183,12 +161,10 @@ def unregister_actions_export_operator():
 
 def register_actions():
     register_actions_operators()
-    register_actions_export_operator()
     register_actions_panel()
 
 def unregister_actions():
     unregister_actions_operators()
-    unregister_actions_export_operator()
     unregister_actions_panel()
 
 # endregion
