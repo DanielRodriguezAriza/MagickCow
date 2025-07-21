@@ -58,3 +58,55 @@ TODOs @20/07/2025:
 """
 
 # endregion
+
+# region Notes - bpy.data.libraries.load()
+
+# NOTE : Using the following code, we can see on the console all of the attributes that exist within the data_from and data_to objects:
+"""
+import bpy
+with bpy.data.libraries.load(filepath, link=False) as (data_from, data_to):
+    for atr in dir(data_from):
+        print(atr)
+"""
+# The types extracted as of 21/07/2025@16:30 are the following:
+"""
+actions
+armatures
+brushes
+cache_files
+cameras
+collections
+curves
+fonts
+grease_pencils
+grease_pencils_v3
+hair_curves
+images
+lattices
+lightprobes
+lights
+linestyles
+masks
+materials
+meshes
+metaballs
+movieclips
+node_groups
+objects
+paint_curves
+palettes
+particles
+pointclouds
+scenes
+screens
+sounds
+speakers
+texts
+textures
+volumes
+workspaces
+worlds
+"""
+# For the purpose of appending scenes to the current scene, pick whatever is required. You must write code like data_to.whatever = data_from.whatever, and then add calls to bpy.context.collection.objects.link(obj) to link objects and whatnot so that they can appear on the scene... yeah, pretty absurd amount of work for what could be very easily just an "append stuff to this scene" function... year 2025 btw...
+
+# endregion
