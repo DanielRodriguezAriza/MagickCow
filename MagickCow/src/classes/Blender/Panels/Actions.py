@@ -96,14 +96,8 @@ def mcow_action_append_blend_file_example(file_name):
     path_addon = os.path.dirname(__file__)
     path_file = os.path.join(path_addon, "data", "examples", file_name, ".blend")
 
-    # Select all of the data we want to extract from the blend file
-    with bpy.data.libraries.load(path_file, link=False) as (data_from, data_to):
-        data_to.objects = data_from.objects
-
-    # Append it to the current scene
-    for obj in data_to.objects:
-        if obj is not None:
-            bpy.context.collection.objects.link(obj)
+    # Append the scene data from the selected blend file to the current scene
+    mcow_utility_append_blender_scene(path_file)
 
 def register_actions_operators():
     bpy.utils.register_class(MagickCow_OT_Action_InstallTemplates)
