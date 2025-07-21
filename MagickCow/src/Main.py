@@ -12,7 +12,7 @@ def register():
     register_properties_material()
     register_properties_object()
     register_properties_scene()
-    register_actions_panel()
+    register_actions()
 
 def unregister():
     # Register custom property classes
@@ -26,7 +26,7 @@ def unregister():
     unregister_properties_material()
     unregister_properties_object()
     unregister_properties_scene()
-    unregister_actions_panel()
+    unregister_actions()
 
 if __name__ == "__main__":
     register()

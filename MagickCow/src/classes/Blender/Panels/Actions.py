@@ -95,6 +95,18 @@ def mcow_action_generate_blend_file_example(file_name):
     # TODO : Implement basic logic that all exporters should use
     pass
 
+def register_actions_operators():
+    bpy.utils.register_class(MagickCow_OT_Action_InstallTemplates)
+    bpy.utils.register_class(MagickCow_OT_Action_UninstallTemplates)
+    bpy.utils.register_class(MagickCow_OT_Action_GenerateAssetLibrary)
+    bpy.utils.register_class(MagickCow_OT_Action_GenerateBlendFile_Example_LevelModel)
+
+def unregister_actions_operators():
+    bpy.utils.unregister_class(MagickCow_OT_Action_InstallTemplates)
+    bpy.utils.unregister_class(MagickCow_OT_Action_UninstallTemplates)
+    bpy.utils.unregister_class(MagickCow_OT_Action_GenerateAssetLibrary)
+    bpy.utils.unregister_class(MagickCow_OT_Action_GenerateBlendFile_Example_LevelModel)
+
 # endregion
 
 # region MagickCow Actions - N-Key Panel
@@ -130,21 +142,9 @@ class OBJECT_PT_MagickCowActionsPanel(bpy.types.Panel):
         boxB.operator("magickcow.action_generate_asset_library")
 
 def register_actions_panel():
-    # Register the operators
-    bpy.utils.register_class(MagickCow_OT_Action_InstallTemplates)
-    bpy.utils.register_class(MagickCow_OT_Action_UninstallTemplates)
-    bpy.utils.register_class(MagickCow_OT_Action_GenerateAssetLibrary)
-
-    # Register the panel
     bpy.utils.register_class(OBJECT_PT_MagickCowActionsPanel)
 
 def unregister_actions_panel():
-    # Unregister the operators
-    bpy.utils.unregister_class(MagickCow_OT_Action_InstallTemplates)
-    bpy.utils.unregister_class(MagickCow_OT_Action_UninstallTemplates)
-    bpy.utils.unregister_class(MagickCow_OT_Action_GenerateAssetLibrary)
-
-    # Unregister the panel
     bpy.utils.unregister_class(OBJECT_PT_MagickCowActionsPanel)
 
 # endregion
@@ -152,5 +152,19 @@ def unregister_actions_panel():
 # region MagickCow Actions - Exporter Operators
 
 # TODO : Implement
+
+# endregion
+
+# region MagickCowA Actions - Register Functions
+
+# Top level function to register all mcow-actions-related stuff.
+def register_actions():
+    register_actions_operators()
+    register_actions_panel()
+
+# Top level function to unregister all mcow-actions-related stuff.
+def unregister_actions():
+    unregister_actions_operators()
+    unregister_actions_panel()
 
 # endregion
