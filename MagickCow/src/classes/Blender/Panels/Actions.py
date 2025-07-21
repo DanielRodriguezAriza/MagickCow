@@ -86,9 +86,9 @@ def mcow_action_generate_asset_library():
 # Basically, just have this evolve as time goes on...
 class MagickCow_OT_Action_AppendBlendFile_Example_LevelModel(bpy.types.Operator):
     bl_idname = "magickcow.action_generate_blend_file_example_level_model"
-    bl_label = "Generate LevelModel"
+    bl_label = "Generate Level Model"
     def execute(self, context):
-        mcow_action_append_blend_file_example("Level Model", "level_model.blend")
+        return mcow_action_append_blend_file_example(self, "Level Model", "level_model.blend")
 
 def mcow_action_append_blend_file_example_internal(file_name):
     # Compute the path where the blend file is located
@@ -98,7 +98,7 @@ def mcow_action_append_blend_file_example_internal(file_name):
     # Append the scene data from the selected blend file to the current scene
     mcow_utility_append_blender_scene(path_file)
 
-def mcow_action_append_blend_file_example(display_name, file_name):
+def mcow_action_append_blend_file_example(self, display_name, file_name):
     try:
         mcow_action_append_blend_file_example_internal(file_name)
         self.report({"INFO"}, f"Successfully loaded \"{display_name}\" example scene!")
@@ -111,13 +111,13 @@ def register_actions_operators():
     bpy.utils.register_class(MagickCow_OT_Action_InstallTemplates)
     bpy.utils.register_class(MagickCow_OT_Action_UninstallTemplates)
     bpy.utils.register_class(MagickCow_OT_Action_GenerateAssetLibrary)
-    bpy.utils.register_class(MagickCow_OT_Action_GenerateBlendFile_Example_LevelModel)
+    bpy.utils.register_class(MagickCow_OT_Action_AppendBlendFile_Example_LevelModel)
 
 def unregister_actions_operators():
     bpy.utils.unregister_class(MagickCow_OT_Action_InstallTemplates)
     bpy.utils.unregister_class(MagickCow_OT_Action_UninstallTemplates)
     bpy.utils.unregister_class(MagickCow_OT_Action_GenerateAssetLibrary)
-    bpy.utils.unregister_class(MagickCow_OT_Action_GenerateBlendFile_Example_LevelModel)
+    bpy.utils.unregister_class(MagickCow_OT_Action_AppendBlendFile_Example_LevelModel)
 
 # endregion
 
