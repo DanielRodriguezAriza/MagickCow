@@ -88,16 +88,24 @@ class MagickCow_OT_Action_AppendBlendFile_Example_LevelModel(bpy.types.Operator)
     bl_idname = "magickcow.action_generate_blend_file_example_level_model"
     bl_label = "Generate LevelModel"
     def execute(self, context):
-        self.report({"ERROR"}, "This feature is not implemented yet!")
-        return {"CANCELLED"}
+        mcow_action_append_blend_file_example("Level Model", "level_model.blend")
 
-def mcow_action_append_blend_file_example(file_name):
+def mcow_action_append_blend_file_example_internal(file_name):
     # Compute the path where the blend file is located
     path_addon = os.path.dirname(__file__)
-    path_file = os.path.join(path_addon, "data", "examples", file_name, ".blend")
+    path_file = os.path.join(path_addon, "data", "examples", file_name)
 
     # Append the scene data from the selected blend file to the current scene
     mcow_utility_append_blender_scene(path_file)
+
+def mcow_action_append_blend_file_example(display_name, file_name):
+    try:
+        mcow_action_append_blend_file_example_internal(file_name)
+        self.report({"INFO"}, f"Successfully loaded \"{display_name}\" example scene!")
+        return {"FINISHED"}
+    except Exception as e:
+        self.report({"ERROR"}, f"Failed to load \"{display_name}\" example scene!")
+        return {"CANCELLED"}
 
 def register_actions_operators():
     bpy.utils.register_class(MagickCow_OT_Action_InstallTemplates)
