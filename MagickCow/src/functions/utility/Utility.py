@@ -217,8 +217,9 @@ def scale_to_z_up(s):
     return mathutils.Vector([s[0], s[2], s[1]])
 
 # NOTE : Kind of a retarded name tbh, because it's not exactly what we're doing, but it's a good enough name to represent that we're going from one coordinate system to the other...
+# Also, do note that transforming from Magicka's UV system to Blender's UVs always implies inverting the V axis, so this function could be named in a more generic way because it's the same transform in both cases...
 def uv_to_z_up(u):
-    return (u[0], u[1]) # TODO : Implement
+    return (u[0], -u[1])
 
 # TODO : Implement these functions and change the exporter code to use this instead of the whole -X rotation bullshit.
 # This change, when applied in a future update, will prevent the exporter from exporting wrong values when dealing with certain hierarchies.
