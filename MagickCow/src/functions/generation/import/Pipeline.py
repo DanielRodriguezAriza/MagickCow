@@ -123,6 +123,7 @@ class MCow_ImportPipeline:
         vertices = []
         indices = [index_buffer_internal[i:i+3] for i in range(0, len(index_buffer_internal), 3)] # This one is actually pretty fucking trivial, because it is already in a format that is 1:1 for what we require lol... all we have to do, is split the buffer into a list of sublists, where every sublist contains 3 elements, which are the indices of each triangle. Whether the input XNA index buffer has an index size that is 16 bit or 32 bit does not matter, since the numbers on the JSON text documented are already translated to whatever the width of Python's integers is anyway, so no need to handle that.
         normals = []
+        uvs = []
 
         # Vertex Attribute Offsets
         # NOTE : If any of these offset values is negative, then that means that the value was not found on the vertex declaration, so we cannot add that information to our newly generated Blender mesh data.
@@ -201,7 +202,15 @@ class MCow_ImportPipeline:
                 data = struct.unpack("<fff", chunk)
                 normals.append(point_to_z_up(data))
 
-        return vertices, indices, normals
+        # If the input vertex has an UV attribute for each vertex, then read it.
+        if vertex_offset_uv >= 0:
+            for offset in range(0, len(vertex_buffer_internal), vertex_stride):
+                chunk = buffer[(offset + vertex_offset_uv) : (offset + vertex_offset_uv + (2 * 4))] # 2 f32 for UVs
+                data = struct.unpack("<ff", chunk)
+                uvs.append(uv_to_z_up(data))
+
+        # Return a tuple with all the extracted mesh data.
+        return vertices, indices, normals, uvs
 
     # endregion
 
