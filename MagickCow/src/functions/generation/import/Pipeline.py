@@ -342,6 +342,7 @@ class MCow_ImportPipeline:
         if texture_data_diffuse is not None:
             texture_diffuse_node = self.create_effect_material_node_texture(nodes, (-200, -200), texture_data_diffuse)
             links.new(texture_diffuse_node.outputs["Color"], bsdf_node.inputs["Base Color"])
+            links.new(texture_diffuse_node.outputs["Alpha"], bsdf_node.inputs["Alpha"]) # Yes, Magicka stores the alpha channel within the diffuse texture itself.
 
         # TODO : Maybe implement support for normal textures? doesn't really matter, it's just for visualization and stuff...
         # Although in the future we COULD modify it so that we reference these nodes for the actual values? idk, maybe the visualization being synced up with custom mats should just be the user's responsibility...
