@@ -529,9 +529,9 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         return obj
 
     def import_buffer_mesh(self, vertex_stride, vertex_declaration, vertex_buffer, index_buffer, name):
-        
+
         # Read the vertex and index buffer data
-        mesh_vertices, mesh_triangles, mesh_normals = self.read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
+        mesh_vertices, mesh_triangles, mesh_normals, mesh_uvs = self.read_mesh_buffer_data(vertex_stride, vertex_declaration, vertex_buffer, index_buffer)
 
         # Create mesh data and mesh object
         mesh = bpy.data.meshes.new(name = name)
@@ -576,6 +576,22 @@ class MCow_ImportPipeline_Map(MCow_ImportPipeline):
         # NOTE : This code is disabled for now, because since 4.2, flipping normals crashes the editor, so we can't fix this either unless I manually flip them myself on import!!!
         # WOW BLENDER IS SO GOOD!!!!
 
+        # endregion
+
+        # Create mesh UVs layer
+        uv_layer = mesh.uv_layers.new(name = name)
+
+        # Assign UVs data to the UV layer
+        for loop in mesh.loops:
+            uv_layer.data[loop.index].uv = mesh_uvs[loop.vertex_index]
+        
+        # region Comment - Alternative UVs loading code for per-face UVs
+        # NOTE : This is the way we'd do it if we had the input mesh buffer in Blender format. Yeah... not too efficient, eh?
+        # That's the price of per-face UVs rather than per-vertex UVs. At least per-face UVs can still be used within Blender just fine, as the exporter side of the code already
+        # takes care of translating back into per-vertex on export. Per-face UVs are just really fucking nice to work with for artists, so giving that up would be retarded.
+        # for face in mesh.polygons:
+        #     for i, loop_index in enumerate(face.loop_indices):
+        #         uv_layer.data[loop_index].uv = mesh_uvs[face.index * 3 + i]
         # endregion
 
         # Return the generated object and mesh data block
