@@ -202,6 +202,7 @@ def mat4x4_buf2mat_rm2cm_yu2zu(m):
 
 # Input: (x, y, z) in Y-Up
 # Output: (x, y, z) in Z-Up
+# TODO : In the future, maybe rename to something like point3_to_z_up() since we could have a point2 function maybe? or maybe it's not worth it idk.
 def point_to_z_up(p):
     return mathutils.Vector([p[0], -p[2], p[1]])
 
@@ -214,6 +215,10 @@ def quat_to_z_up(q):
 # Output: (x, y, z) in Z-Up
 def scale_to_z_up(s):
     return mathutils.Vector([s[0], s[2], s[1]])
+
+# NOTE : Kind of a retarded name tbh, because it's not exactly what we're doing, but it's a good enough name to represent that we're going from one coordinate system to the other...
+def uv_to_z_up(u):
+    return (u[0], u[1]) # TODO : Implement
 
 # TODO : Implement these functions and change the exporter code to use this instead of the whole -X rotation bullshit.
 # This change, when applied in a future update, will prevent the exporter from exporting wrong values when dealing with certain hierarchies.
