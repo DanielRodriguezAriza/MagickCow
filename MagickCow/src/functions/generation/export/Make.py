@@ -851,7 +851,7 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
         # Create JSON structure with a dictionary
         ans = {
             "name" : bone_name,
-            "affectsShields" : affects_shields,
+            "affectShields" : affects_shields,
             "model" : animated_model,
             "numMeshSettings" : len(mesh_settings),
             "meshSettings" : mesh_settings,
