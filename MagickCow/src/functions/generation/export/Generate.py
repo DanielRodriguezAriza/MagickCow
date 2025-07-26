@@ -361,6 +361,9 @@ class MCow_Data_Generator:
                 tangent = mcow_mesh.invtrans @ loop.tangent
                 tangent = mathutils.Vector((tangent[0], tangent[1], tangent[2])).normalized()
 
+                binormal = normal.cross(tangent)
+                binormal = binormal.normalized()
+
                 uv = mcow_mesh.mesh.uv_layers.active.data[loop_idx].uv
                 uv = self.generate_uv(uv)
                 
@@ -372,7 +375,7 @@ class MCow_Data_Generator:
 
                 # NOTE : Perhaps we could do the processing AFTER we isolate what unique vertices exist?
 
-                vertex = (global_vertex_index, position, normal, tangent, uv, color)
+                vertex = (global_vertex_index, position, normal, tangent, uv, color, binormal)
 
                 if vertex_idx not in vertices_map:
                     vertices_map[vertex_idx] = [vertex]
