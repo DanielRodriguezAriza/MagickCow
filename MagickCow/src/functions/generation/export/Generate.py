@@ -363,10 +363,11 @@ class MCow_Data_Generator:
                 uv = self.generate_uv(uv)
                 
                 if color_layer is None:
-                    color = color_default
+                    color = (False, color_default) # color_data = (has_color = False, color_vector = (r, g, b, a))
                 else:
                     color = color_layer.data[loop_idx].color
                     color = (color[0], color[1], color[2], color[3])
+                    color = (True, color) # color_data = (has_color = True, color_vector = (r, g, b, a))
 
                 # NOTE : Perhaps we could do the processing AFTER we isolate what unique vertices exist?
 
