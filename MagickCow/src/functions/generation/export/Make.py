@@ -196,9 +196,15 @@ class MCow_Data_Maker:
     def make_vertex_buffer(self, vertices):
         buf = []
         for vertex in vertices:
-            global_idx, position, normal, tangent, uv, color = vertex
-            # TODO : Implement handling to ignore vertex color when it is not required...
-            buffer_part = struct.pack("fffffffffffffff", position[0], position[1], position[2], normal[0], normal[1], normal[2], uv[0], uv[1], tangent[0], tangent[1], tangent[2], color[0], color[1], color[2], color[3])
+            global_idx, position, normal, tangent, uv, color_data = vertex
+            has_color, color = color_data # Bruh, storing this on each vertex and having to check for every single vertex is pretty fucking retarded... but we'll have to deal with this for now. What a fucking hack.
+            # TODO : Clean this up and remove this retarded, shitty, patchy, temporary solution (something something there is nothing more permanent than a temporary solution...)
+
+            if has_color:
+                buffer_part = struct.pack("fffffffffffffff", position[0], position[1], position[2], normal[0], normal[1], normal[2], uv[0], uv[1], tangent[0], tangent[1], tangent[2], color[0], color[1], color[2], color[3])
+            else:
+                buffer_part = struct.pack("fffffffffff", position[0], position[1], position[2], normal[0], normal[1], normal[2], uv[0], uv[1], tangent[0], tangent[1], tangent[2])
+            
             byte_array = bytearray(buffer_part)
             # int_array = array.array("i")
             # int_array.frombytes(byte_array)
