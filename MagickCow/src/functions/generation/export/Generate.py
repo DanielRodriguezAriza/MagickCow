@@ -332,9 +332,11 @@ class MCow_Data_Generator:
         # Cache vertex color layer
         if len(mcow_mesh.mesh.color_attributes) > 0:
             color_layer = mcow_mesh.mesh.color_attributes[0]
+            has_vertex_color = True
         else:
-            color_default = (0.0, 0.0, 0.0, 0.0) if mcow_mesh.mesh.magickcow_mesh_type in ["WATER", "LAVA"] else (1.0, 1.0, 1.0, 0.0)
-            color_layer = None
+            color_default = (0.0, 0.0, 0.0, 0.0) if mcow_mesh.mesh.magickcow_mesh_type in ["WATER", "LAVA"] else (1.0, 1.0, 1.0, 0.0) # TODO : Get rid of this retarded logic in the future maybe...
+            color_layer = None # LOL
+            has_vertex_color = False
 
         vertices = []
         indices = []
@@ -362,12 +364,11 @@ class MCow_Data_Generator:
                 uv = mcow_mesh.mesh.uv_layers.active.data[loop_idx].uv
                 uv = self.generate_uv(uv)
                 
-                if color_layer is None:
-                    color = (False, color_default) # color_data = (has_color = False, color_vector = (r, g, b, a))
-                else:
+                if has_vertex_color:
                     color = color_layer.data[loop_idx].color
                     color = (color[0], color[1], color[2], color[3])
-                    color = (True, color) # color_data = (has_color = True, color_vector = (r, g, b, a))
+                else:
+                    color = color_default
 
                 # NOTE : Perhaps we could do the processing AFTER we isolate what unique vertices exist?
 
@@ -401,7 +402,7 @@ class MCow_Data_Generator:
             # Insert the data of these 3 new vertices into the index buffer
             indices.extend(temp_indices)
 
-        return (vertices, indices, matname)
+        return (vertices, indices, matname, has_vertex_color) # NOTE : In the future, maybe pass a vertex_info struct which contains information about whether we have a position, normal, tangent, color, uvs, etc... but for now, all meshes will have everything except for color, which only those with a color layer will have.
 
     def generate_mesh_data_testing_1(self, obj, transform, uses_material = True, material_index = 0):
         # Generate mesh data
@@ -605,7 +606,7 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
 
     def generate_static_mesh_data(self, obj, transform, matid):
         # Generate basic mesh data
-        vertices, indices, matname = self.generate_mesh_data(obj, transform, True, matid)
+        vertices, indices, matname, has_color = self.generate_mesh_data(obj, transform, True, matid)
 
         # Generate AABB data
         aabb = self.generate_aabb_data(vertices)
@@ -620,7 +621,7 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
             entity_influence = bpy.types.Mesh.bl_rna.properties["magickcow_mesh_entity_influence"].default
             ground_level = bpy.types.Mesh.bl_rna.properties["magickcow_mesh_ground_level"].default
 
-        return (obj, transform, obj.name, vertices, indices, matname, aabb, sway, entity_influence, ground_level)
+        return (obj, transform, obj.name, vertices, indices, matname, has_color, aabb, sway, entity_influence, ground_level)
 
     def generate_animated_mesh_data(self, obj, transform, matid):
         # NOTE : The animated mesh calculation is a bit simpler because it does not require computing the AABB, as it uses an user defined radius for a bounding sphere.
@@ -628,7 +629,7 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         mesh = obj.data
 
         # Generate basic mesh data
-        vertices, indices, matname = self.generate_mesh_data(obj, transform, True, matid)
+        vertices, indices, matname, has_color = self.generate_mesh_data(obj, transform, True, matid)
         
         # Add the material as a shared resource and get the shared resource index
         idx = self.cache.add_shared_resource(matname, self.cache.get_material(matname, mesh.magickcow_mesh_type))
@@ -636,7 +637,7 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         # Create the matrix that will be passed to the make stage
         matrix = self.generate_matrix_data(transform)
         
-        return (obj, transform, obj.name, matrix, vertices, indices, idx)
+        return (obj, transform, obj.name, matrix, vertices, indices, has_color, idx)
 
     # region Comment - generate_liquid_data
     
@@ -650,19 +651,19 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
     def generate_liquid_data(self, obj, transform, matid):
         
         # Generate the mesh data (vertex buffer, index buffer and effect / material)
-        vertices, indices, matname = self.generate_mesh_data(obj, transform, True, matid)
+        vertices, indices, matname, has_color = self.generate_mesh_data(obj, transform, True, matid)
         
         # Get Liquid Water / Lava config
         can_drown = obj.data.magickcow_mesh_can_drown
         freezable = obj.data.magickcow_mesh_freezable
         autofreeze = obj.data.magickcow_mesh_autofreeze
         
-        return (vertices, indices, matname, can_drown, freezable, autofreeze)
+        return (vertices, indices, matname, has_color, can_drown, freezable, autofreeze)
 
     def generate_force_field_data(self, obj, transform, matid):
         # Generate the mesh data (vertex buffer, index buffer and effect / material, altough the material is ignored in this case)
-        vertices, indices, matname = self.generate_mesh_data(obj, transform, True, matid)
-        return (vertices, indices, matname)
+        vertices, indices, matname, has_color = self.generate_mesh_data(obj, transform, True, matid)
+        return (vertices, indices, matname, has_color)
 
     def generate_light_reference_data(self, obj, transform):
         name = obj.name
@@ -1363,9 +1364,9 @@ class MCow_Data_Generator_PhysicsEntity(MCow_Data_Generator):
 
     def generate_model_mesh(self, obj, transform, matid, parent_bone_index):
         name = obj.name
-        vertices, indices, matname = self.generate_mesh_data(obj, transform, True, matid)
+        vertices, indices, matname, has_color = self.generate_mesh_data(obj, transform, True, matid)
         shared_resource_index = self.cache.add_shared_resource(matname, self.cache.get_material(matname))
-        return (name, parent_bone_index, vertices, indices, shared_resource_index)
+        return (name, parent_bone_index, vertices, indices, has_color, shared_resource_index)
 
     def generate_model_bones(self, bones):
         ans = [self.generate_model_bone(bone) for bone in bones]
