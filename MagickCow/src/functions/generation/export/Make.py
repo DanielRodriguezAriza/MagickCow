@@ -134,7 +134,7 @@ class MCow_Data_Maker:
         }
         return ans
     
-    def make_vertex_declaration_default(self, use_vertex_color = True):
+    def make_vertex_declaration_default(self, has_color):
         # region Comment - Magic Numbers
         # NOTE : Yes, I know, I know... fucking magic numbers!!!
         # These correspond to the internal enum values for D3D's vertex declaration components. Stuff such as the element format, element method and element usage.
@@ -151,7 +151,7 @@ class MCow_Data_Maker:
 
         declaration_list = [] # NOTE : This is not required as of now, but read the TODO after the declaration_list creation to understand what this var's purpose would be in the future, if need be.
 
-        if use_vertex_color:
+        if has_color:
             declaration_list = [
                 (0, 0, 2, 0, 0, 0),  # Position (0) : Vector3
                 (0, 12, 2, 0, 3, 0), # Normal   (0) : Vector3
@@ -176,7 +176,7 @@ class MCow_Data_Maker:
 
         return self.make_vertex_declaration(declaration_list)
 
-    def make_vertex_stride_default(self, use_vertex_color = True):
+    def make_vertex_stride_default(self, has_color):
         # region Comment - Stride values
 
         # NOTE : The old stride was 44 because of the elements within the vertex declaration without vertex color.
@@ -188,17 +188,15 @@ class MCow_Data_Maker:
         # return 60 # 60 because we include the vertex color now, which has its own vertex declaration.
 
         # endregion
-        if use_vertex_color:
+        if has_color:
             return 60 # Vertex stride is 60 bytes if vertex color is included.
         else:
             return 44 # Vertex stride is 44 bytes if vertex color is excluded.
     
-    def make_vertex_buffer(self, vertices):
+    def make_vertex_buffer(self, vertices, has_color):
         buf = []
         for vertex in vertices:
-            global_idx, position, normal, tangent, uv, color_data = vertex
-            has_color, color = color_data # Bruh, storing this on each vertex and having to check for every single vertex is pretty fucking retarded... but we'll have to deal with this for now. What a fucking hack.
-            # TODO : Clean this up and remove this retarded, shitty, patchy, temporary solution (something something there is nothing more permanent than a temporary solution...)
+            global_idx, position, normal, tangent, uv, color = vertex
 
             if has_color:
                 buffer_part = struct.pack("fffffffffffffff", position[0], position[1], position[2], normal[0], normal[1], normal[2], uv[0], uv[1], tangent[0], tangent[1], tangent[2], color[0], color[1], color[2], color[3])
@@ -292,7 +290,7 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
     # region Make - Meshes (Root Nodes, Effects / Materials, Vertex Buffers, Index Buffers, Vertex Declarations, etc...)
 
     def make_root_node(self, mesh):
-        obj, transform, name, vertices, indices, matname, aabb, sway, entity_influence, ground_level = mesh
+        obj, transform, name, vertices, indices, matname, has_color, aabb, sway, entity_influence, ground_level = mesh
         primitives = int(len(indices) / 3) # Magicka's primitives are always triangles, and the mesh was triangulated, so this calculation is assumed to always be correct.
         ans = {
             "isVisible" : True,
@@ -301,9 +299,9 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
             "entityInfluence" : entity_influence,
             "groundLevel" : ground_level,
             "numVertices" : len(vertices),
-            "vertexStride" : self.make_vertex_stride_default(),
-            "vertexDeclaration" : self.make_vertex_declaration_default(),
-            "vertexBuffer" : self.make_vertex_buffer(vertices),
+            "vertexStride" : self.make_vertex_stride_default(has_color),
+            "vertexDeclaration" : self.make_vertex_declaration_default(has_color),
+            "vertexBuffer" : self.make_vertex_buffer(vertices, has_color),
             "indexBuffer" : self.make_index_buffer(indices),
             "effect" : self.make_effect(matname, "GEOMETRY"),
             "primitiveCount" : primitives,
@@ -515,13 +513,13 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
     # region Make - Liquids
 
     def make_liquid(self, liquid_data, liquid_type_str1 = "liquid_water", liquid_type_str2 = "WATER"):
-        vertices, indices, matname, can_drown, freezable, autofreeze = liquid_data
+        vertices, indices, matname, has_color, can_drown, freezable, autofreeze = liquid_data
         ans = {
             "$type" : liquid_type_str1,
-            "vertices" : self.make_vertex_buffer(vertices),
+            "vertices" : self.make_vertex_buffer(vertices, has_color),
             "indices" : self.make_index_buffer(indices),
-            "declaration" : self.make_vertex_declaration_default(),
-            "vertexStride" : self.make_vertex_stride_default(),
+            "declaration" : self.make_vertex_declaration_default(has_color),
+            "vertexStride" : self.make_vertex_stride_default(has_color),
             "numVertices" : len(vertices),
             "primitiveCount" : len(indices) // 3,
             "flag" : can_drown,
@@ -655,7 +653,7 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
         }
         return ans
     
-    def make_animated_model_mesh(self, name, vertices, indices, shared_resource_index, mesh_bone_index, interact_radius):
+    def make_animated_model_mesh(self, name, vertices, indices, has_color, shared_resource_index, mesh_bone_index, interact_radius):
         ans = {
             "name" : name,
             "parentBone" : mesh_bone_index,
@@ -667,7 +665,7 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
                 },
                 "Radius" : interact_radius,
             },
-            "vertexBuffer" : self.make_vertex_buffer(vertices),
+            "vertexBuffer" : self.make_vertex_buffer(vertices, has_color),
             "indexBuffer" : self.make_index_buffer(indices),
             "meshParts" : [ # Always hard code a single mesh part
                 {
@@ -676,7 +674,7 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
                     "numVertices" : len(vertices),
                     "startIndex" : 0,
                     "primitiveCount" : int(len(indices) // 3),
-                    "vertexDeclarationIndex" : 0, # Hard coded to always use the only vertex declaration we have
+                    "vertexDeclarationIndex" : 0 if has_color else 1, # Select the vertex declaration that fits this mesh. Pretty fucking hacky tbh.
                     "tag" : None, # Hard coded to never use a tag (always null)
                     "sharedResourceIndex" : shared_resource_index
                 }
@@ -700,23 +698,24 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
 
             current_mesh = meshes[current_mesh_index]
 
-            obj, transform, name, matrix, vertices, indices, idx = current_mesh
+            obj, transform, name, matrix, vertices, indices, has_color, idx = current_mesh
             
             # Create bone data
             bone = self.make_bone(current_bone_index, name, matrix, 0, [])
             bone_list.append(bone)
             
             # Create model mesh data
-            model_mesh = self.make_animated_model_mesh(name, vertices, indices, idx, current_bone_index, root_radius)
+            model_mesh = self.make_animated_model_mesh(name, vertices, indices, has_color, idx, current_bone_index, root_radius)
             model_meshes.append(model_mesh)
         
         ans = {
             "tag" : None, # None is translated to null, and that is the value that all of the tags seem to have in the XNB files, so hopefully we won't find this to be problematic in the future... can't wait for it to come back to bite me in the ass!
             "numBones" : len(bone_list), # 1 bone for the root and 1 bone per mesh, which is what I've observed within the official XNB files... hopefully this is the right way...
             "bones" : bone_list,
-            "numVertexDeclarations" : 1, # Hard code this to only use 1 vertex declaration, the one we provide always in this addon
+            "numVertexDeclarations" : 2, # Hard code this to only use 2 vertex declarations, the ones we provide always in this addon
             "vertexDeclarations" : [
-                self.make_vertex_declaration_default() # again, hard code the default vertex declaration
+                self.make_vertex_declaration_default(True), # again, hard code the default vertex declaration
+                self.make_vertex_declaration_default(False)
             ],
             "numModelMeshes" : len(model_meshes),
             "modelMeshes" : model_meshes
@@ -1031,7 +1030,7 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
     # region Make - Force Fields
 
     def make_force_field(self, force_field):
-        vertices, indices, matname = force_field
+        vertices, indices, matname, has_color = force_field
 
         # NOTE : This is a "dummy" effect of sorts. Magicka does NOT use an effect class for this when reading force fields from the XNB file, which means that this information is embedded on the force field class
         # itself, but during object construction, under the hood, this data is used to generate an XNA effect. Kinda weird and inconsistent with the rest of the code, but yeah, makes sense from the point of view
@@ -1051,10 +1050,10 @@ class MCow_Data_Maker_Map(MCow_Data_Maker):
             "vertexColorEnabled": temp_effect["vertexColorEnabled"],
             "displacementMap": temp_effect["displacementMap"],
             "ttl": temp_effect["ttl"],
-            "vertices" : self.make_vertex_buffer(vertices),
+            "vertices" : self.make_vertex_buffer(vertices, has_color),
             "indices" : self.make_index_buffer(indices),
-            "declaration" : self.make_vertex_declaration_default(),
-            "vertexStride" : self.make_vertex_stride_default(),
+            "declaration" : self.make_vertex_declaration_default(has_color),
+            "vertexStride" : self.make_vertex_stride_default(has_color),
             "numVertices" : len(vertices),
             "primitiveCount" : (len(indices) // 3)
         }
@@ -1261,7 +1260,7 @@ class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
         return ans
     
     def make_model_mesh(self, mesh):
-        name, parent_bone_index, vertices, indices, shared_resource_index = mesh
+        name, parent_bone_index, vertices, indices, has_color, shared_resource_index = mesh
         ans = {
             "name" : name,
             "parentBone" : parent_bone_index + 2, # Add 2 because of the Root and RootNode bones
@@ -1273,7 +1272,7 @@ class MCow_Data_Maker_PhysicsEntity(MCow_Data_Maker):
                 },
                 "Radius" : 1.5
             },
-            "vertexBuffer" : self.make_vertex_buffer(vertices),
+            "vertexBuffer" : self.make_vertex_buffer(vertices, has_color),
             "indexBuffer" : self.make_index_buffer(indices),
             "meshParts" : [
                 {
