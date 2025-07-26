@@ -153,22 +153,24 @@ class MCow_Data_Maker:
 
         if has_color:
             declaration_list = [
-                (0, 0, 2, 0, 0, 0),  # Position (0) : Vector3
-                (0, 12, 2, 0, 3, 0), # Normal   (0) : Vector3
-                (0, 24, 1, 0, 5, 0), # TexCoord (0) : Vector2
-                (0, 32, 2, 0, 6, 0), # Tangent  (0) : Vector3
-                (0, 24, 1, 0, 5, 1), # TexCoord (1) : Vector2
-                (0, 32, 2, 0, 6, 1), # Tangent  (1) : Vector3
-                (0, 44, 3, 0, 10, 0) # Color    (0) : Vector4
+                (0,  0, 2, 0,  0, 0), # Position (0) : Vector3
+                (0, 12, 2, 0,  3, 0), # Normal   (0) : Vector3
+                (0, 24, 1, 0,  5, 0), # TexCoord (0) : Vector2
+                (0, 32, 2, 0,  6, 0), # Tangent  (0) : Vector3
+                (0, 24, 1, 0,  5, 1), # TexCoord (1) : Vector2
+                (0, 32, 2, 0,  6, 1), # Tangent  (1) : Vector3
+                (0, 44, 2, 0,  7, 0), # Binormal (0) : Vector3
+                (0, 56, 3, 0, 10, 0), # Color    (0) : Vector4
             ]
         else:
             declaration_list = [
-                (0, 0, 2, 0, 0, 0),  # Position (0) : Vector3
-                (0, 12, 2, 0, 3, 0), # Normal   (0) : Vector3
-                (0, 24, 1, 0, 5, 0), # TexCoord (0) : Vector2
-                (0, 32, 2, 0, 6, 0), # Tangent  (0) : Vector3
-                (0, 24, 1, 0, 5, 1), # TexCoord (1) : Vector2
-                (0, 32, 2, 0, 6, 1), # Tangent  (1) : Vector3
+                (0,  0, 2, 0,  0, 0), # Position (0) : Vector3
+                (0, 12, 2, 0,  3, 0), # Normal   (0) : Vector3
+                (0, 24, 1, 0,  5, 0), # TexCoord (0) : Vector2
+                (0, 32, 2, 0,  6, 0), # Tangent  (0) : Vector3
+                (0, 24, 1, 0,  5, 1), # TexCoord (1) : Vector2
+                (0, 32, 2, 0,  6, 1), # Tangent  (1) : Vector3
+                (0, 44, 2, 0,  7, 0), # Binormal (0) : Vector3
             ]
         
         # TODO : In the future, if more complex and customizable buffer structures are desired, rather than hardcoding 2 almost identical lists, we could just have a bunch of bools that indicate if we contain
@@ -189,19 +191,19 @@ class MCow_Data_Maker:
 
         # endregion
         if has_color:
-            return 60 # Vertex stride is 60 bytes if vertex color is included.
+            return 72 # Vertex stride is 72 bytes if vertex color is included.
         else:
-            return 44 # Vertex stride is 44 bytes if vertex color is excluded.
+            return 56 # Vertex stride is 56 bytes if vertex color is excluded.
     
     def make_vertex_buffer(self, vertices, has_color):
         buf = []
         for vertex in vertices:
-            global_idx, position, normal, tangent, uv, color = vertex
+            global_idx, position, normal, tangent, uv, color, binormal = vertex
 
             if has_color:
-                buffer_part = struct.pack("fffffffffffffff", position[0], position[1], position[2], normal[0], normal[1], normal[2], uv[0], uv[1], tangent[0], tangent[1], tangent[2], color[0], color[1], color[2], color[3])
+                buffer_part = struct.pack("ffffffffffffffffff", position[0], position[1], position[2], normal[0], normal[1], normal[2], uv[0], uv[1], tangent[0], tangent[1], tangent[2], binormal[0], binormal[1], binormal[2], color[0], color[1], color[2], color[3])
             else:
-                buffer_part = struct.pack("fffffffffff", position[0], position[1], position[2], normal[0], normal[1], normal[2], uv[0], uv[1], tangent[0], tangent[1], tangent[2])
+                buffer_part = struct.pack("ffffffffffffff", position[0], position[1], position[2], normal[0], normal[1], normal[2], uv[0], uv[1], tangent[0], tangent[1], tangent[2], binormal[0], binormal[1], binormal[2])
             
             byte_array = bytearray(buffer_part)
             # int_array = array.array("i")
