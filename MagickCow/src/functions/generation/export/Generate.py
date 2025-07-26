@@ -353,13 +353,13 @@ class MCow_Data_Generator:
                 vertex_idx = loop.vertex_index
                 
                 position = mcow_mesh.transform @ mcow_mesh.mesh.vertices[vertex_idx].co.to_4d()
-                position = self.generate_vector(position)
+                position = mathutils.Vector((position[0], position[1], position[2]))
 
                 normal = mcow_mesh.invtrans @ loop.normal
-                normal = self.generate_vector(normal)
+                normal = mathutils.Vector((normal[0], normal[1], normal[2])).normalized()
 
                 tangent = mcow_mesh.invtrans @ loop.tangent
-                tangent = self.generate_vector(tangent)
+                tangent = mathutils.Vector((tangent[0], tangent[1], tangent[2])).normalized()
 
                 uv = mcow_mesh.mesh.uv_layers.active.data[loop_idx].uv
                 uv = self.generate_uv(uv)
