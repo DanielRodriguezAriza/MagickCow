@@ -359,10 +359,10 @@ class MCow_Data_Generator:
                 normal = mathutils.Vector((normal[0], normal[1], normal[2])).normalized()
 
                 tangent = mcow_mesh.invtrans @ loop.tangent
-                tangent = mathutils.Vector((tangent[0], tangent[1], tangent[2])).normalized()
+                tangent = mathutils.Vector((tangent[0], tangent[1], tangent[2])).normalized() * -1 # NOTE : Not sure if inverting this value (the *-1 part) is correct or not, but for now this is ok since it matches the tangent values of Magicka vertex buffers that I've inspected... the logic is pretty much the same as always, translate from Blender's coordinate system to Magicka's.
 
                 binormal = normal.cross(tangent)
-                binormal = binormal.normalized()
+                binormal = binormal.normalized() * -1 # NOTE : In computer graphics, the binormal is multiplied by w=+-1 (binormal = N x T * w, where w is the "winding" direction) to ensure that we can translate from one program's coordinate system to another's correctly.
 
                 uv = mcow_mesh.mesh.uv_layers.active.data[loop_idx].uv
                 uv = self.generate_uv(uv)
