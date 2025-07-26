@@ -146,13 +146,36 @@ class MCow_Data_Maker:
         # This simplifies the code a lot, since now we only have to care about writing to a single stream (index 0 always ofc) and call it a day. No multi-vertex buffer handling or anything like that.
         # endregion
 
-        # TODO : Maybe remove duplicate entries? they are supposed to be UB, but Magicka has them on vanilla models, so maybe they are weirdly required by XNA 3.1 or the render engine as it was implemented in Magicka?
+        # TODO : Maybe remove duplicate entries? they are supposed to be UB in D3D9, but Magicka has them on vanilla models, so maybe they are weirdly required by XNA 3.1
+        # or the render engine as it was implemented in Magicka?
+
+        declaration_list = [] # NOTE : This is not required as of now, but read the TODO after the declaration_list creation to understand what this var's purpose would be in the future, if need be.
 
         if use_vertex_color:
-            return self.make_vertex_declaration([(0, 0, 2, 0, 0, 0), (0, 12, 2, 0, 3, 0), (0, 24, 1, 0, 5, 0), (0, 32, 2, 0, 6, 0), (0, 24, 1, 0, 5, 1), (0, 32, 2, 0, 6, 1), (0, 44, 3, 0, 10, 0)])
+            declaration_list = [
+                (0, 0, 2, 0, 0, 0),  # Position (0) : Vector3
+                (0, 12, 2, 0, 3, 0), # Normal   (0) : Vector3
+                (0, 24, 1, 0, 5, 0), # TexCoord (0) : Vector2
+                (0, 32, 2, 0, 6, 0), # Tangent  (0) : Vector3
+                (0, 24, 1, 0, 5, 1), # TexCoord (1) : Vector2
+                (0, 32, 2, 0, 6, 1), # Tangent  (1) : Vector3
+                (0, 44, 3, 0, 10, 0) # Color    (0) : Vector4
+            ]
         else:
-            return self.make_vertex_declaration([(0, 0, 2, 0, 0, 0), (0, 12, 2, 0, 3, 0), (0, 24, 1, 0, 5, 0), (0, 32, 2, 0, 6, 0), (0, 24, 1, 0, 5, 1), (0, 32, 2, 0, 6, 1), (0, 44, 3, 0, 10, 0)]) # TODO : Change to remove the vertex color from the declaration
-    
+            declaration_list = [
+                (0, 0, 2, 0, 0, 0),  # Position (0) : Vector3
+                (0, 12, 2, 0, 3, 0), # Normal   (0) : Vector3
+                (0, 24, 1, 0, 5, 0), # TexCoord (0) : Vector2
+                (0, 32, 2, 0, 6, 0), # Tangent  (0) : Vector3
+                (0, 24, 1, 0, 5, 1), # TexCoord (1) : Vector2
+                (0, 32, 2, 0, 6, 1), # Tangent  (1) : Vector3
+            ]
+        
+        # TODO : In the future, if more complex and customizable buffer structures are desired, rather than hardcoding 2 almost identical lists, we could just have a bunch of bools that indicate if we contain
+        # X type of property on the mesh, and then slowly add the values of the entries to the list, with an automatically calculated offset at each step. For now, tho, this is ok.
+
+        return self.make_vertex_declaration(declaration_list)
+
     def make_vertex_stride_default(self, use_vertex_color = True):
         # region Comment - Stride values
 
