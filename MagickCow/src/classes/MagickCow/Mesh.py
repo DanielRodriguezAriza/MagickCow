@@ -29,20 +29,21 @@ class MCow_Mesh:
         self.bm.free()
 
     def _calculate_mesh_data(self):
-        self._select_object(self.obj)
-        self._apply_modifiers(self.obj)
-        self._triangulate_mesh(self.obj)
+        self._select_object()
+        self._apply_modifiers()
+        self._triangulate_mesh()
+        self._compute_tangents()
     
-    def _select_object(self, obj):
-        obj.select_set(state = True)
-        bpy.context.view_layer.objects.active = obj
+    def _select_object(self):
+        self.obj.select_set(state = True)
+        bpy.context.view_layer.objects.active = self.obj
 
-    def _apply_modifiers(self, obj):
-        for mod in obj.modifiers:
+    def _apply_modifiers(self):
+        for mod in self.obj.modifiers:
             bpy.ops.object.modifier_apply(modifier = mod.name)
     
-    def _triangulate_mesh(self, obj):
-        mesh = obj.data
+    def _triangulate_mesh(self):
+        mesh = self.obj.data
         bm = bmesh.new()
         bm.from_mesh(mesh)
         bmesh.ops.triangulate(bm, faces=bm.faces)
@@ -50,5 +51,7 @@ class MCow_Mesh:
         self.mesh = mesh
         self.bm = bm
 
+    def _compute_tangents(self):
+        self.mesh.calc_tangents()
 
 # endregion
