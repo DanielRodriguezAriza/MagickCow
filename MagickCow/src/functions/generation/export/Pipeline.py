@@ -219,9 +219,18 @@ class MCow_Data_Pipeline:
 
     # endregion
 
+    # region Aux Functions
+
+    def _enter_object_mode(self):
+        # NOTE : No clue if a non bpy.ops version exists tbh, and I couldn't care less for the purposes of this call lol, so this is good enough for me! For now, at least...
+        bpy.ops.object.mode_set(mode="OBJECT")
+
+    # endregion
+
     # region Scene Pre-Processing
 
     def preprocess_scene(self):
+        self._enter_object_mode() # Only required as of now because we're not using the despgraph. We're doing a lot of destructive work and then reloading the .blend file. Many of these ops can only be applied from object mode, so better enforce this to make the process less cumbersome for users who may find themselves on edit mode or vertex pain mode or whatever other mode.
         self._make_scene_objects_local()
         self._rotate_scene()
 
