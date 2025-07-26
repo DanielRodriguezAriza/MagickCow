@@ -134,18 +134,47 @@ class MCow_Data_Maker:
         }
         return ans
     
-    def make_vertex_declaration_default(self):
-        return self.make_vertex_declaration([(0, 0, 2, 0, 0, 0), (0, 12, 2, 0, 3, 0), (0, 24, 1, 0, 5, 0), (0, 32, 2, 0, 6, 0), (0, 24, 1, 0, 5, 1), (0, 32, 2, 0, 6, 1), (0, 44, 3, 0, 10, 0)])
+    def make_vertex_declaration_default(self, use_vertex_color = True):
+        # region Comment - Magic Numbers
+        # NOTE : Yes, I know, I know... fucking magic numbers!!!
+        # These correspond to the internal enum values for D3D's vertex declaration components. Stuff such as the element format, element method and element usage.
+        # TODO : Add some fucking defines or enums or whatever for these, please?? if only Python had actual enums, we wouldn't have to do this shit to have no overhead...
+        # which at the end of the day, would be a tiny overhead, but I didn't think of that ahead of time, so now I get to pay the price of doing things wrong in the past...
+        # endregion
+        # region Comment - Streams
+        # NOTE : XNA (all versions, including 3.1 and 4.0) doesn't support stream buffers for indices other than 0, which is why all of the official model formats use a single vertex buffer.
+        # This simplifies the code a lot, since now we only have to care about writing to a single stream (index 0 always ofc) and call it a day. No multi-vertex buffer handling or anything like that.
+        # endregion
+
+        # TODO : Maybe remove duplicate entries? they are supposed to be UB, but Magicka has them on vanilla models, so maybe they are weirdly required by XNA 3.1 or the render engine as it was implemented in Magicka?
+
+        if use_vertex_color:
+            return self.make_vertex_declaration([(0, 0, 2, 0, 0, 0), (0, 12, 2, 0, 3, 0), (0, 24, 1, 0, 5, 0), (0, 32, 2, 0, 6, 0), (0, 24, 1, 0, 5, 1), (0, 32, 2, 0, 6, 1), (0, 44, 3, 0, 10, 0)])
+        else:
+            return self.make_vertex_declaration([(0, 0, 2, 0, 0, 0), (0, 12, 2, 0, 3, 0), (0, 24, 1, 0, 5, 0), (0, 32, 2, 0, 6, 0), (0, 24, 1, 0, 5, 1), (0, 32, 2, 0, 6, 1), (0, 44, 3, 0, 10, 0)]) # TODO : Change to remove the vertex color from the declaration
     
-    def make_vertex_stride_default(self):
-        # Old Stide was 44, the vertex color inclusion has changed that. No need to make special cases because it's actually quite slim, vertex color doesn't even bloat mesh memory usage that much despite the 2GB limit...
+    def make_vertex_stride_default(self, use_vertex_color = True):
+        # region Comment - Stride values
+
+        # NOTE : The old stride was 44 because of the elements within the vertex declaration without vertex color.
         # return 44 # 44 = 11*4; only 11 because we do not account for those vertex declarations that use usage index 1, because they overlap with already existing values from the usage index 0.
-        return 60 # 60 because we include the vertex color now, which has its own vertex declaration.
+        # The inclusion of vertex color support has changed that. The special case for not using vertex color does not exist due to memory consumption optimizations, because it's actually quite slim to include
+        # the vertex color. On its own, vertex color doesn't even bloat mesh memory usage that much despite the 2GB runtime memory allocation limit.
+        # The reason to not include it would be due to the fact that vertex color affects the way certain surfaces are rendered, for example, liquids, which kind of break unless you have the proper
+        # vertex color setup. Better to only include the vertex color if 100% required to avoid these issues...
+        # return 60 # 60 because we include the vertex color now, which has its own vertex declaration.
+
+        # endregion
+        if use_vertex_color:
+            return 60 # Vertex stride is 60 bytes if vertex color is included.
+        else:
+            return 44 # Vertex stride is 44 bytes if vertex color is excluded.
     
     def make_vertex_buffer(self, vertices):
         buf = []
         for vertex in vertices:
             global_idx, position, normal, tangent, uv, color = vertex
+            # TODO : Implement handling to ignore vertex color when it is not required...
             buffer_part = struct.pack("fffffffffffffff", position[0], position[1], position[2], normal[0], normal[1], normal[2], uv[0], uv[1], tangent[0], tangent[1], tangent[2], color[0], color[1], color[2], color[3])
             byte_array = bytearray(buffer_part)
             # int_array = array.array("i")
