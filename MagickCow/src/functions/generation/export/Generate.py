@@ -336,7 +336,8 @@ class MCow_Data_Generator:
         else:
             color_default = (0.0, 0.0, 0.0, 0.0) if mcow_mesh.mesh.magickcow_mesh_type in ["WATER", "LAVA"] else (1.0, 1.0, 1.0, 0.0) # TODO : Get rid of this retarded logic in the future maybe...
             color_layer = None # LOL
-            has_vertex_color = False
+            # has_vertex_color = False
+            has_vertex_color = True # TODO : Clean this shit up!!! This is a fucking hack that exists to fix something I broke somewhere else... need to clean this up later on... FUCK! Basically, we're making it so that we ALWAYS have vertex color to work around the stupidly retarded system I implemented which allows us to NOT have vertex color! The reason to do this is that if we do not have vertex color, then all materials that use 2 texture sets fucking break and appear as black! yippie!
 
         vertices = []
         indices = []
@@ -367,7 +368,7 @@ class MCow_Data_Generator:
                 uv = mcow_mesh.mesh.uv_layers.active.data[loop_idx].uv
                 uv = self.generate_uv(uv)
                 
-                if has_vertex_color:
+                if color_layer is not None: # has_vertex_color:
                     color = color_layer.data[loop_idx].color
                     color = (color[0], color[1], color[2], color[3])
                 else:
