@@ -894,12 +894,14 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
         
         for poly in mesh.polygons:
             triangle = [0,0,0]
+            triangle_external = [0, 0, 0]
             idx = 0
             for loop_idx in poly.loop_indices:
                 loop = mesh.loops[loop_idx]
                 vertex_idx = loop.vertex_index
                 
-                triangle[idx] = vertex_idx + last_vertex_idx
+                triangle[idx] = vertex_idx # The "internal" vertex index corresponds to the local index within the actual geometry in this Blender mesh part.
+                triangle_external[idx] = vertex_idx + last_vertex_idx # The "external" vertex index corresponds to the global index within the final exported single-mesh navmesh.
                 idx += 1
             
             # We don't need to translate the vertices to the Y up coordinate system here because the relative positions are still the same, so the distances remain the same.
@@ -928,7 +930,7 @@ class MCow_Data_Generator_Map(MCow_Data_Generator):
             neighbour_b = self.get_opposite_face(poly.index, edges[self.get_edge(triangle[1], triangle[2])])
             neighbour_c = self.get_opposite_face(poly.index, edges[self.get_edge(triangle[2], triangle[0])])
             
-            tri = (triangle[0], triangle[1], triangle[2], neighbour_a, neighbour_b, neighbour_c, cost_ab, cost_bc, cost_ca) # within Magicka's code, 65535 (max u16 value) is reserved as the "none" or "null" value for neighbour triangle indices.
+            tri = (triangle_external[0], triangle_external[1], triangle_external[2], neighbour_a, neighbour_b, neighbour_c, cost_ab, cost_bc, cost_ca) # within Magicka's code, 65535 (max u16 value) is reserved as the "none" or "null" value for neighbour triangle indices.
             triangles.append(tri)
         
         # Free the bm (fun fact, this function is the only one that actually needs the bm to exist up until this point... again, keeping it everywhere else for consistency, and just in case it is needed in the future)
