@@ -369,11 +369,14 @@ class MCow_ImportPipeline:
             diffuse1_node = nodes.new(type="ShaderNodeTexImage")
             diffuse1_node.location = (-1622, 637)
             diffuse1_node.image = self.texture_load(diffuse1)
+            links.new(diffuse1_node.outputs["Color"], mcow_node.inputs["DiffuseTexture1Color"])
+            links.new(diffuse1_node.outputs["Alpha"], mcow_node.inputs["DiffuseTexture1Alpha"])
 
             # Node Normal 1
             normal1_node = nodes.new(type="ShaderNodeTexImage")
             normal1_node.location = (-1619, 355)
             normal1_node.image = self.texture_load(normal1)
+            links.new(normal1_node.outputs["Color"], mcow_node.inputs["NormalTexture1"])
 
         # Node Alpha 0
         alpha0_node = nodes.new(type="ShaderNodeMix")
