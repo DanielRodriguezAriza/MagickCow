@@ -333,79 +333,43 @@ class MCow_ImportPipeline:
         # Clear out the default nodes from the node graph (we could skip this step, but just in case)
         nodes.clear()
 
-        # Try to import the deferred effect mcow group node if it isn't available already
-        if bpy.data.node_groups.get("mcow_NodeGroup_DeferredEffect") is None:
-            
-
         # Material Output Node:
         output_node = nodes.new(type = "ShaderNodeOutputMaterial")
         output_node.location = (400, 0)
         
         # Effect Deferred mcow Node:
         mcow_node = nodes.new(type="ShaderNodeGroup")
-        node.node_tree = bpy.data.node_groups["mcow_NodeGroup_DeferredEffect"]
+        mcow_node.node_tree = bpy.data.node_groups["mcow_NodeGroup_DeferredEffect"]
+        mcow_node.location = (0, 0)
 
-        # 3) Link BSDF node to output node
-        links.new(bsdf_node.outputs["BSDF"], output_node.inputs["Surface"])
-
-        # 4) Create the rest of the nodes
-
-        # Node Color 0
-        mulcolor0_node = nodes.new(type="ShaderNodeMix")
-        mulcolor0_node.location = (-1333, 1465)
-        mulcolor0_node.width = 140
-        mulcolor0_node.height = 100
-        mulcolor0_node.label = "MulColor0"
-        mulcolor0_node.data_type = "RGBA"
-        mulcolor0_node.blend_type = "MULTIPLY"
-        mulcolor0_node.inputs[7].default_value = color0
+        # Color 0
+        mcow_node.inputs["DiffuseColor0"].default_value = color0
 
         # Node Diffuse 0
-        diffuse0_data = self.texture_load(diffuse0)
         diffuse0_node = nodes.new(type="ShaderNodeTexImage")
         diffuse0_node.location = (-1668, 1336)
-        diffuse0_node.width = 240
-        diffuse0_node.height = 100
-        diffuse0_node.label = "Diffuse0"
-        diffuse0_node.image = diffuse0_data
+        diffuse0_node.image = self.texture_load(diffuse0)
 
         # Node Normal 0
-        normal0_data = self.texture_load(normal0)
         normal0_node = nodes.new(type="ShaderNodeTexImage")
         normal0_node.location = (-1668, 1054)
-        normal0_node.width = 240
-        normal0_node.height = 100
-        normal0_node.label = "Normal0"
-        normal0_node.image = normal0_data
+        normal0_node.image = self.texture_load(normal0)
 
         # Nodes for second set
+        mcow_node.inputs["HasSecondSet"] = has_second_set
         if has_second_set:
             # Node Color 1
-            mulcolor1_node = nodes.new(type="ShaderNodeMix")
-            mulcolor1_node.location = (-1328, 805)
-            mulcolor1_node.width = 140
-            mulcolor1_node.height = 100
-            mulcolor1_node.label = "MulColor1"
-            mulcolor1_node.blend_type = "RGBA"
-            mulcolor1_node.inputs[7].default_value = color1
+            mcow_node.inputs["DiffuseColor0"].default_value = color1
 
             # Node Diffuse 1
-            diffuse1_data = self.texture_load(diffuse1)
             diffuse1_node = nodes.new(type="ShaderNodeTexImage")
             diffuse1_node.location = (-1622, 637)
-            diffuse1_node.width = 240
-            diffuse1_node.height = 100
-            diffuse1_node.label = "Diffuse1"
-            diffuse1_node.image = diffuse1_data
+            diffuse1_node.image = self.texture_load(diffuse1)
 
             # Node Normal 1
-            normal1_data = self.texture_load(normal1)
             normal1_node = nodes.new(type="ShaderNodeTexImage")
             normal1_node.location = (-1619, 355)
-            normal1_node.width = 240
-            normal1_node.height = 100
-            normal1_node.label = "Normal1"
-            normal1_node.image = normal1_data
+            normal1_node.image = self.texture_load(normal1)
 
         # Node Alpha 0
         alpha0_node = nodes.new(type="ShaderNodeMix")
