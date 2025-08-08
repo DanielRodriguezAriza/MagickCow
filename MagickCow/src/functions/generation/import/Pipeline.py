@@ -4,6 +4,7 @@ class MCow_ImportPipeline:
     def __init__(self):
         self._cached_import_path = ""
         self._cached_textures = {}
+        self.cache_group_nodes() # NOTE : Maybe in the future this should be called on exec? also, maybe make it only happen if texture importing is enabled. But this is ok for now.
         return
     
     def exec(self, data, path):
@@ -315,6 +316,14 @@ class MCow_ImportPipeline:
         texture_data = bpy.data.images.load(chosen_texture_file)
         self._cached_textures[texture_path_absolute] = texture_data
         return texture_data
+
+    def cache_group_nodes(self):
+        # Compute the path of the blend file where the expected group node is located
+        path_addon = os.path.dirname(__file__)
+        path_file = os.path.join(path_addon, "data", "node_groups", "effects.blend")
+
+        # Append the group nodes to the current scene
+        mcow_utility_append_blender_group_nodes_with_override(path_file)
 
     def create_effect_material_nodes_effect_deferred(self, material, color0, diffuse0, normal0, has_second_set, color1, diffuse1, normal1):
         # Get nodes and links
