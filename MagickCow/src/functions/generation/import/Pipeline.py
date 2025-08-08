@@ -351,7 +351,7 @@ class MCow_ImportPipeline:
         diffuse0_node.location = (-1668, 1336)
         diffuse0_node.image = self.texture_load(diffuse0)
         links.new(diffuse0_node.outputs["Color"], mcow_node.inputs["DiffuseTexture0Color"])
-        links.new(diffuse0_node.outputs["Alpha"], mcow_node.inputs["DiffuseTexture0Alpha"])
+        links.new(diffuse0_node.outputs["Alpha"], mcow_node.inputs["DiffuseTexture0Alpha"]) # Yes, Magicka stores the alpha channel for transparencies within the diffuse texture itself.
 
         # Node Normal 0
         normal0_node = nodes.new(type="ShaderNodeTexImage")
@@ -377,31 +377,7 @@ class MCow_ImportPipeline:
             normal1_node.location = (-1619, 355)
             normal1_node.image = self.texture_load(normal1)
             links.new(normal1_node.outputs["Color"], mcow_node.inputs["NormalTexture1"])
-
-        # Node Alpha 0
-        alpha0_node = nodes.new(type="ShaderNodeMix")
-        alpha0_node.location = (-1333, 1236)
-        alpha0_node.width = 140
-        alpha0_node.height = 100
-        alpha0_node.label = "Alpha0"
-        alpha0_node.data_type = "FLOAT"
-        alpha0_node.inputs[0] = 1.0
-        alpha0_node.inputs[3] = 1.0
-
-        # Diffuse Texture 0
-        diffuse0_data = self.texture_load(diffuse0)
-        if texture_data_diffuse is not None:
-            texture_diffuse_node = self.create_effect_material_node_texture(nodes, (-200, -200), texture_data_diffuse)
-            links.new(texture_diffuse_node.outputs["Color"], bsdf_node.inputs["Base Color"])
-            links.new(texture_diffuse_node.outputs["Alpha"], bsdf_node.inputs["Alpha"]) # Yes, Magicka stores the alpha channel within the diffuse texture itself.
-
-        # 5) Link up the nodes
-
-        # fas
-
-
-
-
+        
         # All of this stuff doesn't really matter, it's just for visualization and stuff...
         # Although in the future we COULD modify it so that we reference these nodes for the actual values during export.
         # idk, maybe the visualization being synced up with custom mats should just be the user's responsibility... but we'll see about that in the future when the time comes.
