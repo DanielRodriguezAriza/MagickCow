@@ -341,22 +341,23 @@ class MCow_ImportPipeline:
 
         # color0
 
-
-        # diffuse0
+        # Node Diffuse 0
         diffuse0_data = self.texture_load(diffuse0)
-        node = nodes.new(type="ShaderNodeTexImage")
-        node.location = (-1668.2657, 1336.7462)
-        node.width = 240
-        node.height = 100
-        node.image = diffuse0_data
+        diffuse0_node = nodes.new(type="ShaderNodeTexImage")
+        diffuse0_node.location = (-1668, 1336)
+        diffuse0_node.width = 240
+        diffuse0_node.height = 100
+        diffuse0_node.label = "Diffuse0"
+        diffuse0_node.image = diffuse0_data
 
-        # normal0
+        # Node Normal 0
         normal0_data = self.texture_load(normal0)
-        node = nodes.new(type="ShaderNodeTexImage")
-        node.location = (-1668.2657, 1336.7462)
-        node.width = 240
-        node.height = 100
-        node.image = normal0_data
+        normal0_node = nodes.new(type="ShaderNodeTexImage")
+        normal0_node.location = (-1668, 1054)
+        normal0_node.width = 240
+        normal0_node.height = 100
+        normal0_node.label = "Normal0"
+        normal0_node.image = normal0_data
 
 
         # Diffuse Texture 0
