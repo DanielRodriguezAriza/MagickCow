@@ -11,4 +11,9 @@ def mcow_utility_append_blender_scene(path, link = False):
         if obj is not None:
             bpy.context.collection.objects.link(obj)
 
+# Append the material group nodes stored within the specified blender file to the current one
+def mcow_utility_append_blender_group_nodes(path, link = False):
+    with bpy.data.libraries.load(path, link = link) as (data_from, data_to):
+        data_to.node_groups = data_from.node_groups
+
 # endregion
