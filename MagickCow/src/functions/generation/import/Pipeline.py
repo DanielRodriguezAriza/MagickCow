@@ -337,7 +337,38 @@ class MCow_ImportPipeline:
         # 3) Link BSDF node to output node
         links.new(bsdf_node.outputs["BSDF"], output_node.inputs["Surface"])
 
-        
+        # 4) Create the rest of the nodes
+
+        # color0
+
+
+        # diffuse0
+        diffuse0_data = self.texture_load(diffuse0)
+        node = nodes.new(type="ShaderNodeTexImage")
+        node.location = (-1668.2657, 1336.7462)
+        node.width = 240
+        node.height = 100
+        node.image = diffuse0_data
+
+        # normal0
+        normal0_data = self.texture_load(normal0)
+        node = nodes.new(type="ShaderNodeTexImage")
+        node.location = (-1668.2657, 1336.7462)
+        node.width = 240
+        node.height = 100
+        node.image = normal0_data
+
+
+        # Diffuse Texture 0
+        diffuse0_data = self.texture_load(diffuse0)
+        if texture_data_diffuse is not None:
+            texture_diffuse_node = self.create_effect_material_node_texture(nodes, (-200, -200), texture_data_diffuse)
+            links.new(texture_diffuse_node.outputs["Color"], bsdf_node.inputs["Base Color"])
+            links.new(texture_diffuse_node.outputs["Alpha"], bsdf_node.inputs["Alpha"]) # Yes, Magicka stores the alpha channel within the diffuse texture itself.
+
+        # 5) Link up the nodes
+
+        # fas
 
         # TODO : Maybe implement support for normal textures? doesn't really matter, it's just for visualization and stuff...
         # Although in the future we COULD modify it so that we reference these nodes for the actual values? idk, maybe the visualization being synced up with custom mats should just be the user's responsibility...
