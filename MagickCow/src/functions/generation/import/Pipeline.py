@@ -325,7 +325,7 @@ class MCow_ImportPipeline:
         # Append the group nodes to the current scene
         mcow_utility_append_blender_group_nodes_with_override(path_file)
 
-    def create_effect_material_nodes_effect_deferred(self, material, color0, diffuse0, normal0, has_second_set, color1, diffuse1, normal1):
+    def create_effect_material_nodes_effect_deferred(self, material, color0, diffuse0, normal0, alpha0disabled, has_second_set, color1, diffuse1, normal1, alpha1disabled):
         # Get nodes and links
         nodes = material.node_tree.nodes
         links = material.node_tree.links
@@ -359,6 +359,9 @@ class MCow_ImportPipeline:
         normal0_node.image = self.texture_load(normal0)
         links.new(normal0_node.outputs["Color"], mcow_node.inputs["NormalTexture0"])
 
+        # Alpha 0 Disabled
+        mcow_node.inputs["DiffuseTexture0AlphaDisabled"].default_value = alpha0disabled
+
         # Nodes for second set
         mcow_node.inputs["HasSecondSet"] = has_second_set
         if has_second_set:
@@ -377,6 +380,9 @@ class MCow_ImportPipeline:
             normal1_node.location = (-1619, 355)
             normal1_node.image = self.texture_load(normal1)
             links.new(normal1_node.outputs["Color"], mcow_node.inputs["NormalTexture1"])
+
+            # Alpha 1 Disabled
+            mcow_node.inputs["DiffuseTexture1AlphaDisabled"].default_value = alpha1disabled
         
         # All of this stuff doesn't really matter, it's just for visualization and stuff...
         # Although in the future we COULD modify it so that we reference these nodes for the actual values during export.
@@ -447,14 +453,16 @@ class MCow_ImportPipeline:
         color0 = self.read_color_rgb(effect["DiffuseColor0"])
         diffuse0 = effect["DiffuseTexture0"]
         normal0 = effect["NormalTexture0"]
+        alpha0disabled = effect["DiffuseTexture0AlphaDisabled"]
 
         has_second_set = effect["HasSecondSet"]
         color1 = self.read_color_rgb(effect["DiffuseColor1"])
         diffuse1 = effect["DiffuseTexture1"]
         normal1 = effect["NormalTexture1"]
+        alpha1disabled = effect["DiffuseTexture1AlphaDisabled"]
 
         # Generate the material nodes themselves
-        self.create_effect_material_nodes_effect_deferred(material, color0, diffuse0, normal0, has_second_set, color1, diffuse1, normal1)
+        self.create_effect_material_nodes_effect_deferred(material, color0, diffuse0, normal0, alpha0disabled, has_second_set, color1, diffuse1, normal1, alpha1disabled)
 
     # endregion
 
