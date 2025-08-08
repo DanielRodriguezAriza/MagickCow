@@ -324,22 +324,22 @@ class MCow_ImportPipeline:
         # Clear out the default nodes from the node graph (we could skip this step, but just in case)
         nodes.clear()
 
-        # Basic BSDF material setup:
-        
-        # 1) Material Output Node:
+        # Try to import the deferred effect mcow group node if it isn't available already
+        if bpy.data.node_groups.get("mcow_NodeGroup_DeferredEffect") is None:
+            
+
+        # Material Output Node:
         output_node = nodes.new(type = "ShaderNodeOutputMaterial")
         output_node.location = (400, 0)
         
-        # 2) Principled BSDF Node:
-        bsdf_node = nodes.new(type = "ShaderNodeBsdfPrincipled")
-        bsdf_node.location = (0, 0)
+        # Effect Deferred mcow Node:
+        mcow_node = nodes.new(type="ShaderNodeGroup")
+        node.node_tree = bpy.data.node_groups["mcow_NodeGroup_DeferredEffect"]
 
         # 3) Link BSDF node to output node
         links.new(bsdf_node.outputs["BSDF"], output_node.inputs["Surface"])
 
         # 4) Create the rest of the nodes
-
-        # color0
 
         # Node Diffuse 0
         diffuse0_data = self.texture_load(diffuse0)
