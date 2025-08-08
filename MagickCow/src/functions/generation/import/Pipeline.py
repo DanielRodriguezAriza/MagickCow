@@ -384,7 +384,11 @@ class MCow_ImportPipeline:
             # Alpha 1 Disabled
             mcow_node.inputs["DiffuseTexture1AlphaDisabled"].default_value = alpha1disabled
         
-        # All of this stuff doesn't really matter, it's just for visualization and stuff...
+        # TODO : Add handling for vertex color channel, if present within the mesh.
+        # Otherwise, assume the default value of 0 (Texture set 0 will be disaplyed).
+        # btw, for this to make the most sense, it would require the vertex color data importing to actually be implemented on the mesh geometry buffer import logic side of the code.
+
+        # NOTE: All of this stuff doesn't really matter, it's just for visualization and stuff...
         # Although in the future we COULD modify it so that we reference these nodes for the actual values during export.
         # idk, maybe the visualization being synced up with custom mats should just be the user's responsibility... but we'll see about that in the future when the time comes.
 
