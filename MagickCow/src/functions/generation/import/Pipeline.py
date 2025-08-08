@@ -377,6 +377,16 @@ class MCow_ImportPipeline:
         normal1_node.label = "Normal1"
         normal1_node.image = normal1_data
 
+        # Node Color 0
+        mulcolor0_node = nodes.new(type="ShaderNodeMix")
+        mulcolor0_node.location = (-1333, 1465)
+        mulcolor0_node.width = 140
+        mulcolor0_node.height = 100
+        mulcolor0_node.label = "MulColor0"
+        node.data_type = "RGBA"
+        node.blend_type = "MULTIPLY"
+        mulcolor0_node.inputs[7].default_value = color0
+
         # Diffuse Texture 0
         diffuse0_data = self.texture_load(diffuse0)
         if texture_data_diffuse is not None:
