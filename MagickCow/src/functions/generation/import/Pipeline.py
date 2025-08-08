@@ -344,7 +344,7 @@ class MCow_ImportPipeline:
         links.new(mcow_node.outputs["BSDF"], output_node.inputs["Surface"])
 
         # Color 0
-        mcow_node.inputs["DiffuseColor0"].default_value = color0
+        mcow_node.inputs["DiffuseColor0"].default_value = (color0[0], color0[1], color0[2], 1.0)
 
         # Node Diffuse 0
         diffuse0_node = nodes.new(type="ShaderNodeTexImage")
@@ -366,7 +366,7 @@ class MCow_ImportPipeline:
         mcow_node.inputs["HasSecondSet"] = has_second_set
         if has_second_set:
             # Node Color 1
-            mcow_node.inputs["DiffuseColor0"].default_value = color1
+            mcow_node.inputs["DiffuseColor0"].default_value = (color1[0], color1[1], color1[2], 1.0)
 
             # Node Diffuse 1
             diffuse1_node = nodes.new(type="ShaderNodeTexImage")
