@@ -370,8 +370,12 @@ class MCow_ImportPipeline:
 
         # fas
 
-        # TODO : Maybe implement support for normal textures? doesn't really matter, it's just for visualization and stuff...
-        # Although in the future we COULD modify it so that we reference these nodes for the actual values? idk, maybe the visualization being synced up with custom mats should just be the user's responsibility...
+
+
+
+        # All of this stuff doesn't really matter, it's just for visualization and stuff...
+        # Although in the future we COULD modify it so that we reference these nodes for the actual values during export.
+        # idk, maybe the visualization being synced up with custom mats should just be the user's responsibility... but we'll see about that in the future when the time comes.
 
     def read_effect_deferred(self, material, effect):
         material.mcow_effect_deferred_alpha = effect["Alpha"]
