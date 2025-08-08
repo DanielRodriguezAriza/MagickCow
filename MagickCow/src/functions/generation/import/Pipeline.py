@@ -341,6 +341,7 @@ class MCow_ImportPipeline:
         mcow_node = nodes.new(type="ShaderNodeGroup")
         mcow_node.node_tree = bpy.data.node_groups["mcow_NodeGroup_DeferredEffect"]
         mcow_node.location = (0, 0)
+        links.new(mcow_node.outputs["BSDF"], output_node.inputs["Surface"])
 
         # Color 0
         mcow_node.inputs["DiffuseColor0"].default_value = color0
@@ -349,11 +350,14 @@ class MCow_ImportPipeline:
         diffuse0_node = nodes.new(type="ShaderNodeTexImage")
         diffuse0_node.location = (-1668, 1336)
         diffuse0_node.image = self.texture_load(diffuse0)
+        links.new(diffuse0_node.outputs["Color"], mcow_node.inputs["DiffuseTexture0Color"])
+        links.new(diffuse0_node.outputs["Alpha"], mcow_node.inputs["DiffuseTexture0Alpha"])
 
         # Node Normal 0
         normal0_node = nodes.new(type="ShaderNodeTexImage")
         normal0_node.location = (-1668, 1054)
         normal0_node.image = self.texture_load(normal0)
+        links.new(normal0_node.outputs["Color"], mcow_node.inputs["NormalTexture0"])
 
         # Nodes for second set
         mcow_node.inputs["HasSecondSet"] = has_second_set
