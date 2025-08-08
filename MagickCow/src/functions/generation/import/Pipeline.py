@@ -363,7 +363,7 @@ class MCow_ImportPipeline:
         mcow_node.inputs["DiffuseTexture0AlphaDisabled"].default_value = alpha0disabled
 
         # Nodes for second set
-        mcow_node.inputs["HasSecondSet"] = has_second_set
+        mcow_node.inputs["HasSecondSet"].default_value = has_second_set
         if has_second_set:
             # Node Color 1
             mcow_node.inputs["DiffuseColor0"].default_value = (color1[0], color1[1], color1[2], 1.0)
