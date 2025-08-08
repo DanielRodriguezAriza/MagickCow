@@ -316,7 +316,7 @@ class MCow_ImportPipeline:
         self._cached_textures[texture_path_absolute] = texture_data
         return texture_data
 
-    def create_effect_material_nodes(self, material, texture_diffuse):
+    def create_effect_material_nodes_effect_deferred(self, material, color0, diffuse0, normal0, color1, diffuse1, normal1):
         # Get nodes and links
         nodes = material.node_tree.nodes
         links = material.node_tree.links
@@ -326,23 +326,18 @@ class MCow_ImportPipeline:
 
         # Basic BSDF material setup:
         
-        # 1) Material Output:
+        # 1) Material Output Node:
         output_node = nodes.new(type = "ShaderNodeOutputMaterial")
         output_node.location = (400, 0)
         
-        # 2) Principled BSDF:
+        # 2) Principled BSDF Node:
         bsdf_node = nodes.new(type = "ShaderNodeBsdfPrincipled")
         bsdf_node.location = (0, 0)
 
         # 3) Link BSDF node to output node
         links.new(bsdf_node.outputs["BSDF"], output_node.inputs["Surface"])
 
-        # Diffuse Texture
-        texture_data_diffuse = self.texture_load(texture_diffuse)
-        if texture_data_diffuse is not None:
-            texture_diffuse_node = self.create_effect_material_node_texture(nodes, (-200, -200), texture_data_diffuse)
-            links.new(texture_diffuse_node.outputs["Color"], bsdf_node.inputs["Base Color"])
-            links.new(texture_diffuse_node.outputs["Alpha"], bsdf_node.inputs["Alpha"]) # Yes, Magicka stores the alpha channel within the diffuse texture itself.
+        
 
         # TODO : Maybe implement support for normal textures? doesn't really matter, it's just for visualization and stuff...
         # Although in the future we COULD modify it so that we reference these nodes for the actual values? idk, maybe the visualization being synced up with custom mats should just be the user's responsibility...
@@ -407,8 +402,16 @@ class MCow_ImportPipeline:
             material.mcow_effect_additive_texture = effect["texture"]
 
     def generate_effect_deferred(self, material, effect):
-        diffuse = effect["DiffuseTexture0"]
-        self.create_effect_material_nodes(material, diffuse)
+        # Get relevant properties
+        diffuse0 = effect["DiffuseTexture0"]
+        diffuse1 = effect["DiffuseTexture1"]
+        normal0 = effect["NormalTexture0"]
+        normal1 = effect["NormalTexture1"]
+        color0 = self.read_color_rgb(effect["DiffuseColor0"])
+        color1 = self.read_color_rgb(effect["DiffuseColor1"])
+
+        # Generate the material nodes themselves
+        self.create_effect_material_nodes_effect_deferred(material, color0, diffuse0, normal0, color1, diffuse1, normal1)
 
     # endregion
 
