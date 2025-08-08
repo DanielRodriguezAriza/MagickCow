@@ -316,7 +316,7 @@ class MCow_ImportPipeline:
         self._cached_textures[texture_path_absolute] = texture_data
         return texture_data
 
-    def create_effect_material_nodes_effect_deferred(self, material, color0, diffuse0, normal0, color1, diffuse1, normal1):
+    def create_effect_material_nodes_effect_deferred(self, material, color0, diffuse0, normal0, has_second_set, color1, diffuse1, normal1):
         # Get nodes and links
         nodes = material.node_tree.nodes
         links = material.node_tree.links
@@ -341,6 +341,16 @@ class MCow_ImportPipeline:
 
         # 4) Create the rest of the nodes
 
+        # Node Color 0
+        mulcolor0_node = nodes.new(type="ShaderNodeMix")
+        mulcolor0_node.location = (-1333, 1465)
+        mulcolor0_node.width = 140
+        mulcolor0_node.height = 100
+        mulcolor0_node.label = "MulColor0"
+        mulcolor0_node.data_type = "RGBA"
+        mulcolor0_node.blend_type = "MULTIPLY"
+        mulcolor0_node.inputs[7].default_value = color0
+
         # Node Diffuse 0
         diffuse0_data = self.texture_load(diffuse0)
         diffuse0_node = nodes.new(type="ShaderNodeTexImage")
@@ -359,42 +369,34 @@ class MCow_ImportPipeline:
         normal0_node.label = "Normal0"
         normal0_node.image = normal0_data
 
-        # Node Diffuse 1
-        diffuse1_data = self.texture_load(diffuse1)
-        diffuse1_node = nodes.new(type="ShaderNodeTexImage")
-        diffuse1_node.location = (-1622, 637)
-        diffuse1_node.width = 240
-        diffuse1_node.height = 100
-        diffuse1_node.label = "Diffuse1"
-        diffuse1_node.image = diffuse1_data
+        # Nodes for second set
+        if has_second_set:
+            # Node Color 1
+            mulcolor1_node = nodes.new(type="ShaderNodeMix")
+            mulcolor1_node.location = (-1328, 805)
+            mulcolor1_node.width = 140
+            mulcolor1_node.height = 100
+            mulcolor1_node.label = "MulColor1"
+            mulcolor1_node.blend_type = "RGBA"
+            mulcolor1_node.inputs[7].default_value = color1
 
-        # Node Normal 1
-        normal1_data = self.texture_load(normal1)
-        normal1_node = nodes.new(type="ShaderNodeTexImage")
-        normal1_node.location = (-1619, 355)
-        normal1_node.width = 240
-        normal1_node.height = 100
-        normal1_node.label = "Normal1"
-        normal1_node.image = normal1_data
+            # Node Diffuse 1
+            diffuse1_data = self.texture_load(diffuse1)
+            diffuse1_node = nodes.new(type="ShaderNodeTexImage")
+            diffuse1_node.location = (-1622, 637)
+            diffuse1_node.width = 240
+            diffuse1_node.height = 100
+            diffuse1_node.label = "Diffuse1"
+            diffuse1_node.image = diffuse1_data
 
-        # Node Color 0
-        mulcolor0_node = nodes.new(type="ShaderNodeMix")
-        mulcolor0_node.location = (-1333, 1465)
-        mulcolor0_node.width = 140
-        mulcolor0_node.height = 100
-        mulcolor0_node.label = "MulColor0"
-        mulcolor0_node.data_type = "RGBA"
-        mulcolor0_node.blend_type = "MULTIPLY"
-        mulcolor0_node.inputs[7].default_value = color0
-
-        # Node Color 1
-        mulcolor1_node = nodes.new(type="ShaderNodeMix")
-        mulcolor1_node.location = (-1328, 805)
-        mulcolor1_node.width = 140
-        mulcolor1_node.height = 100
-        mulcolor1_node.label = "MulColor1"
-        mulcolor1_node.blend_type = "RGBA"
-        mulcolor1_node.inputs[7].default_value = color1
+            # Node Normal 1
+            normal1_data = self.texture_load(normal1)
+            normal1_node = nodes.new(type="ShaderNodeTexImage")
+            normal1_node.location = (-1619, 355)
+            normal1_node.width = 240
+            normal1_node.height = 100
+            normal1_node.label = "Normal1"
+            normal1_node.image = normal1_data
 
         # Node Alpha 0
         alpha0_node = nodes.new(type="ShaderNodeMix")
@@ -484,16 +486,19 @@ class MCow_ImportPipeline:
             material.mcow_effect_additive_texture = effect["texture"]
 
     def generate_effect_deferred(self, material, effect):
+        
         # Get relevant properties
-        diffuse0 = effect["DiffuseTexture0"]
-        diffuse1 = effect["DiffuseTexture1"]
-        normal0 = effect["NormalTexture0"]
-        normal1 = effect["NormalTexture1"]
         color0 = self.read_color_rgb(effect["DiffuseColor0"])
+        diffuse0 = effect["DiffuseTexture0"]
+        normal0 = effect["NormalTexture0"]
+
+        has_second_set = effect["HasSecondSet"]
         color1 = self.read_color_rgb(effect["DiffuseColor1"])
+        diffuse1 = effect["DiffuseTexture1"]
+        normal1 = effect["NormalTexture1"]
 
         # Generate the material nodes themselves
-        self.create_effect_material_nodes_effect_deferred(material, color0, diffuse0, normal0, color1, diffuse1, normal1)
+        self.create_effect_material_nodes_effect_deferred(material, color0, diffuse0, normal0, has_second_set, color1, diffuse1, normal1)
 
     # endregion
 
