@@ -6,7 +6,7 @@ bl_info = {
     "category" : "Export",
     "description" : "Exports the mesh data of the BLEND file to an intermediate JSON file to be used by MagickaPUP to generate a XNB file compatible with Magicka.",
     "author" : "potatoes",
-    "version" : (1, 0, 0)
+    "version" : (1, 1, 0)
 }
 
 # endregion
