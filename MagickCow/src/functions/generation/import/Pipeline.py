@@ -353,17 +353,21 @@ class MCow_ImportPipeline:
         mcow_node.inputs["DiffuseColor0"].default_value = (color0[0], color0[1], color0[2], 1.0)
 
         # Node Diffuse 0
-        diffuse0_node = nodes.new(type="ShaderNodeTexImage")
-        diffuse0_node.location = (-1668, 1336)
-        diffuse0_node.image = self.texture_load(diffuse0)
-        links.new(diffuse0_node.outputs["Color"], mcow_node.inputs["DiffuseTexture0Color"])
-        links.new(diffuse0_node.outputs["Alpha"], mcow_node.inputs["DiffuseTexture0Alpha"]) # Yes, Magicka stores the alpha channel for transparencies within the diffuse texture itself.
+        diffuse0_data = self.texture_load(diffuse0)
+        if diffuse0_data is not None:
+            diffuse0_node = nodes.new(type="ShaderNodeTexImage")
+            diffuse0_node.location = (-1668, 1336)
+            diffuse0_node.image = diffuse0_data
+            links.new(diffuse0_node.outputs["Color"], mcow_node.inputs["DiffuseTexture0Color"])
+            links.new(diffuse0_node.outputs["Alpha"], mcow_node.inputs["DiffuseTexture0Alpha"]) # Yes, Magicka stores the alpha channel for transparencies within the diffuse texture itself.
 
         # Node Normal 0
-        normal0_node = nodes.new(type="ShaderNodeTexImage")
-        normal0_node.location = (-1668, 1054)
-        normal0_node.image = self.texture_load(normal0)
-        links.new(normal0_node.outputs["Color"], mcow_node.inputs["NormalTexture0"])
+        normal0_data = self.texture_load(normal0)
+        if normal0_data is not None:
+            normal0_node = nodes.new(type="ShaderNodeTexImage")
+            normal0_node.location = (-1668, 1054)
+            normal0_node.image = normal0_data
+            links.new(normal0_node.outputs["Color"], mcow_node.inputs["NormalTexture0"])
 
         # Alpha 0 Disabled
         mcow_node.inputs["DiffuseTexture0AlphaDisabled"].default_value = alpha0disabled
@@ -384,17 +388,21 @@ class MCow_ImportPipeline:
             mcow_node.inputs["DiffuseColor0"].default_value = (color1[0], color1[1], color1[2], 1.0)
 
             # Node Diffuse 1
-            diffuse1_node = nodes.new(type="ShaderNodeTexImage")
-            diffuse1_node.location = (-1622, 637)
-            diffuse1_node.image = self.texture_load(diffuse1)
-            links.new(diffuse1_node.outputs["Color"], mcow_node.inputs["DiffuseTexture1Color"])
-            links.new(diffuse1_node.outputs["Alpha"], mcow_node.inputs["DiffuseTexture1Alpha"])
+            diffuse1_data = self.texture_load(diffuse1)
+            if diffuse1_data is not None:
+                diffuse1_node = nodes.new(type="ShaderNodeTexImage")
+                diffuse1_node.location = (-1622, 637)
+                diffuse1_node.image = diffuse1_data
+                links.new(diffuse1_node.outputs["Color"], mcow_node.inputs["DiffuseTexture1Color"])
+                links.new(diffuse1_node.outputs["Alpha"], mcow_node.inputs["DiffuseTexture1Alpha"])
 
             # Node Normal 1
-            normal1_node = nodes.new(type="ShaderNodeTexImage")
-            normal1_node.location = (-1619, 355)
-            normal1_node.image = self.texture_load(normal1)
-            links.new(normal1_node.outputs["Color"], mcow_node.inputs["NormalTexture1"])
+            normal1_data = self.texture_load(normal1)
+            if normal1_data is not None:
+                normal1_node = nodes.new(type="ShaderNodeTexImage")
+                normal1_node.location = (-1619, 355)
+                normal1_node.image = normal1_data
+                links.new(normal1_node.outputs["Color"], mcow_node.inputs["NormalTexture1"])
 
             # Alpha 1 Disabled
             mcow_node.inputs["DiffuseTexture1AlphaDisabled"].default_value = alpha1disabled
